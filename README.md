@@ -107,12 +107,16 @@ Unlike those small fixtures, `--play` indexes both text IPL and the binary
 streamed IPL inside IMG: the latter contain most of the detailed buildings and
 ground. Its resident window is bounded to 900 m / 4096 nearest instances. No
 synthetic ground fills missing assets. Distant LOD rendering is not yet present.
-Pager updates currently rebuild the GPU scene synchronously, so movement can
-produce streaming hitches even while steady rendering reaches the 60 Hz cap.
+Pager/BVH rebuilding now runs on one exclusive worker; texture/list upload and
+retirement are spread across main-thread frames. Render and collision snapshots
+publish together before physics. The 4 ms GPU budget is soft: measured live
+streaming runs at 45–56 FPS versus ~60 steady, with scene publication taking
+several seconds; this is not a hard latency guarantee or full-map residency.
 The renderer now carries authored day/night prelight, material coefficients
 and car paint colors into a GLSL 1.20 pipeline, interpolates `timecyc.dat`
-sky/lighting/fog and draws real `water.dat` triangles. Shared vehicle textures,
-water textures/waves/reflections, shadows and full original effects are still
+sky/lighting/fog and draws real `water.dat` triangles. Shared `vehicle.txd`
+textures now resolve in the original common-before-model order. Vehicle damage
+selection/specular/reflections, water textures/waves/reflections, shadows and full original effects are still
 missing; sky and water are not a claim of complete visual equivalence.
 
 MangoHud is a runtime overlay, not a build dependency. The launcher records CSV
