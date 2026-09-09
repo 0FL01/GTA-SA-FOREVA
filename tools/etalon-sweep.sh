@@ -7,8 +7,7 @@ pass=0; fail=0
 chk() { # chk <label> <expected-substring> <command...>
   local label="$1"; local want="$2"; shift 2
   local out
-  out="$("$@" 2>&1)"
-  if echo "$out" | grep -qF "$want"; then
+  if out="$("$@" 2>&1)" && grep -qF "$want" <<< "$out"; then
     echo "PASS $label"; pass=$((pass+1))
   else
     echo "FAIL $label (want '$want')"
@@ -32,8 +31,10 @@ chk nav 'selected=1 chosen=1' env SDL_VIDEODRIVER=dummy $B --menu-nav down,enter
 chk coll 11598182692490058556 $B --coll-probe
 chk radio 14914820248825096026 $B --smoke-radio --station RE --seconds 5
 chk ped 8661044579928738921 $B --shot-ped $O/ped.tga --model cj
-chk anim 4444196192875791124 $B --shot-anim $O/anim.tga --model andre --anim IDLE_stance --time 0.5
-chk animseq 5401746386500127696 $B --anim-seq $O/animseq.tga --model andre --anim WALK_civi --frames 6
+# Rebaselined after the independently audited inverse-bind/world matrix-order
+# fix (RealtimeGameplayPoseProbe). The former hashes encoded stretched limbs.
+chk anim 16177280542601362575 $B --shot-anim $O/anim.tga --model andre --anim IDLE_stance --time 0.5
+chk animseq 'checksums=2062210707692712122,13276266474860423999,8157542380187650197,2582290901291269210,10514042998560378316,3419777634375814317' $B --anim-seq $O/animseq.tga --model andre --anim WALK_civi --frames 6
 chk blend 'c0matchesR6j=1' $B --anim-blend $O/blend.tga
 chk car 5730483265208789677 $B --shot-car $O/car0.tga --model landstal --steer 0 --spin 0
 chk hour0 12424149891741056524 $B --shot-scene $O/h0.tga --frames 30 --hour 0
@@ -43,17 +44,18 @@ chk cloudy 17456348052958327601 $B --shot-scene $O/cl.tga --frames 30 --hour 12 
 chk rainy 11361061957936333104 $B --shot-scene $O/rn.tga --frames 30 --hour 12 --weather RAINY_SF
 chk fogcloudy 13110586735901234051 $B --shot-scene $O/fc.tga --frames 30 --hour 12 --weather CLOUDY_LA --fog
 chk fogextra 17103271862050636373 $B --shot-scene $O/fe.tga --frames 30 --hour 12 --fog
-chk duo 5772255422792811549 $B --shot-duo $O/duo.tga --car landstal --ped andre
-chk crowd 10525445556894735238 $B --shot-crowd $O/crowd.tga
+chk duo 5513735349085560864 $B --shot-duo $O/duo.tga --car landstal --ped andre
+chk crowd 4768252903054582776 $B --shot-crowd $O/crowd.tga
 chk cs 7067056039750001653 $B --shot-cs $O/cs.tga
 chk csanim 12593717684848869509 $B --shot-cs-anim $O/csanim.tga
 chk csanimseq 'midMatchesR6w=1' $B --csanim-seq $O/csanimseq.tga
 chk sweet 6076501667886367754 $B --shot-cs-anim $O/sweet.tga --model cssweet --bank smoke1a --anim cssweet --time 0.5
 chk sweetbind 2273931685932636729 $B --shot-cs $O/cssweet.tga --model cssweet
 chk drive 'checksums=6771818124858749124,13426677351635860727,5048975404012482712' $B --drive --path 1608.20,-1721.80:1755.60,-1812.30:1683.22,-2242.96 --waypoints 3 --frames-per-leg 3 --model landstal --out $O/drive
-chk walk 'checksums=6943272887341086684,14267465534692917209,7125888396247038619' $B --walk --path 1645.38,-2292.76:1660.00,-2270.00:1675.00,-2250.00 --waypoints 3 --frames-per-leg 3 --model andre --anim WALK_civi --out $O/walk
+chk walk 'checksums=16187537142071421117,9520528001201157008,11093202885761166141' $B --walk --path 1645.38,-2292.76:1660.00,-2270.00:1675.00,-2250.00 --waypoints 3 --frames-per-leg 3 --model andre --anim WALK_civi --out $O/walk
 echo "=== csduo (new) ==="
 $B --shot-cs-duo $O/csduo.tga 2>&1 | grep -E 'csduo-load|csOffsets|csduo-cam|texcsduo-ok|csduo-ok'
 echo "=== ldd ==="
 ldd $B | grep -ci wine || true
 echo "SUMMARY pass=$pass fail=$fail"
+(( fail == 0 ))

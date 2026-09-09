@@ -67,8 +67,11 @@ GXT/dat` via `OS_File*`) and never touches `gta-sa.exe`.
 After building in the container, run **on the host Wayland desktop**:
 
 ```bash
-./play.sh                      # until Esc / window close
-./play.sh --demo --seconds 35  # bounded moving-camera check
+./play.sh                       # on-foot / nearby Landstal, until Esc / close
+./play.sh --demo --seconds 35   # jump, enter, drive, brake, exit, walk
+./play.sh --demo-curb --seconds 12 # real 17 cm street curb, walk/sprint up/down
+./play.sh --freecam              # original flying world viewer
+./play.sh --freecam --hour 22 --weather CLOUDY_LA --freeze-time
 ```
 
 Requires host Mesa/OpenGL, OpenAL, Vorbis runtime libraries and `mangohud`.
@@ -78,9 +81,26 @@ textures on the GPU, and calls `SDL_GL_SwapWindow` every frame. Vsync plus a
 60 Hz timer prevents an unpaced batch loop. It logs the actual video driver,
 GL renderer, drawable size, completed swaps and measured frame rate.
 
-**Controls:** WASD move, Q/E down/up, arrows look, left Shift fast, Esc exit.
-Resize is supported. This is a **static-world free-camera viewer**, not the
-original game's mission boot, character controller, traffic or full gameplay.
+**Controls:** WASD walk/drive, arrows orbit, left Shift sprint, Space jump or
+handbrake, left Ctrl brake, F enter/exit a nearby stationary vehicle, Tab toggle
+free camera (Q/E down/up, Shift fast), Esc exit. Resize is supported.
+`--cam x,y,z` selects the initial location (in gameplay, z is the ground-ray
+ceiling). `--hour` accepts fractional hours in [0,24); the timecycle advances
+one game minute per real second unless `--freeze-time` is supplied.
+
+This is an **interactive gameplay slice, not full San Andreas parity**. A real
+skinned `andre` with four IFP clips and a real Landstal persist across ticks;
+movement, jumping/landing, collision blocking, entering/driving/exiting and a
+collision-aware third-person camera operate in the same loop as rendering.
+The on-foot controller sweeps five overlapping spheres against actual triangles:
+curbs up to 26 cm and supported descents up to 30 cm retain ground contact;
+larger ledges, steep walls and inadequate headroom remain blocking. Walk/run
+keep a distance-driven animation phase and blend to idle/fall without resetting
+the foot cycle. The targeted terrain probe also checks ramps, gaps and ceilings.
+Collision uses a BVH of loaded render triangles, not the original COL flags;
+vehicle dynamics are still simplified (including acceleration), and entering
+has no door/seat animation. Modular CJ, mission boot, traffic, combat, original
+HUD/menu/save systems and other gameplay integration remain unfinished.
 `--drive`, `--walk` and screenshot modes remain deterministic offline harnesses.
 
 Unlike those small fixtures, `--play` indexes both text IPL and the binary
@@ -89,6 +109,11 @@ ground. Its resident window is bounded to 900 m / 4096 nearest instances. No
 synthetic ground fills missing assets. Distant LOD rendering is not yet present.
 Pager updates currently rebuild the GPU scene synchronously, so movement can
 produce streaming hitches even while steady rendering reaches the 60 Hz cap.
+The renderer now carries authored day/night prelight, material coefficients
+and car paint colors into a GLSL 1.20 pipeline, interpolates `timecyc.dat`
+sky/lighting/fog and draws real `water.dat` triangles. Shared vehicle textures,
+water textures/waves/reflections, shadows and full original effects are still
+missing; sky and water are not a claim of complete visual equivalence.
 
 MangoHud is a runtime overlay, not a build dependency. The launcher records CSV
 under `artifacts/graphics/`. It uses continuous logging (`log_duration=0`): the
