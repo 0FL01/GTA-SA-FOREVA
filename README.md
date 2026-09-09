@@ -98,9 +98,13 @@ larger ledges, steep walls and inadequate headroom remain blocking. Walk/run
 keep a distance-driven animation phase and blend to idle/fall without resetting
 the foot cycle. The targeted terrain probe also checks ramps, gaps and ceilings.
 Collision uses a BVH of loaded render triangles, not the original COL flags;
-vehicle dynamics are still simplified (including acceleration), and entering
-has no door/seat animation. Modular CJ, mission boot, traffic, combat, original
-HUD/menu/save systems and other gameplay integration remain unfinished.
+the transmission now uses source-derived handling conversion, gears and inertia
+at the original default 30 Hz simulation cadence. Tire adhesion, suspension and
+per-wheel braking remain simplified, and entering has no door/seat animation.
+The live radar uses all 144 original map tiles, camera-relative player/north
+markers and original HUD disc; the clock uses the authored Pricedown atlas and
+game time. Modular CJ, mission boot, traffic, combat, remaining HUD/menu/save
+systems and other gameplay integration remain unfinished.
 `--drive`, `--walk` and screenshot modes remain deterministic offline harnesses.
 
 Unlike those small fixtures, `--play` indexes both text IPL and the binary
