@@ -116,8 +116,12 @@ The renderer now carries authored day/night prelight, material coefficients
 and car paint colors into a GLSL 1.20 pipeline, interpolates `timecyc.dat`
 sky/lighting/fog and draws real `water.dat` triangles. Shared `vehicle.txd`
 textures now resolve in the original common-before-model order. Vehicle damage
-selection/specular/reflections, water textures/waves/reflections, shadows and full original effects are still
+transitions/specular/reflections, water textures/waves/reflections, shadows and full original effects are still
 missing; sky and water are not a claim of complete visual equivalence.
+The starting car now selects intact near-detail components instead of drawing
+damaged parts and VLO on top of them. On-foot diagonal contacts slide along
+the actual contact plane; animation follows total accepted Tick displacement,
+including curb/ramp traversal and downhill guardrail contact.
 
 MangoHud is a runtime overlay, not a build dependency. The launcher records CSV
 under `artifacts/graphics/`. It uses continuous logging (`log_duration=0`): the
