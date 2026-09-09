@@ -1,0 +1,7 @@
+# Keep build context small: game assets and build dirs never go into the image.
+Grand-Theft-Auto-San-Andreas/
+gta-reversed/build/
+gta-reversed/bin/
+build/
+bin/
+.git/

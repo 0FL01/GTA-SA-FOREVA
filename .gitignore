@@ -1,0 +1,13 @@
+# Game assets: legally owned local copy, read-only; NEVER commit or redistribute.
+/Grand-Theft-Auto-San-Andreas/
+
+# Build outputs and package caches
+/build/
+/build-conan/
+/.conan-cache/
+
+# Archived run outputs: logs, screenshots, one-off probes
+/artifacts/
+
+# Native fork is an independent git repository (own remote/history)
+/gta-reversed/
