@@ -28,7 +28,7 @@ chk scene 8041393264061736146 $B --shot-scene $O/scene.tga --frames 30
 chk e2e 'checksums=1885179052648202699,9311803278224900038,2155565298813610694' $B --e2e --path 1600,-1700,70:1683,-2285,50 --waypoints 3 --frames-per-leg 3 --out $O/e2e
 chk sfxreal 16310867633259773355 $B --smoke-audio-real --bank GENRL --samples 16
 chk menu 14347365074911296144 $B --shot-menu $O/menu.tga --lang english
-chk nav 'selected=1 chosen=1' $B --menu-nav down,enter --out $O/nav.tga --lang english
+chk nav 'selected=1 chosen=1' env SDL_VIDEODRIVER=dummy $B --menu-nav down,enter --out $O/nav.tga --lang english
 chk coll 11598182692490058556 $B --coll-probe
 chk radio 14914820248825096026 $B --smoke-radio --station RE --seconds 5
 chk ped 8661044579928738921 $B --shot-ped $O/ped.tga --model cj

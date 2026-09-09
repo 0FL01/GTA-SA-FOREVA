@@ -41,13 +41,15 @@ docker build -t mad-sa:dev .            # after any Dockerfile change
 docker run --rm -it \
   -v "$PWD":/workspace \
   -v "$PWD/Grand-Theft-Auto-San-Andreas":/game:ro \
+  -v mad-sa-conan:/opt/conan \
   mad-sa:dev bash
 ```
 
 In-container build (SDL3 via Conan, then CMake):
 
 ```bash
-conan install --requires=sdl/3.4.14 -of build-conan -g CMakeDeps -g CMakeToolchain
+conan install --requires=sdl/3.4.14 -o 'sdl/*:pulseaudio=False' \
+      -of build-conan -g CMakeDeps -g CMakeToolchain --build=missing
 cmake -S gta-reversed -B build -DGTASA_BUILD_LEGACY=OFF \
       -DCMAKE_TOOLCHAIN_FILE=/workspace/build-conan/conan_toolchain.cmake \
       -DCMAKE_BUILD_TYPE=Release
@@ -59,6 +61,51 @@ file build/mad-sa-linux                 # ELF 64-bit, x86-64
 Result: `build/mad-sa-linux`, an x86_64 ELF that links **no Wine / Win libraries**
 (check with `ldd`). The native track reads game assets directly (`IMG/DFF/TXD/
 GXT/dat` via `OS_File*`) and never touches `gta-sa.exe`.
+
+### Interactive OpenGL + Wayland + MangoHud
+
+After building in the container, run **on the host Wayland desktop**:
+
+```bash
+./play.sh                      # until Esc / window close
+./play.sh --demo --seconds 35  # bounded moving-camera check
+```
+
+Requires host Mesa/OpenGL, OpenAL, Vorbis runtime libraries and `mangohud`.
+The launcher forces SDL's **Wayland** driver (no XWayland fallback). The ELF
+creates an SDL3 OpenGL window and EGL context, draws DFF triangles with TXD
+textures on the GPU, and calls `SDL_GL_SwapWindow` every frame. Vsync plus a
+60 Hz timer prevents an unpaced batch loop. It logs the actual video driver,
+GL renderer, drawable size, completed swaps and measured frame rate.
+
+**Controls:** WASD move, Q/E down/up, arrows look, left Shift fast, Esc exit.
+Resize is supported. This is a **static-world free-camera viewer**, not the
+original game's mission boot, character controller, traffic or full gameplay.
+`--drive`, `--walk` and screenshot modes remain deterministic offline harnesses.
+
+Unlike those small fixtures, `--play` indexes both text IPL and the binary
+streamed IPL inside IMG: the latter contain most of the detailed buildings and
+ground. Its resident window is bounded to 900 m / 4096 nearest instances. No
+synthetic ground fills missing assets. Distant LOD rendering is not yet present.
+Pager updates currently rebuild the GPU scene synchronously, so movement can
+produce streaming hitches even while steady rendering reaches the 60 Hz cap.
+
+MangoHud is a runtime overlay, not a build dependency. The launcher records CSV
+under `artifacts/graphics/`. It uses continuous logging (`log_duration=0`): the
+host's MangoHud package crashes in its post-log benchmark panel with a finite
+log duration. Do not stop logging manually on that version. Override
+`MANGOHUD_CONFIG` to customize the HUD. See [MangoHud's configuration docs](https://github.com/flightlessmango/MangoHud).
+
+Without MangoHud, the same graphics path can be run directly:
+
+```bash
+SDL_VIDEODRIVER=wayland ./build/mad-sa-linux --play \
+  --game-dir "$PWD/Grand-Theft-Auto-San-Andreas"
+```
+
+Keep the Conan volume between container builds: generated CMake files refer to
+absolute paths inside `/opt/conan`. If using a new cache, rerun `conan install`
+and the CMake configure step before building.
 
 ### Upstream Windows DLL (reference track)
 
