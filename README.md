@@ -122,6 +122,10 @@ sky/lighting/fog and draws real `water.dat` triangles. Shared `vehicle.txd`
 textures now resolve in the original common-before-model order. Vehicle damage
 transitions/specular/reflections, water textures/waves/reflections, shadows and full original effects are still
 missing; sky and water are not a claim of complete visual equivalence.
+Vehicle glass now uses authored material/texture alpha: opaque components render
+first, translucent triangles render back-to-front with depth testing/writing.
+Triangle sorting is a native substitute for the original atomic/component
+heuristic, not full vehicle-material parity.
 The starting car now selects intact near-detail components instead of drawing
 damaged parts and VLO on top of them. On-foot diagonal contacts slide along
 the actual contact plane; animation follows total accepted Tick displacement,
