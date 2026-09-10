@@ -100,8 +100,10 @@ muscle 50 (95% Normal, 5% Ripped); it is a preview, not skipped mission executio
 **Experimental SCM boot:** `./play.sh --new-game` executes the real main script,
 creates its persistent base player/world, and honors the initial black fade and
 08:00 clock. Currently mission 0 stops with exit **1** at unsupported
-`09B4 SET_ENTRY_EXIT_FLAG`, IP **201006**, after 126 mission commands, including
-three actual locked-property pickups and radar markers. This is an explicit missing service, not successful new
+`0518 CREATE_FORSALE_PROPERTY_PICKUP`, IP **201080**, after 132 mission commands, including
+three actual locked-property pickups, radar markers and two actual ENEX access changes.
+The owned IPL entrance registry drives diamond markers and activation eligibility;
+interior transition effects remain unsupported. This is an explicit missing service, not successful new
 game boot. It cannot be combined with demo/player-preview/freecam or camera/time
 overrides. No unknown opcode is silently skipped.
 
@@ -135,9 +137,14 @@ streaming runs at 45–56 FPS versus ~60 steady, with scene publication taking
 several seconds; this is not a hard latency guarantee or full-map residency.
 The renderer now carries authored day/night prelight, material coefficients
 and car paint colors into a GLSL 1.20 pipeline, interpolates `timecyc.dat`
-sky/lighting/fog and draws real `water.dat` triangles. Shared `vehicle.txd`
+sky/lighting/fog and draws authored water polygons with `waterclear256`, two UV
+layers and source-sized wave grids, including all six triangular bodies. Water
+time keeps advancing with `--freeze-time` (that flag freezes the timecycle).
+For a shoreline check: `./play.sh --freecam --cam 820,-1880,6 --freeze-time`.
+Shared `vehicle.txd`
 textures now resolve in the original common-before-model order. Vehicle damage
-transitions/specular/reflections, water textures/waves/reflections, shadows and full original effects are still
+transitions/specular/reflections, automatic water-flow selection, reflections,
+glare/wakes/foam, shadows and full original effects are still
 missing; sky and water are not a claim of complete visual equivalence.
 Vehicle glass now uses authored material/texture alpha: opaque components render
 first, translucent triangles render back-to-front with depth testing/writing.
