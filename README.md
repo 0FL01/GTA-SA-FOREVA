@@ -100,8 +100,12 @@ muscle 50 (95% Normal, 5% Ripped); it is a preview, not skipped mission executio
 **Experimental SCM boot:** `./play.sh --new-game` executes the real main script,
 creates its persistent base player/world, and honors the initial black fade and
 08:00 clock. Currently mission 0 stops with exit **1** at unsupported
-`0213 CREATE_PICKUP`, IP **205545**, after 516 mission commands, including
-32 property pickups/radar markers, 30 ENEX writes and 13 garage deactivations.
+`0570 CREATE_CONTACT_BLIP`, IP **205876**, after 539 mission commands, including
+32 property pickups/radar markers, 13 save tokens, 30 ENEX writes and 13 garage deactivations.
+Save tokens use actual model 1277, source visibility scheduling and the shared
+generation-qualified pool. Collection still stops before side effects where the
+original player task/event authority is required; a rendered disk is not a working save menu.
+The HUD has verified sprite 33 (`radar_race`), but its host service is not yet enabled.
 The source-sized garage registry consumes real player/COL state. Fourteen initial
 door placement overrides are shared by rendering and collision; the first garage
 update disables collision for 13 open doors without duplicating their geometry.
@@ -153,8 +157,10 @@ the installed `water.dat` has zero authored currents, which remain zero rather t
 receiving artificial drift. Wave motion is separate from flow.
 Outside-world ocean blocks and the original `seabd32` floor at Z=-70 now render
 before the water surface. The authored limited-depth flag affects water-height
-queries, not an invented floor six metres below every water polygon. Exact
-original `ScanWorld` traversal equivalence and underwater effects remain open.
+queries, not an invented floor six metres below every water polygon. Ordered
+`ScanWorld` traversal now matches the retail SSE/PC24 path, including the first-70
+block limit; the water path's extra list is empty. Underwater effects, reflections
+and complete weather parity remain open.
 For a shoreline check: `./play.sh --freecam --cam 820,-1880,6 --freeze-time`.
 Shared `vehicle.txd`
 textures now resolve in the original common-before-model order. Vehicle damage
