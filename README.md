@@ -100,18 +100,21 @@ muscle 50 (95% Normal, 5% Ripped); it is a preview, not skipped mission executio
 **Experimental SCM boot:** `./play.sh --new-game` executes the real main script,
 creates its persistent base player/world, and honors the initial black fade and
 08:00 clock. Currently mission 0 stops with exit **1** at unsupported
-`0517 CREATE_LOCKED_PROPERTY_PICKUP`, IP **200868**, after its 117-command
-initialization prefix. This is an explicit missing service, not successful new
+`09B4 SET_ENTRY_EXIT_FLAG`, IP **201006**, after 126 mission commands, including
+three actual locked-property pickups and radar markers. This is an explicit missing service, not successful new
 game boot. It cannot be combined with demo/player-preview/freecam or camera/time
 overrides. No unknown opcode is silently skipped.
 
-The on-foot controller sweeps five overlapping spheres against actual triangles:
+The on-foot controller sweeps five overlapping spheres against original COL geometry:
 curbs up to 26 cm and supported descents up to 30 cm retain ground contact;
 larger ledges, steep walls and inadequate headroom remain blocking. Walk/run
 keep a distance-driven animation phase and blend to idle/fall without resetting
 the foot cycle. The targeted terrain probe also checks ramps, gaps and ceilings.
-Collision uses a BVH of loaded render triangles, not the original COL flags;
-the transmission now uses source-derived handling conversion, gears and inertia
+Collision uses owned source triangles, spheres and oriented boxes with spatial
+indices, bound through text/binary IPL and validated IDE names independently of
+the render cap. Source primitive/material metadata is retained; this does not
+yet implement every original surface response or dynamic-object collision rule.
+The transmission now uses source-derived handling conversion, gears and inertia
 at the original default 30 Hz simulation cadence. Tire adhesion, suspension and
 per-wheel braking remain simplified, and entering has no door/seat animation.
 The live radar uses all 144 original map tiles, camera-relative player/north
@@ -122,7 +125,8 @@ systems and other gameplay integration remain unfinished.
 
 Unlike those small fixtures, `--play` indexes both text IPL and the binary
 streamed IPL inside IMG: the latter contain most of the detailed buildings and
-ground. Its resident window is bounded to 900 m / 4096 nearest instances. No
+ground. Its render window is bounded to 900 m / 4096 nearest instances; source
+collision uses intersecting COL bounds without that render-instance cap. No
 synthetic ground fills missing assets. Distant LOD rendering is not yet present.
 Pager/BVH rebuilding now runs on one exclusive worker; texture/list upload and
 retirement are spread across main-thread frames. Render and collision snapshots
