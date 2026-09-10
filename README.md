@@ -70,6 +70,7 @@ After building in the container, run **on the host Wayland desktop**:
 ./play.sh                       # on-foot / nearby Landstal, until Esc / close
 ./play.sh --demo --seconds 35   # jump, enter, drive, brake, exit, walk
 ./play.sh --demo-curb --seconds 12 # real 17 cm street curb, walk/sprint up/down
+./play.sh --player-cj --demo --seconds 28 # modular CJ startup-outfit preview
 ./play.sh --freecam              # original flying world viewer
 ./play.sh --freecam --hour 22 --weather CLOUDY_LA --freeze-time
 ```
@@ -92,6 +93,18 @@ This is an **interactive gameplay slice, not full San Andreas parity**. A real
 skinned `andre` with four IFP clips and a real Landstal persist across ticks;
 movement, jumping/landing, collision blocking, entering/driving/exiting and a
 collision-aware third-person camera operate in the same loop as rendering.
+`--player-cj` replaces Andre with the owned five-part CJ mesh, four composed
+textures and 32-bone animation hierarchy. The source-backed outfit uses fat 200 /
+muscle 50 (95% Normal, 5% Ripped); it is a preview, not skipped mission execution.
+
+**Experimental SCM boot:** `./play.sh --new-game` executes the real main script,
+creates its persistent base player/world, and honors the initial black fade and
+08:00 clock. Currently mission 0 stops with exit **1** at unsupported
+`0517 CREATE_LOCKED_PROPERTY_PICKUP`, IP **200868**, after its 117-command
+initialization prefix. This is an explicit missing service, not successful new
+game boot. It cannot be combined with demo/player-preview/freecam or camera/time
+overrides. No unknown opcode is silently skipped.
+
 The on-foot controller sweeps five overlapping spheres against actual triangles:
 curbs up to 26 cm and supported descents up to 30 cm retain ground contact;
 larger ledges, steep walls and inadequate headroom remain blocking. Walk/run
