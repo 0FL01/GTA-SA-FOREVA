@@ -100,8 +100,13 @@ muscle 50 (95% Normal, 5% Ripped); it is a preview, not skipped mission executio
 **Experimental SCM boot:** `./play.sh --new-game` executes the real main script,
 creates its persistent base player/world, and honors the initial black fade and
 08:00 clock. Currently mission 0 stops with exit **1** at unsupported
-`02B9 DEACTIVATE_GARAGE`, IP **201129**, after 135 mission commands, including
-three locked and one for-sale property pickup, radar markers and two ENEX access changes.
+`0213 CREATE_PICKUP`, IP **205545**, after 516 mission commands, including
+32 property pickups/radar markers, 30 ENEX writes and 13 garage deactivations.
+The source-sized garage registry consumes real player/COL state. Fourteen initial
+door placement overrides are shared by rendering and collision; the first garage
+update disables collision for 13 open doors without duplicating their geometry.
+Opening/restoration, garage-camera transitions and vehicle-pool maintenance still
+require their original consumers; they are explicit unsupported boundaries.
 Sale presentation uses the actual model, green radar sprite, projected Pricedown
 price and localized TAB prompt/denials. Player cash starts at zero; a funded
 interaction requires still-unported script purchase logic, not an invented debit.
@@ -146,10 +151,14 @@ time keeps advancing with `--freeze-time` (that flag freezes the timecycle).
 Nearest-water flow selection and smoothing run at 30 Hz, independently of presentation;
 the installed `water.dat` has zero authored currents, which remain zero rather than
 receiving artificial drift. Wave motion is separate from flow.
+Outside-world ocean blocks and the original `seabd32` floor at Z=-70 now render
+before the water surface. The authored limited-depth flag affects water-height
+queries, not an invented floor six metres below every water polygon. Exact
+original `ScanWorld` traversal equivalence and underwater effects remain open.
 For a shoreline check: `./play.sh --freecam --cam 820,-1880,6 --freeze-time`.
 Shared `vehicle.txd`
 textures now resolve in the original common-before-model order. Vehicle damage
-transitions/specular/reflections, water seabed/depth effects, reflections,
+transitions/specular/reflections, complete water-depth queries, reflections,
 glare/wakes/foam, shadows and full original effects are still
 missing; sky and water are not a claim of complete visual equivalence.
 Vehicle glass now uses authored material/texture alpha: opaque components render
