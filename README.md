@@ -100,8 +100,11 @@ muscle 50 (95% Normal, 5% Ripped); it is a preview, not skipped mission executio
 **Experimental SCM boot:** `./play.sh --new-game` executes the real main script,
 creates its persistent base player/world, and honors the initial black fade and
 08:00 clock. Currently mission 0 stops with exit **1** at unsupported
-`0518 CREATE_FORSALE_PROPERTY_PICKUP`, IP **201080**, after 132 mission commands, including
-three actual locked-property pickups, radar markers and two actual ENEX access changes.
+`02B9 DEACTIVATE_GARAGE`, IP **201129**, after 135 mission commands, including
+three locked and one for-sale property pickup, radar markers and two ENEX access changes.
+Sale presentation uses the actual model, green radar sprite, projected Pricedown
+price and localized TAB prompt/denials. Player cash starts at zero; a funded
+interaction requires still-unported script purchase logic, not an invented debit.
 The owned IPL entrance registry drives diamond markers and activation eligibility;
 interior transition effects remain unsupported. This is an explicit missing service, not successful new
 game boot. It cannot be combined with demo/player-preview/freecam or camera/time
@@ -140,10 +143,13 @@ and car paint colors into a GLSL 1.20 pipeline, interpolates `timecyc.dat`
 sky/lighting/fog and draws authored water polygons with `waterclear256`, two UV
 layers and source-sized wave grids, including all six triangular bodies. Water
 time keeps advancing with `--freeze-time` (that flag freezes the timecycle).
+Nearest-water flow selection and smoothing run at 30 Hz, independently of presentation;
+the installed `water.dat` has zero authored currents, which remain zero rather than
+receiving artificial drift. Wave motion is separate from flow.
 For a shoreline check: `./play.sh --freecam --cam 820,-1880,6 --freeze-time`.
 Shared `vehicle.txd`
 textures now resolve in the original common-before-model order. Vehicle damage
-transitions/specular/reflections, automatic water-flow selection, reflections,
+transitions/specular/reflections, water seabed/depth effects, reflections,
 glare/wakes/foam, shadows and full original effects are still
 missing; sky and water are not a claim of complete visual equivalence.
 Vehicle glass now uses authored material/texture alpha: opaque components render
