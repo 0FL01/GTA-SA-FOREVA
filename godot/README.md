@@ -154,6 +154,32 @@ without an authored parent) retain source material/prelight, not dummy texels.
 Missing dictionaries, undecodable real rasters and unresolved parent semantics
 remain honest candidate errors; this is not whole-map texture/LOD completion.
 
+## Paired source-chain data gate (P1-A04)
+
+The bounded LAn0/24 chain (models3991/4043) now prepares both real DFF resources
+and the child COL arrays in one publication. The lab validates and retains them
+together; a rejected replacement preserves both. The parent resource stays hidden
+as a prepared alternate, **not automatic source LOD selection**. Packed COL data
+is not gameplay collision/physics authority. Leaving this chain's window publishes
+an empty paired-data section. Loading/publication remain synchronous.
+
+```bash
+GODOT_BIN="$PWD/build/godot-deps/godot-4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64"
+"$GODOT_BIN" --headless --path godot --script res://tests/region_chain.gd -- \
+  --game-dir "/path/to/owned/GTA San Andreas" --capture-dir "$PWD/artifacts/godot/chain-cpu"
+```
+
+Require `region-chain-ok`; use the explicit Wayland/Vulkan flags below instead
+of `--headless` for the rendered gate. The fixture checks122 real faces, retained
+packed-array contents, hidden parent resources, retry/recovery and teardown.
+`tools/godot-chain-fixture.py --output artifacts/godot/chain-fixture-NEW --case baseline`
+creates only synthetic bytes in a new directory; it never reads/copies the game.
+Run that directory with the test's `--synthetic-baseline` to verify rotated
+DFF/COL transforms, cap-edge pairing and monotonic reopen revisions. Separate
+`missing-parent`/`missing-col` fixture cases use `--expect-region-reject` /
+`--expect-open-reject`. These are **test-script flags**, not production launcher
+options. Missing resources reject the pair; they never produce counters-only Ready.
+
 ## Package
 
 After a successful native build:
@@ -171,6 +197,10 @@ verified runtime, README, dependency record, and license notices. It rejects
 unresolved libraries, native SDL/OpenAL/GL/Wine coupling, and repository,
 `/workspace`, or Conan runtime paths. It does not include game assets, captures,
 tests, `.godot`, caches, or user settings.
+The extension exports only `sa_legacy_library_init`, enforced by `nm` at packaging.
+This isolates its static C++ runtime from Mesa's separately loaded libstdc++:
+exported GNU-unique locale facet IDs previously caused a Vulkan-only parser crash.
+The ELF export map fixes that ABI collision without changing parsing/validation.
 
 Godot may create a local `.godot/` import cache after launch; it is runtime state,
 not an input to republish. Re-run the package script to recreate a clean transfer

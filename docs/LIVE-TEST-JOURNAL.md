@@ -47,6 +47,14 @@ No desktop-wide screenshots of unrelated applications. A software-rendered VDS r
 
 Append actual sessions below; do not erase failed runs or replace these pending rows with assumed success.
 
+## GODOT-P1-08 — 2026-09-11 UTC / paired data + clean Vulkan package
+
+- Native95713252 + root companion pair actual3991/4043 DFF resources and122-face COL arrays at one generation. Lab validates/copies before commit, retains both on NaN rejection, clears both outside the chain/at teardown. Parent is hidden/prepared; gameplay physics and automatic LOD stay unsupported.
+- Gates: fresh extension/native13-unit builds, native sweep33/0, P0 exact-large UV/3NaN cases,52 texture-identity pairs, real paired-data gate. Pure-Python synthetic fixtures (no copied game bytes) prove rotated DFF/COL transforms, cap-edge pairing/cap1 failure, missing parent DFF/COL and reopen revision continuity. `p1-a04-gates-final.log` ends `p1-a04-gates-ok`; `p1-a04-package-runtime.log` has `region-chain-ok roads_rev=2 recovered_rev=3 grove_empty_ok held_faces=122`.
+- Failure/fix: first Vulkan package crashed in std::istream numeric extraction despite CPU success. `p1-a04-bindings-diagnostic.log` proves GNU-unique num_get IDs redirecting from extension static libstdc++ to Mesa's dynamic libstdc++. Export map + package nm audit isolate private C++/RW/runtime symbols; only `sa_legacy_library_init` is exported. Same parsers and final real/negative/rendered tests pass; no data repair or suppressed exception.
+- Reviewed `artifacts/godot/a04-chain-package/forward_plus-paired-retained.png`: intact roads scene and explicit3991->4043/122f data-only overlay. Godot4.6.1/Wayland/Weston13/llvmpipe Vulkan1.4.318; no Radeon/original-parity acceptance. Manifests contain summaries, not COL arrays. Extension SHA256 `cfa73c06ca9e959eb03e6f06eddadae2c4dab2c72e0195082a654d909461a300`; lab script `515b7414dcfc2594b595b09d18a5125d39ff64b2ee9f7037a5935d6969bf42e0`.
+- A04 bounded data transaction is verified; A05 worker/cancellation and A06 GPU budgets are next, not already implemented. Full-port and external target gates remain open.
+
 ## GODOT-P1-07 — 2026-09-11 / bounded source LinkLods CPU verification
 
 - **Identity/scope:** native `0628fce4`, root containing entry. Real LAn text0/24/model3991/4043, child COL3/header3991/122faces, draws180/450; unique complete model/sibling closure, non-cache/multiplier1. Parent aliases child collision but has entity collision disabled after big-building setup; `bIsLod` clears independently of owns-COL. Global runtime catalog flags stay Unknown; no rendered LOD/publication claim.

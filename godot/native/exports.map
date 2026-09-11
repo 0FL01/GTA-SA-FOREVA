@@ -1,0 +1,4 @@
+{
+    global: sa_legacy_library_init;
+    local: *;
+};

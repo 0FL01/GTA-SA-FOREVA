@@ -22,9 +22,12 @@ packaged executable bytes match the executable stored in that archive.
 - The package contains the official Godot executable and `libsa_legacy.so`.
 - `godot-cpp` and NULL-platform `librw` are compiled into the GDExtension; their
   source checkouts are not shipped.
-- Linux, glibc, libstdc++, Wayland, Vulkan loader, and Mesa are host components,
-  not copied from the build machine. Exact dynamic requirements are compiler and
-  adapter dependent; packaging runs `ldd` and fails on unresolved libraries.
+- Linux, glibc, Wayland, Vulkan loader, and Mesa are host components, not copied
+  from the build machine. The pinned godot-cpp build also links GCC's C++ runtime
+  statically into the extension; Mesa may load a separate host libstdc++. The ELF
+  export map exposes only the GDExtension C entry point, preventing runtime facet
+  symbol collisions. Packaging checks defined exports and runs `ldd`, failing on
+  unresolved libraries. Dynamic requirements remain compiler/adapter dependent.
 - The package rejects RPATH/RUNPATH or resolved dependency paths under the
 repository, `/workspace`, `/opt/conan`, or `/.conan-cache`. Conan is not a
 runtime dependency of this delivery.
@@ -39,8 +42,11 @@ runtime dependency of this delivery.
 
 The native adapter consumes reader code from this research workspace. The source
 audit and `godot/native/CMakeLists.txt` identify `StreamPager`, `TexSample`, the
-read-only `os_file_posix` wrapper, GL-free `TimeCycle` and MIT-licensed
-NULL-platform librw as the compiled closure. The workspace root does not
+read-only `os_file_posix` wrapper, GL-free `TimeCycle`, `NativeLodCatalog`,
+`NativeWorldEntityInfo`, `NativeCollisionAssets` and MIT-licensed NULL-platform
+librw as the compiled closure. The three catalog/COL readers enable their
+required exception handling and strict source float semantics per translation
+unit; the extension does not link the native SDL/GL gameplay monolith. The workspace root does not
 contain a declared redistribution license for its own reader/adapter code.
 Therefore the generated package is a personal test handover, not a
 redistribution-cleared binary release. Review the final CMake source list and

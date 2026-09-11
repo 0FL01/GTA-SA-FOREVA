@@ -11,12 +11,15 @@
 #include <godot_cpp/variant/packed_byte_array.hpp>
 #include <godot_cpp/variant/packed_color_array.hpp>
 #include <godot_cpp/variant/packed_float32_array.hpp>
+#include <godot_cpp/variant/packed_int32_array.hpp>
 #include <godot_cpp/variant/packed_vector2_array.hpp>
 #include <godot_cpp/variant/packed_vector3_array.hpp>
+#include <godot_cpp/variant/quaternion.hpp>
 #include <godot_cpp/variant/typed_array.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
 #include "app/platform/linux/NativeAssetIdentity.h"
+#include "app/platform/linux/NativeLodCatalog.h"
 #include "app/platform/linux/StreamPager.h"
 #include "app/platform/linux/TimeCycle.h"
 
@@ -44,6 +47,15 @@ constexpr size_t kMaxSceneTriangles = 8'000'000;
 constexpr size_t kMaxSceneImages = 4096;
 constexpr size_t kMaxImageBytes = 512ull * 1024ull * 1024ull;
 constexpr std::array<int, 9> kSampleHours{0, 5, 6, 7, 12, 19, 20, 22, 24};
+
+// P1-A04 frozen single-chain profile: explicit bounded real encounter, never
+// invented positions/COL. Actual catalog + COL prove the rest at OpenGame.
+constexpr int kFrozenChildModel = 3991;
+constexpr int kFrozenParentModel = 4043;
+constexpr uint32_t kFrozenChildRecord = 0;
+constexpr uint32_t kFrozenParentRecord = 24;
+constexpr size_t kFrozenChildLocal = 0;
+constexpr size_t kFrozenParentLocal = 24;
 
 std::mutex s_PagerMutex;
 SALegacyBridge* s_PagerOwner = nullptr;
@@ -560,6 +572,172 @@ Color InterpolateRgb(const uint8_t (&first)[N], const uint8_t (&second)[N], floa
         1.0f);
 }
 
+// --- P1-A04 single-chain helpers (actual render + COL packet, no gameplay). ---
+
+std::string LowerAscii(std::string value) {
+    for (auto& c : value) {
+        if (c >= 'A' && c <= 'Z') {
+            c += 'a' - 'A';
+        }
+    }
+    return value;
+}
+
+std::string NormalizeIplKey(const std::string& value) {
+    std::string out = LowerAscii(value);
+    for (auto& c : out) {
+        if (c == '/') {
+            c = '\\';
+        }
+    }
+    return out;
+}
+
+bool FinitePlacement(const NativeCollisionPlacement& placement) {
+    for (float v : placement.Position) {
+        if (!Finite(v) || std::abs(v) > 1'000'000.0f) {
+            return false;
+        }
+    }
+    for (float v : placement.Quaternion) {
+        if (!Finite(v)) {
+            return false;
+        }
+    }
+    float norm = 0.0f;
+    for (float v : placement.Quaternion) {
+        norm += v * v;
+    }
+    return Finite(norm) && norm > 1e-9f;
+}
+
+Dictionary PlacementDictionary(const NativeCollisionPlacement& placement) {
+    Dictionary dict;
+    dict["ipl"] = SourceString(placement.Ipl);
+    dict["record"] = static_cast<int64_t>(placement.Record);
+    dict["binary"] = placement.Binary;
+    dict["position_sa"] = Vector3(placement.Position[0], placement.Position[1], placement.Position[2]);
+    dict["quaternion_sa"] =
+        Quaternion(placement.Quaternion[0], placement.Quaternion[1], placement.Quaternion[2],
+                   placement.Quaternion[3]);
+    return dict;
+}
+
+bool ValidateEffectiveCol(const NativeCollisionModel& col, uint32_t expectedFaces, String& error) {
+    if (!col.Unsupported.empty()) {
+        error = "effective COL is unsupported";
+        return false;
+    }
+    if (col.Empty) {
+        error = "effective COL is empty";
+        return false;
+    }
+    if (col.Version < 1 || col.Version > 4) {
+        error = "effective COL version out of range";
+        return false;
+    }
+    if (!col.ValidatedHeaderId || col.HeaderId != kFrozenChildModel) {
+        error = "effective COL header provenance mismatch";
+        return false;
+    }
+    if (col.Library.empty() || col.Name.empty()) {
+        error = "effective COL library/name missing";
+        return false;
+    }
+    if (col.Vertices.empty() || col.Faces.empty()) {
+        error = "effective COL geometry empty";
+        return false;
+    }
+    if (expectedFaces != 0 && col.Faces.size() != expectedFaces) {
+        error = "effective COL face count mismatch";
+        return false;
+    }
+    constexpr size_t kMaxColElements = 1u << 20;
+    if (col.Vertices.size() > kMaxColElements || col.Faces.size() > kMaxColElements ||
+        col.Spheres.size() > kMaxColElements || col.Boxes.size() > kMaxColElements) {
+        error = "effective COL element count out of range";
+        return false;
+    }
+    for (float v : col.Min) {
+        if (!Finite(v)) {
+            error = "effective COL bounds_min nonfinite";
+            return false;
+        }
+    }
+    for (float v : col.Max) {
+        if (!Finite(v)) {
+            error = "effective COL bounds_max nonfinite";
+            return false;
+        }
+    }
+    for (float v : col.BoundCenter) {
+        if (!Finite(v)) {
+            error = "effective COL bound_center nonfinite";
+            return false;
+        }
+    }
+    if (!Finite(col.BoundRadius) || col.BoundRadius < 0.0f) {
+        error = "effective COL bound_radius invalid";
+        return false;
+    }
+    for (int axis = 0; axis < 3; ++axis) {
+        if (col.Min[axis] > col.Max[axis]) {
+            error = "effective COL bounds inverted";
+            return false;
+        }
+    }
+    for (const auto& v : col.Vertices) {
+        for (float c : v) {
+            if (!Finite(c)) {
+                error = "effective COL vertex nonfinite";
+                return false;
+            }
+        }
+    }
+    const uint64_t vertexCount = col.Vertices.size();
+    for (const auto& face : col.Faces) {
+        for (uint32_t index : face.Vertices) {
+            if (static_cast<uint64_t>(index) >= vertexCount) {
+                error = "effective COL face index outside array";
+                return false;
+            }
+        }
+    }
+    for (const auto& sphere : col.Spheres) {
+        for (float c : sphere.Center) {
+            if (!Finite(c)) {
+                error = "effective COL sphere center nonfinite";
+                return false;
+            }
+        }
+        if (!Finite(sphere.Radius) || sphere.Radius < 0.0f) {
+            error = "effective COL sphere radius invalid";
+            return false;
+        }
+    }
+    for (const auto& box : col.Boxes) {
+        for (float c : box.Min) {
+            if (!Finite(c)) {
+                error = "effective COL box min nonfinite";
+                return false;
+            }
+        }
+        for (float c : box.Max) {
+            if (!Finite(c)) {
+                error = "effective COL box max nonfinite";
+                return false;
+            }
+        }
+        for (int axis = 0; axis < 3; ++axis) {
+            if (box.Min[axis] > box.Max[axis]) {
+                error = "effective COL box bounds inverted";
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 } // namespace
 
 void SALegacyBridge::_bind_methods() {
@@ -616,6 +794,223 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
         return Result(false, "pager initialized with invalid source counters");
     }
 
+    // P1-A04 single-chain setup after Init, before any Update. Every failure
+    // shuts the pager down directly: never call CloseGame() here (mutex is
+    // already held, CloseGame would deadlock). Revision stays untouched.
+    NativeCollisionPopulation fullPopulation;
+    {
+        std::string popError;
+        if (!StreamPager_CollisionPopulation(fullPopulation, popError)) {
+            StreamPager_Shutdown();
+            const String detail = String::utf8(popError.c_str());
+            return Result(false, detail.is_empty() ? "collision population unavailable"
+                                                   : String("collision population unavailable: ") + detail);
+        }
+    }
+    if (!fullPopulation.IncludesStreamed || fullPopulation.Instances.empty() ||
+        fullPopulation.Models.empty()) {
+        StreamPager_Shutdown();
+        return Result(false, "collision population lacks streamed source provenance");
+    }
+
+    std::shared_ptr<const NativeLodCatalog> catalog;
+    {
+        std::string catalogError;
+        catalog = NativeLodCatalog::LoadBeforeWorker(path.c_str(), fullPopulation, catalogError);
+        if (!catalog || !catalog->DiskValidated()) {
+            StreamPager_Shutdown();
+            const String detail = String::utf8(catalogError.c_str());
+            return Result(false,
+                          detail.is_empty() ? "LOD catalog disk validation failed" : detail);
+        }
+    }
+
+    NativeCollisionAssets collisionAssets;
+    {
+        std::string colError;
+        if (!collisionAssets.Load(path.c_str(), fullPopulation, colError)) {
+            StreamPager_Shutdown();
+            const String detail = String::utf8(colError.c_str());
+            return Result(false, detail.is_empty() ? "collision assets load failed" : detail);
+        }
+    }
+
+    // EXPLICIT bounded real profile via the actual catalog: LAn text
+    // record0/model3991 GSFreeway7_LAn -> record24/model4043 LODGSFreeway7_LAn.
+    const NativeLodNode* childNode = nullptr;
+    const NativeLodNode* parentNode = nullptr;
+    size_t childCount = 0;
+    size_t parentCount = 0;
+    for (const auto& node : catalog->Nodes()) {
+        if (node.Identity.ModelId == kFrozenChildModel) {
+            ++childCount;
+            childNode = &node;
+        }
+        if (node.Identity.ModelId == kFrozenParentModel) {
+            ++parentCount;
+            parentNode = &node;
+        }
+    }
+    if (childCount != 1 || parentCount != 1 || !childNode || !parentNode) {
+        StreamPager_Shutdown();
+        return Result(false, "frozen LOD pair models 3991/4043 not uniquely present");
+    }
+    {
+        bool profileOk = true;
+        if (LowerAscii(childNode->Identity.Model) != "gsfreeway7_lan") {
+            profileOk = false;
+        }
+        if (LowerAscii(parentNode->Identity.Model) != "lodgsfreeway7_lan") {
+            profileOk = false;
+        }
+        if (NormalizeIplKey(childNode->Identity.Ipl) != "data\\maps\\la\\lan.ipl") {
+            profileOk = false;
+        }
+        if (NormalizeIplKey(parentNode->Identity.Ipl) != "data\\maps\\la\\lan.ipl") {
+            profileOk = false;
+        }
+        if (childNode->Identity.Record != kFrozenChildRecord ||
+            parentNode->Identity.Record != kFrozenParentRecord) {
+            profileOk = false;
+        }
+        if (childNode->Identity.Binary || parentNode->Identity.Binary) {
+            profileOk = false;
+        }
+        if (childNode->Source != parentNode->Source) {
+            profileOk = false;
+        }
+        if (childNode->LocalIndex != kFrozenChildLocal ||
+            parentNode->LocalIndex != kFrozenParentLocal) {
+            profileOk = false;
+        }
+        if (childNode->Placement.Lod != static_cast<int>(parentNode->LocalIndex)) {
+            profileOk = false;
+        }
+        if (parentNode->Placement.Lod != -1) {
+            profileOk = false;
+        }
+        if (childNode->Link != NativeLodLinkStatus::Bound) {
+            profileOk = false;
+        }
+        if (!FinitePlacement(childNode->Placement) || !FinitePlacement(parentNode->Placement)) {
+            profileOk = false;
+        }
+        const size_t childIdx = static_cast<size_t>(childNode - catalog->Nodes().data());
+        const size_t parentIdx = static_cast<size_t>(parentNode - catalog->Nodes().data());
+        if (!(childNode->Parent.has_value() && *childNode->Parent == parentIdx)) {
+            profileOk = false;
+        }
+        if (!childNode->Children.empty()) {
+            profileOk = false;
+        }
+        if (parentNode->Parent.has_value()) {
+            profileOk = false;
+        }
+        if (parentNode->Children.size() != 1 || parentNode->Children.front() != childIdx) {
+            profileOk = false;
+        }
+        if (!profileOk) {
+            StreamPager_Shutdown();
+            return Result(false, "frozen LOD pair profile mismatch (LAn record0/3991->record24/4043)");
+        }
+    }
+
+    NativeLodChainDecision decision;
+    {
+        std::string evalError;
+        const NativeLinkLodsInputs inputs(false, 1.0f);
+        if (!catalog->EvaluateLinkLodsChain(childNode->Identity, collisionAssets, inputs, decision,
+                                            evalError)) {
+            StreamPager_Shutdown();
+            const String detail = String::utf8(evalError.c_str());
+            return Result(false, detail.is_empty() ? "frozen LOD chain closure rejected" : detail);
+        }
+    }
+    {
+        bool closureOk = true;
+        if (!(decision.Child == childNode->Identity)) {
+            closureOk = false;
+        }
+        if (!(decision.Parent == parentNode->Identity)) {
+            closureOk = false;
+        }
+        if (decision.ChildModelId != kFrozenChildModel ||
+            decision.ParentModelId != kFrozenParentModel) {
+            closureOk = false;
+        }
+        if (decision.Link != NativeLodLinkStatus::Bound || !decision.EdgeKept) {
+            closureOk = false;
+        }
+        if (!decision.CollisionTransferred || !decision.EffectiveCol) {
+            closureOk = false;
+        }
+        if (decision.EffectiveColFaces == 0) {
+            closureOk = false;
+        }
+        if (decision.EffectiveCol &&
+            decision.EffectiveColFaces != decision.EffectiveCol->Faces.size()) {
+            closureOk = false;
+        }
+        if (decision.EffectiveColLibrary.empty()) {
+            closureOk = false;
+        }
+        if (decision.EffectiveCol &&
+            decision.EffectiveColLibrary != decision.EffectiveCol->Library) {
+            closureOk = false;
+        }
+        if (decision.ChildBigBuilding != NativeWorldKnownBool::False ||
+            decision.ChildUsesCollision != NativeWorldKnownBool::True ||
+            decision.ChildIsLod != NativeWorldKnownBool::True) {
+            closureOk = false;
+        }
+        if (decision.ParentBigBuilding != NativeWorldKnownBool::True ||
+            decision.ParentUsesCollision != NativeWorldKnownBool::False ||
+            decision.ParentIsLod != NativeWorldKnownBool::False) {
+            closureOk = false;
+        }
+        if (!decision.DrawUnchanged) {
+            closureOk = false;
+        }
+        if (decision.Underwater || decision.UnderwaterPropagated) {
+            closureOk = false;
+        }
+        if (decision.ParentChildren != 1 || decision.ChildChildren != 0) {
+            closureOk = false;
+        }
+        if (decision.EffectiveCol) {
+            String colError;
+            if (!ValidateEffectiveCol(*decision.EffectiveCol, decision.EffectiveColFaces, colError)) {
+                closureOk = false;
+            }
+        } else {
+            closureOk = false;
+        }
+        if (!closureOk) {
+            StreamPager_Shutdown();
+            return Result(false, "frozen LOD chain closure incomplete");
+        }
+    }
+
+    {
+        std::string cfgError;
+        if (!StreamPager_ConfigureLodSupplement(decision.Child, decision.Parent, cfgError)) {
+            StreamPager_Shutdown();
+            const String detail = String::utf8(cfgError.c_str());
+            return Result(false, detail.is_empty() ? "LOD supplement configuration rejected"
+                                                   : detail);
+        }
+    }
+
+    // Retain catalog + decision/effective COL owned data. The whole asset map
+    // is released here; the shared EffectiveCol keeps the packet alive.
+    m_Catalog = catalog;
+    m_Decision = decision;
+    m_ChildPlacement = childNode->Placement;
+    m_ParentPlacement = parentNode->Placement;
+    m_EffectiveCol = decision.EffectiveCol;
+    m_EffectiveColLibrary = decision.EffectiveColLibrary;
+    m_HasLodPair = true;
+
     m_GameDir = path;
     m_Ready = true;
     s_PagerOwner = this;
@@ -665,9 +1060,11 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
 
     WorldShotScene scene{};
     E2EPagerFrame frame{};
+    std::vector<NativePlacementIdentity> rendered;
     char nativeError[256]{};
+    const std::shared_ptr<const NativePlacementOverrides> noOverrides;
     if (!StreamPager_Update(saPosition.x, saPosition.y, saPosition.z, scene, frame,
-                            nativeError, sizeof(nativeError))) {
+                            nativeError, sizeof(nativeError), noOverrides, &rendered)) {
         return failureResult(ErrorString(nativeError));
     }
     ValidationFailure validationFailure;
@@ -704,6 +1101,195 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
         return failureResult("validated scene produced no Godot meshes");
     }
 
+    // P1-A04 single-chain supplement resolution. The parent emits via the
+    // existing pipeline only when its selected child is in this window.
+    int childMeshIndex = -1;
+    int parentMeshIndex = -1;
+    bool lodSelected = false;
+    if (m_HasLodPair && m_Catalog && m_EffectiveCol) {
+        if (rendered.size() != scene.meshes.size()) {
+            return failureResult("LOD supplement render identity count mismatch");
+        }
+        for (size_t i = 0; i < rendered.size(); ++i) {
+            if (rendered[i] == m_Decision.Child) {
+                if (childMeshIndex >= 0) {
+                    return failureResult("LOD supplement duplicate child render");
+                }
+                childMeshIndex = static_cast<int>(i);
+            }
+            if (rendered[i] == m_Decision.Parent) {
+                if (parentMeshIndex >= 0) {
+                    return failureResult("LOD supplement duplicate parent render");
+                }
+                parentMeshIndex = static_cast<int>(i);
+            }
+        }
+        if (childMeshIndex >= 0 || parentMeshIndex >= 0) {
+            // Half pairs never publish: reject with revision unchanged.
+            if (childMeshIndex < 0 || parentMeshIndex < 0) {
+                return failureResult("LOD supplement half pair present (pair rejected)");
+            }
+            if (childMeshIndex >= static_cast<int>(scene.meshes.size()) ||
+                parentMeshIndex >= static_cast<int>(scene.meshes.size()) ||
+                childMeshIndex >= static_cast<int>(meshes.size()) ||
+                parentMeshIndex >= static_cast<int>(meshes.size())) {
+                return failureResult("LOD supplement mesh index outside publication");
+            }
+            const auto& childScene = scene.meshes[static_cast<size_t>(childMeshIndex)];
+            const auto& parentScene = scene.meshes[static_cast<size_t>(parentMeshIndex)];
+            if (childScene.tris <= 0 || childScene.pos.empty() || parentScene.tris <= 0 ||
+                parentScene.pos.empty()) {
+                return failureResult("LOD supplement pair geometry empty (pair rejected)");
+            }
+            lodSelected = true;
+        }
+    }
+
+    Dictionary collisionLineage;
+    if (lodSelected) {
+        // Fully validated render + COL payload only; any failure leaves the
+        // revision unchanged. Local SA data plus the authored placement
+        // specifies the transform/conjugation exactly once (binding conjugates
+        // the authored inverse rotation a single time).
+        if (!FinitePlacement(m_ChildPlacement) || !FinitePlacement(m_ParentPlacement)) {
+            return failureResult("LOD supplement authored placement nonfinite");
+        }
+        String colError;
+        if (!m_EffectiveCol ||
+            !ValidateEffectiveCol(*m_EffectiveCol, m_Decision.EffectiveColFaces, colError)) {
+            return failureResult(colError.is_empty() ? "LOD supplement effective COL invalid"
+                                                     : colError);
+        }
+        if (m_EffectiveColLibrary.empty() || m_EffectiveColLibrary != m_EffectiveCol->Library) {
+            return failureResult("LOD supplement effective COL library mismatch");
+        }
+        const NativeCollisionModel& col = *m_EffectiveCol;
+        const int64_t vertexCount = static_cast<int64_t>(col.Vertices.size());
+        const int64_t faceCount = static_cast<int64_t>(col.Faces.size());
+        const int64_t sphereCount = static_cast<int64_t>(col.Spheres.size());
+        const int64_t boxCount = static_cast<int64_t>(col.Boxes.size());
+        if (vertexCount <= 0 || faceCount <= 0) {
+            return failureResult("LOD supplement effective COL counters invalid");
+        }
+
+        PackedFloat32Array vertices;
+        vertices.resize(vertexCount * 3);
+        for (int64_t i = 0; i < vertexCount; ++i) {
+            const auto& v = col.Vertices[static_cast<size_t>(i)];
+            vertices.set(i * 3, v[0]);
+            vertices.set(i * 3 + 1, v[1]);
+            vertices.set(i * 3 + 2, v[2]);
+        }
+        PackedInt32Array faceIndices;
+        faceIndices.resize(faceCount * 3);
+        for (int64_t i = 0; i < faceCount; ++i) {
+            const auto& face = col.Faces[static_cast<size_t>(i)];
+            for (int k = 0; k < 3; ++k) {
+                const uint32_t index = face.Vertices[static_cast<size_t>(k)];
+                if (static_cast<uint64_t>(index) >= static_cast<uint64_t>(vertexCount) ||
+                    index > static_cast<uint32_t>(std::numeric_limits<int32_t>::max())) {
+                    return failureResult("LOD supplement effective COL face index outside array");
+                }
+                faceIndices.set(i * 3 + k, static_cast<int32_t>(index));
+            }
+        }
+        PackedByteArray faceSurfaces;
+        faceSurfaces.resize(faceCount * 4);
+        for (int64_t i = 0; i < faceCount; ++i) {
+            const auto& surface = col.Faces[static_cast<size_t>(i)].Surface;
+            faceSurfaces.set(i * 4, surface.Material);
+            faceSurfaces.set(i * 4 + 1, surface.Flags);
+            faceSurfaces.set(i * 4 + 2, surface.Brightness);
+            faceSurfaces.set(i * 4 + 3, surface.Light);
+        }
+        PackedFloat32Array sphereData;
+        sphereData.resize(sphereCount * 4);
+        PackedByteArray sphereSurfaces;
+        sphereSurfaces.resize(sphereCount * 4);
+        for (int64_t i = 0; i < sphereCount; ++i) {
+            const auto& sphere = col.Spheres[static_cast<size_t>(i)];
+            sphereData.set(i * 4, sphere.Center[0]);
+            sphereData.set(i * 4 + 1, sphere.Center[1]);
+            sphereData.set(i * 4 + 2, sphere.Center[2]);
+            sphereData.set(i * 4 + 3, sphere.Radius);
+            sphereSurfaces.set(i * 4, sphere.Surface.Material);
+            sphereSurfaces.set(i * 4 + 1, sphere.Surface.Flags);
+            sphereSurfaces.set(i * 4 + 2, sphere.Surface.Brightness);
+            sphereSurfaces.set(i * 4 + 3, sphere.Surface.Light);
+        }
+        PackedFloat32Array boxData;
+        boxData.resize(boxCount * 6);
+        PackedByteArray boxSurfaces;
+        boxSurfaces.resize(boxCount * 4);
+        for (int64_t i = 0; i < boxCount; ++i) {
+            const auto& box = col.Boxes[static_cast<size_t>(i)];
+            boxData.set(i * 6, box.Min[0]);
+            boxData.set(i * 6 + 1, box.Min[1]);
+            boxData.set(i * 6 + 2, box.Min[2]);
+            boxData.set(i * 6 + 3, box.Max[0]);
+            boxData.set(i * 6 + 4, box.Max[1]);
+            boxData.set(i * 6 + 5, box.Max[2]);
+            boxSurfaces.set(i * 4, box.Surface.Material);
+            boxSurfaces.set(i * 4 + 1, box.Surface.Flags);
+            boxSurfaces.set(i * 4 + 2, box.Surface.Brightness);
+            boxSurfaces.set(i * 4 + 3, box.Surface.Light);
+        }
+
+        Dictionary childDict;
+        childDict["model_id"] = static_cast<int64_t>(m_Decision.Child.ModelId);
+        childDict["model"] = SourceString(m_Decision.Child.Model);
+        childDict["mesh_index"] = static_cast<int64_t>(childMeshIndex);
+        childDict["uses_collision"] = true;
+        childDict["placement"] = PlacementDictionary(m_ChildPlacement);
+
+        Dictionary parentDict;
+        parentDict["model_id"] = static_cast<int64_t>(m_Decision.Parent.ModelId);
+        parentDict["model"] = SourceString(m_Decision.Parent.Model);
+        parentDict["mesh_index"] = static_cast<int64_t>(parentMeshIndex);
+        parentDict["uses_collision"] = false;
+        parentDict["effective_alias"] = "child";
+        parentDict["placement"] = PlacementDictionary(m_ParentPlacement);
+
+        Dictionary colDict;
+        colDict["status"] = "ready";
+        colDict["library"] = SourceString(col.Library);
+        colDict["header_id"] = static_cast<int64_t>(col.HeaderId);
+        colDict["header_name"] = SourceString(col.Name);
+        colDict["version"] = static_cast<int64_t>(col.Version);
+        colDict["vertex_count"] = vertexCount;
+        colDict["faces"] = faceCount;
+        colDict["spheres"] = sphereCount;
+        colDict["boxes"] = boxCount;
+        colDict["bounds_min"] = Vector3(col.Min[0], col.Min[1], col.Min[2]);
+        colDict["bounds_max"] = Vector3(col.Max[0], col.Max[1], col.Max[2]);
+        colDict["bound_center"] = Vector3(col.BoundCenter[0], col.BoundCenter[1], col.BoundCenter[2]);
+        colDict["bound_radius"] = col.BoundRadius;
+        colDict["vertices"] = vertices;
+        colDict["face_indices"] = faceIndices;
+        colDict["face_surfaces"] = faceSurfaces;
+        colDict["sphere_data"] = sphereData;
+        colDict["sphere_surfaces"] = sphereSurfaces;
+        colDict["box_data"] = boxData;
+        colDict["box_surfaces"] = boxSurfaces;
+
+        collisionLineage["generation"] = m_PublicationRevision + 1;
+        collisionLineage["scope"] = "single-chain-data-not-gameplay";
+        collisionLineage["link"] = "bound";
+        collisionLineage["collision_transferred"] = true;
+        collisionLineage["child"] = childDict;
+        collisionLineage["parent"] = parentDict;
+        collisionLineage["col"] = colDict;
+    }
+
+    // Top-level mesh flag: the prepared parent stays retained-but-hidden on the
+    // client when selected (child false). This is a client retention hint, not
+    // a source visibility claim. Unselected frames flag every mesh false.
+    for (int64_t i = 0; i < meshes.size(); ++i) {
+        Dictionary entry = meshes[i];
+        entry["lod_chain_alternate"] = lodSelected && i == parentMeshIndex;
+        meshes[i] = entry;
+    }
+
     int sectorsLoaded = 0;
     int sectorsEvicted = 0;
     int modelsPeak = 0;
@@ -733,6 +1319,7 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
     Dictionary result = Result(true);
     result["meshes"] = meshes;
     result["stats"] = stats;
+    result["collision_lineage"] = collisionLineage;
     ++m_PublicationRevision;
     result["publication_revision"] = m_PublicationRevision;
     return result;
@@ -821,6 +1408,13 @@ void SALegacyBridge::CloseGame() {
     std::lock_guard lock(s_PagerMutex);
     if (!m_Ready) {
         m_GameDir.clear();
+        m_Catalog.reset();
+        m_Decision = NativeLodChainDecision{};
+        m_ChildPlacement = NativeCollisionPlacement{};
+        m_ParentPlacement = NativeCollisionPlacement{};
+        m_EffectiveCol.reset();
+        m_EffectiveColLibrary.clear();
+        m_HasLodPair = false;
         return;
     }
     if (s_PagerOwner == this) {
@@ -829,6 +1423,15 @@ void SALegacyBridge::CloseGame() {
     }
     m_GameDir.clear();
     m_Ready = false;
+    // Clear pair owners; returned Godot packed arrays already own their bytes.
+    // m_PublicationRevision is intentionally preserved across close/reopen.
+    m_Catalog.reset();
+    m_Decision = NativeLodChainDecision{};
+    m_ChildPlacement = NativeCollisionPlacement{};
+    m_ParentPlacement = NativeCollisionPlacement{};
+    m_EffectiveCol.reset();
+    m_EffectiveColLibrary.clear();
+    m_HasLodPair = false;
 }
 
 } // namespace godot

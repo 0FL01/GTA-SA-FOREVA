@@ -43,15 +43,19 @@ audit_elf() {
 
 audit_extension_boundary() {
     local dependencies
+    local exports
 
     dependencies="$(readelf -d "$EXTENSION_LIBRARY") $(ldd "$EXTENSION_LIBRARY")"
     for forbidden in libSDL libopenal libOpenAL libGL.so libOpenGL libGLX libGLES libEGL libwine librw; do
         [[ "$dependencies" != *"$forbidden"* ]] \
             || fail "GDExtension unexpectedly depends on native presentation/runtime library: $forbidden"
     done
+    exports="$(nm --dynamic --defined-only --format=just-symbols "$EXTENSION_LIBRARY")"
+    [[ "$exports" == "sa_legacy_library_init" ]] \
+        || fail "extension must export only its GDExtension C entry point; private C++ symbols can collide with the GPU driver runtime"
 }
 
-for command in file install ldd readelf sha512sum unzip; do
+for command in file install ldd nm readelf sha512sum unzip; do
     command -v "$command" >/dev/null 2>&1 || fail "required command not found: $command"
 done
 [[ -x "$RUNTIME_BIN" ]] || fail "run tools/godot-fetch.sh first"

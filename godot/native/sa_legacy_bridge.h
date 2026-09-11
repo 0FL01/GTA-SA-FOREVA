@@ -6,7 +6,11 @@
 #include <godot_cpp/variant/vector3.hpp>
 
 #include <cstdint>
+#include <memory>
 #include <string>
+
+#include "app/platform/linux/NativeCollisionAssets.h"
+#include "app/platform/linux/NativeLodCatalog.h"
 
 namespace godot {
 
@@ -30,6 +34,16 @@ private:
     bool m_Ready = false;
     // Object-lifetime sequence: close/reopen preserves it; only a published region advances it.
     int64_t m_PublicationRevision = 0;
+    // P1-A04 single-chain LOD supplement: actual paired render + COL packet only.
+    // No gameplay physics, no general LOD, no A05/A06. Retained across LoadRegion
+    // calls; cleared on CloseGame without resetting m_PublicationRevision.
+    std::shared_ptr<const NativeLodCatalog> m_Catalog;
+    NativeLodChainDecision m_Decision;
+    NativeCollisionPlacement m_ChildPlacement;
+    NativeCollisionPlacement m_ParentPlacement;
+    std::shared_ptr<const NativeCollisionModel> m_EffectiveCol;
+    std::string m_EffectiveColLibrary;
+    bool m_HasLodPair = false;
 };
 
 } // namespace godot

@@ -45,6 +45,13 @@ add_subdirectory(
 set_target_properties(librw PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 set(NATIVE_SOURCE_DIR "${REPO_ROOT}/gta-reversed/source")
+# P1-A04 single-chain sources: strict source float semantics and throwing
+# Require() parsers need exceptions even though the extension disables them.
+set(NATIVE_LOD_SOURCES
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeLodCatalog.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCollisionAssets.cpp"
+)
 add_library(sa_legacy SHARED
     register_types.cpp
     sa_legacy_bridge.cpp
@@ -52,7 +59,12 @@ add_library(sa_legacy SHARED
     "${NATIVE_SOURCE_DIR}/app/platform/linux/StreamPager.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/TexSample.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/TimeCycle.cpp"
+    ${NATIVE_LOD_SOURCES}
 )
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set_source_files_properties(${NATIVE_LOD_SOURCES} PROPERTIES COMPILE_OPTIONS
+        "-fexceptions;-fno-fast-math;-ffp-contract=off")
+endif()
 target_compile_features(sa_legacy PRIVATE cxx_std_20)
 target_include_directories(sa_legacy PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}"
@@ -60,6 +72,15 @@ target_include_directories(sa_legacy PRIVATE
 )
 find_package(Threads REQUIRED)
 target_link_libraries(sa_legacy PRIVATE godot-cpp librw::librw Threads::Threads)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # godot-cpp links libstdc++ statically. Its GNU-unique locale facet IDs
+    # must not bind to Mesa's separately loaded dynamic libstdc++ instance.
+    # GDExtension exchanges a C interface, not private C++/RW/stdlib symbols.
+    target_link_options(sa_legacy PRIVATE
+        "LINKER:--version-script=${CMAKE_CURRENT_LIST_DIR}/exports.map")
+    set_property(TARGET sa_legacy APPEND PROPERTY LINK_DEPENDS
+        "${CMAKE_CURRENT_LIST_DIR}/exports.map")
+endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_legacy PRIVATE -Wall -Wextra -Wpedantic)
 endif()

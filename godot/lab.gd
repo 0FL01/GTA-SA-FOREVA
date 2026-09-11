@@ -86,6 +86,7 @@ var _environment_index := 0
 var _environment_data: Dictionary = {}
 var _environment_cache: Array[Dictionary] = []
 var _region_stats: Dictionary = {}
+var _region_collision: Dictionary = {}
 var _region_stats_csv := "{}"
 var _open_metadata: Dictionary = {}
 var _data_hashes: Dictionary = {}
@@ -485,6 +486,9 @@ func _load_region(center_sa: Vector3) -> bool:
 		if not mesh_info is Dictionary:
 			_fatal("load_region returned malformed mesh metadata", 4)
 			return false
+		if mesh_info.has("lod_chain_alternate") and not mesh_info.get("lod_chain_alternate") is bool:
+			_fatal("load_region lod_chain_alternate is not boolean", 4)
+			return false
 		var mesh_value: Variant = mesh_info.get("mesh")
 		if not mesh_value is ArrayMesh or mesh_value.get_surface_count() == 0:
 			_fatal("load_region returned an empty or invalid ArrayMesh", 4)
@@ -521,11 +525,19 @@ func _load_region(center_sa: Vector3) -> bool:
 				_fatal("load_region returned invalid surface material values", 4)
 				return false
 
+	var collision_out := _prepare_region_collision(result, meshes, int(revision_value))
+	if not bool(collision_out.get("ok", false)):
+		return false
+	var prepared_collision: Dictionary = collision_out.get("prepared", {})
+	var pair_child_index: int = int(collision_out.get("child_index", -1))
+	var pair_parent_index: int = int(collision_out.get("parent_index", -1))
+
 	var candidate_stats: Dictionary = result.stats.duplicate(true)
 	var candidate_instances: Array[MeshInstance3D] = []
 	var candidate_materials: Array = []
 	var candidate_surfaces := 0
-	for mesh_info in meshes:
+	for mesh_index in range(meshes.size()):
+		var mesh_info: Dictionary = meshes[mesh_index]
 		var mesh: ArrayMesh = mesh_info.mesh
 		var instance := MeshInstance3D.new()
 		instance.mesh = mesh
@@ -535,10 +547,16 @@ func _load_region(center_sa: Vector3) -> bool:
 			instance.set_surface_override_material(surface_index, material)
 			candidate_materials.append(material)
 			candidate_surfaces += 1
+		if mesh_index == pair_parent_index:
+			instance.visible = false
+		instance.set_meta("lod_chain_alternate", mesh_index == pair_parent_index)
+		instance.set_meta("source_model_id", int(mesh_info.get("source_model_id", -1)))
+		instance.set_meta("source_model", str(mesh_info.get("source_model", "")))
 		candidate_instances.append(instance)
 
 	_release_region()
 	_region_stats = candidate_stats
+	_region_collision = prepared_collision
 	_region_stats_csv = JSON.stringify(_region_stats)
 	_materials = candidate_materials
 	_resident_meshes = candidate_instances.size()
@@ -556,6 +574,261 @@ func _load_region(center_sa: Vector3) -> bool:
 	_last_load_stall_ms = float(Time.get_ticks_usec() - started) / 1000.0
 	_total_load_stall_ms += _last_load_stall_ms
 	return true
+
+
+func _prepare_region_collision(result: Dictionary, meshes: Array, revision: int) -> Dictionary:
+	var lineage_value: Variant = result.get("collision_lineage", {})
+	if not lineage_value is Dictionary:
+		_fatal("load_region returned non-Dictionary collision_lineage", 4)
+		return {"ok": false}
+	var lineage: Dictionary = lineage_value
+	if lineage.is_empty():
+		for mesh_index in range(meshes.size()):
+			var info: Dictionary = meshes[mesh_index]
+			if bool(info.get("lod_chain_alternate", false)):
+				_fatal("load_region meshes claim lod_chain_alternate without collision_lineage", 4)
+				return {"ok": false}
+		return {"ok": true, "prepared": {}, "child_index": -1, "parent_index": -1}
+	var generation_value: Variant = lineage.get("generation")
+	if not generation_value is int or int(generation_value) != revision:
+		_fatal("load_region collision_lineage has invalid generation", 4)
+		return {"ok": false}
+	if str(lineage.get("scope", "")) != "single-chain-data-not-gameplay":
+		_fatal("load_region collision_lineage has invalid scope", 4)
+		return {"ok": false}
+	if str(lineage.get("link", "")) != "bound":
+		_fatal("load_region collision_lineage has invalid link", 4)
+		return {"ok": false}
+	if not lineage.get("collision_transferred") is bool or not bool(lineage.collision_transferred):
+		_fatal("load_region collision_lineage collision_transferred must be true", 4)
+		return {"ok": false}
+	if not lineage.get("child") is Dictionary or not lineage.get("parent") is Dictionary or not lineage.get("col") is Dictionary:
+		_fatal("load_region collision_lineage is missing child/parent/col", 4)
+		return {"ok": false}
+	var child: Dictionary = lineage.child
+	var parent: Dictionary = lineage.parent
+	var col: Dictionary = lineage.col
+	var child_role := _validate_collision_role(child, meshes, true, "child")
+	if not bool(child_role.get("ok", false)):
+		return {"ok": false}
+	var parent_role := _validate_collision_role(parent, meshes, false, "parent")
+	if not bool(parent_role.get("ok", false)):
+		return {"ok": false}
+	var child_index: int = int(child_role.mesh_index)
+	var parent_index: int = int(parent_role.mesh_index)
+	if child_index == parent_index:
+		_fatal("load_region collision_lineage child and parent share mesh_index", 4)
+		return {"ok": false}
+	if str(parent.get("effective_alias", "")) != "child":
+		_fatal("load_region collision_lineage parent effective_alias must be child", 4)
+		return {"ok": false}
+	for mesh_index in range(meshes.size()):
+		var info: Dictionary = meshes[mesh_index]
+		var flag := bool(info.get("lod_chain_alternate", false))
+		if mesh_index == parent_index and not flag:
+			_fatal("load_region parent mesh must carry lod_chain_alternate=true", 4)
+			return {"ok": false}
+		if mesh_index == child_index and flag:
+			_fatal("load_region child mesh must carry lod_chain_alternate=false", 4)
+			return {"ok": false}
+		if mesh_index != parent_index and flag:
+			_fatal("load_region only the bound parent may carry lod_chain_alternate=true", 4)
+			return {"ok": false}
+	if not _validate_collision_model(col, child):
+		return {"ok": false}
+	return {"ok": true, "prepared": lineage.duplicate(true), "child_index": child_index, "parent_index": parent_index}
+
+
+func _validate_collision_role(role: Dictionary, meshes: Array, expect_uses: bool, label: String) -> Dictionary:
+	var model_id_value: Variant = role.get("model_id")
+	if not model_id_value is int or int(model_id_value) < 0:
+		_fatal("load_region collision_lineage %s has invalid model_id" % label, 4)
+		return {"ok": false}
+	var model_value: Variant = role.get("model")
+	if not (model_value is String or model_value is StringName) or str(model_value).is_empty():
+		_fatal("load_region collision_lineage %s has invalid model" % label, 4)
+		return {"ok": false}
+	var mesh_index_value: Variant = role.get("mesh_index")
+	if not mesh_index_value is int or int(mesh_index_value) < 0 or int(mesh_index_value) >= meshes.size():
+		_fatal("load_region collision_lineage %s has invalid mesh_index" % label, 4)
+		return {"ok": false}
+	if not role.get("uses_collision") is bool or bool(role.uses_collision) != expect_uses:
+		_fatal("load_region collision_lineage %s has invalid uses_collision" % label, 4)
+		return {"ok": false}
+	if not role.get("placement") is Dictionary:
+		_fatal("load_region collision_lineage %s is missing placement" % label, 4)
+		return {"ok": false}
+	var placement: Dictionary = role.placement
+	var ipl_value: Variant = placement.get("ipl")
+	if not (ipl_value is String or ipl_value is StringName) or str(ipl_value).is_empty():
+		_fatal("load_region collision_lineage %s placement has invalid ipl" % label, 4)
+		return {"ok": false}
+	if not placement.get("record") is int or int(placement.record) < 0:
+		_fatal("load_region collision_lineage %s placement has invalid record" % label, 4)
+		return {"ok": false}
+	if not placement.get("binary") is bool:
+		_fatal("load_region collision_lineage %s placement has invalid binary" % label, 4)
+		return {"ok": false}
+	if not _finite_vector3(placement.get("position_sa")):
+		_fatal("load_region collision_lineage %s placement has nonfinite position_sa" % label, 4)
+		return {"ok": false}
+	if not _finite_quaternion(placement.get("quaternion_sa")):
+		_fatal("load_region collision_lineage %s placement has nonfinite quaternion_sa" % label, 4)
+		return {"ok": false}
+	var mesh_index := int(mesh_index_value)
+	var mesh_info: Dictionary = meshes[mesh_index]
+	if not mesh_info.get("source_model_id") is int or int(mesh_info.source_model_id) != int(model_id_value):
+		_fatal("load_region collision_lineage %s model_id does not match source mesh" % label, 4)
+		return {"ok": false}
+	if str(mesh_info.get("source_model", "")).to_lower() != str(model_value).to_lower():
+		_fatal("load_region collision_lineage %s model does not match source mesh" % label, 4)
+		return {"ok": false}
+	return {"ok": true, "mesh_index": mesh_index}
+
+
+func _validate_collision_model(col: Dictionary, child: Dictionary) -> bool:
+	if str(col.get("status", "")) != "ready":
+		_fatal("load_region collision_lineage col status must be ready", 4)
+		return false
+	var library_value: Variant = col.get("library")
+	if not (library_value is String or library_value is StringName) or str(library_value).is_empty():
+		_fatal("load_region collision_lineage col has invalid library", 4)
+		return false
+	if not col.get("header_id") is int or int(col.header_id) < 0:
+		_fatal("load_region collision_lineage col has invalid header_id", 4)
+		return false
+	var header_name_value: Variant = col.get("header_name")
+	if not (header_name_value is String or header_name_value is StringName) or str(header_name_value).is_empty():
+		_fatal("load_region collision_lineage col has invalid header_name", 4)
+		return false
+	if not col.get("version") is int:
+		_fatal("load_region collision_lineage col has invalid version", 4)
+		return false
+	for key in ["vertex_count", "faces", "spheres", "boxes"]:
+		if not col.get(key) is int or int(col[key]) < 0:
+			_fatal("load_region collision_lineage col has invalid %s" % key, 4)
+			return false
+	var vertex_count := int(col.vertex_count)
+	var faces := int(col.faces)
+	var spheres := int(col.spheres)
+	var boxes := int(col.boxes)
+	if vertex_count <= 0 or faces <= 0:
+		_fatal("load_region collision_lineage col has no faces/vertices", 4)
+		return false
+	if int(child.model_id) != int(col.header_id):
+		_fatal("load_region collision_lineage col header_id does not match child", 4)
+		return false
+	if str(child.model).to_lower() != str(header_name_value).to_lower():
+		_fatal("load_region collision_lineage col header_name does not match child", 4)
+		return false
+	if not _finite_vector3(col.get("bounds_min")) or not _finite_vector3(col.get("bounds_max")) or not _finite_vector3(col.get("bound_center")):
+		_fatal("load_region collision_lineage col has nonfinite bounds", 4)
+		return false
+	var radius_value: Variant = col.get("bound_radius")
+	if not (radius_value is float or radius_value is int) or not is_finite(float(radius_value)) or float(radius_value) < 0.0:
+		_fatal("load_region collision_lineage col has invalid bound_radius", 4)
+		return false
+	if not col.get("vertices") is PackedFloat32Array:
+		_fatal("load_region collision_lineage col has invalid vertices", 4)
+		return false
+	if not col.get("face_indices") is PackedInt32Array:
+		_fatal("load_region collision_lineage col has invalid face_indices", 4)
+		return false
+	if not col.get("face_surfaces") is PackedByteArray:
+		_fatal("load_region collision_lineage col has invalid face_surfaces", 4)
+		return false
+	if not col.get("sphere_data") is PackedFloat32Array:
+		_fatal("load_region collision_lineage col has invalid sphere_data", 4)
+		return false
+	if not col.get("sphere_surfaces") is PackedByteArray:
+		_fatal("load_region collision_lineage col has invalid sphere_surfaces", 4)
+		return false
+	if not col.get("box_data") is PackedFloat32Array:
+		_fatal("load_region collision_lineage col has invalid box_data", 4)
+		return false
+	if not col.get("box_surfaces") is PackedByteArray:
+		_fatal("load_region collision_lineage col has invalid box_surfaces", 4)
+		return false
+	var vertices: PackedFloat32Array = col.vertices
+	var face_indices: PackedInt32Array = col.face_indices
+	var face_surfaces: PackedByteArray = col.face_surfaces
+	var sphere_data: PackedFloat32Array = col.sphere_data
+	var sphere_surfaces: PackedByteArray = col.sphere_surfaces
+	var box_data: PackedFloat32Array = col.box_data
+	var box_surfaces: PackedByteArray = col.box_surfaces
+	if vertices.size() != vertex_count * 3:
+		_fatal("load_region collision_lineage col vertex count mismatch", 4)
+		return false
+	if face_indices.size() != faces * 3 or face_surfaces.size() != faces * 4:
+		_fatal("load_region collision_lineage col face count mismatch", 4)
+		return false
+	if sphere_data.size() != spheres * 4 or sphere_surfaces.size() != spheres * 4:
+		_fatal("load_region collision_lineage col sphere count mismatch", 4)
+		return false
+	if box_data.size() != boxes * 6 or box_surfaces.size() != boxes * 4:
+		_fatal("load_region collision_lineage col box count mismatch", 4)
+		return false
+	for value in vertices:
+		if not is_finite(value):
+			_fatal("load_region collision_lineage col has nonfinite vertex", 4)
+			return false
+	for index_value in face_indices:
+		if index_value < 0 or index_value >= vertex_count:
+			_fatal("load_region collision_lineage col has out-of-range face index", 4)
+			return false
+	for value in sphere_data:
+		if not is_finite(value):
+			_fatal("load_region collision_lineage col has nonfinite sphere data", 4)
+			return false
+	for sphere_index in range(spheres):
+		if float(sphere_data[sphere_index * 4 + 3]) < 0.0:
+			_fatal("load_region collision_lineage col has negative sphere radius", 4)
+			return false
+	for value in box_data:
+		if not is_finite(value):
+			_fatal("load_region collision_lineage col has nonfinite box data", 4)
+			return false
+	for box_index in range(boxes):
+		for axis in range(3):
+			if float(box_data[box_index * 6 + axis]) > float(box_data[box_index * 6 + 3 + axis]):
+				_fatal("load_region collision_lineage col has inverted box bounds", 4)
+				return false
+	return true
+
+
+func _finite_vector3(value: Variant) -> bool:
+	if not value is Vector3:
+		return false
+	return is_finite(value.x) and is_finite(value.y) and is_finite(value.z)
+
+
+func _finite_quaternion(value: Variant) -> bool:
+	if not value is Quaternion:
+		return false
+	return is_finite(value.x) and is_finite(value.y) and is_finite(value.z) and is_finite(value.w)
+
+
+func _paired_data_summary() -> Dictionary:
+	if _region_collision.is_empty():
+		return {"present": false}
+	var child: Dictionary = _region_collision.get("child", {})
+	var parent: Dictionary = _region_collision.get("parent", {})
+	var col: Dictionary = _region_collision.get("col", {})
+	return {
+		"present": true,
+		"generation": int(_region_collision.get("generation", _publication_revision)),
+		"child_model_id": int(child.get("model_id", -1)),
+		"child_model": str(child.get("model", "")),
+		"child_mesh_index": int(child.get("mesh_index", -1)),
+		"parent_model_id": int(parent.get("model_id", -1)),
+		"parent_model": str(parent.get("model", "")),
+		"parent_mesh_index": int(parent.get("mesh_index", -1)),
+		"header_id": int(col.get("header_id", -1)),
+		"faces": int(col.get("faces", 0)),
+		"vertex_count": int(col.get("vertex_count", 0)),
+		"spheres": int(col.get("spheres", 0)),
+		"boxes": int(col.get("boxes", 0)),
+	}
 
 
 func _reject_region_candidate(center_sa: Vector3, result: Dictionary) -> bool:
@@ -617,6 +890,7 @@ func _release_region() -> void:
 	_resident_meshes = 0
 	_resident_surfaces = 0
 	_region_stats.clear()
+	_region_collision.clear()
 	_region_stats_csv = "{}"
 
 
@@ -1010,6 +1284,7 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"rejected_load_count": _rejected_load_count,
 			"last_region_error": _last_region_error.duplicate(true),
 			"collision_status": "unsupported; this viewer does not generate gameplay collision",
+			"paired_data": _paired_data_summary(),
 		},
 		"post_effect": {
 			"requested": _flags.post,
@@ -1114,6 +1389,9 @@ func _update_overlay() -> void:
 	status_label.text += "WASD move  Q/E fall/rise  Shift fast  RMB look  Esc release/quit  R route\n"
 	status_label.text += "1 clear  2 evening  3 night  4 overcast | F1-F4 diagnostics | F5 PC filter | F6 retry | F12 capture\n"
 	status_label.text += "LOD unavailable | gameplay collision unsupported\n"
+	var paired_summary := _paired_data_summary()
+	if bool(paired_summary.get("present", false)):
+		status_label.text += "paired data: %d->%d COL %df (data only, no gameplay)\n" % [int(paired_summary.get("child_model_id", -1)), int(paired_summary.get("parent_model_id", -1)), int(paired_summary.get("faces", 0))]
 	status_label.text += "Original reference missing: discrepancy not measured; no parity pass."
 
 
