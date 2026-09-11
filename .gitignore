@@ -4,6 +4,9 @@
 # Build outputs and package caches
 /build/
 /build-conan/
+/godot/bin/
+/godot/.godot/
+/godot/core.*
 /.conan-cache/
 
 # Archived run outputs: logs, screenshots, one-off probes

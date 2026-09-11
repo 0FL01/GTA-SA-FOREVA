@@ -1,7 +1,9 @@
 # mad-sa
 Personal RE research workspace for GTA:SA 1.0 US: upstream-model reverse (gta-reversed fork) + native Linux standalone track. Wine is dev-reference only, never runtime.
+Primary direction is now the separate Godot legacy-look lab; preserve the native backend as a regression reference, not a completed full game.
 
 ## Map
+- `godot/` — Godot presentation/GDExtension lab; `godot/README.md` has pinned fetch/build/package/test commands. Authoritative readers remain C++; no PBR/physics replacement.
 - `Grand-Theft-Auto-San-Andreas/` — legally owned game install, read-only, never edit/commit/copy
 - `gta-reversed/` — fork of `gta-reversed/gta-reversed`, independent git repo (own remote), many commits ahead of upstream master
 - `gta-reversed/source/game_sa/` — game logic being reversed (upstream DLL-hook model)
@@ -25,6 +27,7 @@ Personal RE research workspace for GTA:SA 1.0 US: upstream-model reverse (gta-re
 - Do not use a bare one-line message for non-trivial changes; the message must explain the change without requiring the diff.
 
 ## Verify
+- `tools/godot-build.sh` / `tools/godot-package.sh` — asset-free Godot delivery; run rendered pixel tests and clean-package route per `godot/README.md`, not just headless import. Game data stays external/read-only.
 - `./build/mad-sa-linux --smoke` — minimal native gate (exit 0 + `smoke-ok`); full sweep: `tools/etalon-sweep.sh` inside container
 - `file build/mad-sa-linux` — ELF 64-bit x86-64; `ldd build/mad-sa-linux` — no wine/Win libs
 - `git -C gta-reversed log --oneline -5` — confirm RE base before port work
@@ -33,6 +36,7 @@ Personal RE research workspace for GTA:SA 1.0 US: upstream-model reverse (gta-re
 - Windows-only reference build: `python gta-reversed/setup.py`, `cmake --build build`
 
 ## Docs
+- `docs/goals/2026-09-11-godot-legacy-look-lab.md` — current Godot goal; verbatim request linked there. `docs/visual_contract.md` separates restoration intent from unverified original/GPU parity.
 - `README.md` — project purpose, legal scope, build/run, gate table
 - `docs/goals/2026-09-08-linux-native-opengl-port.md` — frozen contract R1–R6 + evidence
 - `gta-reversed/README.md` — upstream build + ASI-loader model + native Linux track section

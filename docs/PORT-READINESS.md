@@ -1,5 +1,13 @@
 # Native port readiness roadmap
 
+## Primary direction: Godot legacy-look lab
+
+The [2026-09-11 Godot goal](goals/2026-09-11-godot-legacy-look-lab.md) supersedes native feature work as the current direction; [the request is archived verbatim](goals/2026-09-11-godot-legacy-look-lab-request.md). The native status below remains a regression baseline, not a completed game. First deliverable is an asset-free district inspection lab; existing CJ/vehicle mechanics follow visual validation rather than changing simulation simultaneously. See `godot/README.md` for the pinned engine, build/package/run commands and target Fedora44/Wayland/Mesa/RX780M procedure. Full F1/F2 and native R6 remain unresolved.
+
+## Native regression baseline
+
+Godot delivery evidence: `godot/README.md`, journal GODOT-LAB-01 and `artifacts/godot/package/`. Real Grove Street, four environments, component toggles including PC filter,9 controlled captures, both renderer pixel tests and3-pass bounded reload/memory measurements pass on software Wayland/Vulkan. Known LOD/foliage/material-effect differences and missing target-GPU/original-reference acceptance are explicit. The decision is to continue the Godot lab direction, not certify full migration from one district.
+
 Updated: 2026-09-11. **Full F1/F2/R6 remains active; the original game is not yet fully playable.**
 
 Authority: [frozen goal and chronological evidence](goals/2026-09-08-linux-native-opengl-port.md).

@@ -1,6 +1,8 @@
 # nc-lab workspace handover
 
 Updated: 2026-09-11. Working directory: `/home/opencode/ai/mad-sa`, user `opencode`.
+**Direction change:** primary work is now [Godot SA Legacy Look Lab](goals/2026-09-11-godot-legacy-look-lab.md), with the [verbatim user request](goals/2026-09-11-godot-legacy-look-lab-request.md) preserved. Read that goal's current checkpoint and `godot/README.md` before starting work. The native closure below is the preserved baseline, not permission to start its next feature round. Fedora44/Wayland/Mesa/RX780M is the user's separate test host; server software rendering is not that host's acceptance.
+The Godot test delivery is `artifacts/godot/package/` (asset-free, pinned runtime included). Its clean Wayland Forward+ route and both renderer pixel oracles pass; GODOT-LAB-01 in the journal records794 frames/3 full passes/24 publications, memory plateau and known visual differences. Native additive reader metadata is committed as8c62697b; native regression sweep remains33/0. User target-GPU/original-reference acceptance is still not-run. Preserve this bounded demo instead of silently starting full gameplay migration.
 The user copied this workspace **and the game directory with rsync**. The abandoned archive/manifest migration helpers were removed. Do not resume that migration or restore Git indexes from an archive.
 The workspace has a freshly rebuilt native runtime on this server. This is **not a completed full port or successful original new-game boot**.
 
@@ -39,7 +41,7 @@ Cleanup scope was only agent-created `artifacts/migration-nc-lab` on both hosts 
 
 - Inherited WIP stage is verified locally: `artifacts/build-runs/nc-lab-closure.log` records40/40 successful serial command invocations, including5451 VM checks and sweep33/0. Final Wayland boot, worker publication, CJ capture/CSV and actual root launcher also pass. `nc-lab-wayland-boot-final.log` is the final rebuilt diagnostic; CI-HL-01 records image review and failed experiments. The old interrupted combined run is not used as closure.
 - Explicit native commit22dee69e and root companion carry only intended source/build/docs/launcher changes. Conditional push needs HTTPS write authentication, currently unavailable. Full F1/F2/R6 remains open; no next feature round was started during this closure.
-- Next engineering dependencies are below and in the roadmap: real model-demand/ground/blockage/population/spawn/cleanup consumers and actual0814 ownership, not fake Ready/no-op services. Start by checking user/cwd/both Git statuses and preserving later WIP. Never resume archive migration or restore indexes/reset/clean.
+- Native deferred dependencies are below; the active checkpoint is the linked Godot visual lab. Start by checking user/cwd/both Git statuses and preserving later WIP. Never resume archive migration or restore indexes/reset/clean.
 - For a subsequent stage use **five fresh stateless general children**, disjoint files, no child delegation; parent owns integration/gates. Keep-j2/one heavy GL, source FP rules, rootless Docker, both game mounts read-only and `/workspace/build`. Commit each verified stage with2–4 indented Changes bullets and push only when authorized authentication exists.
 
 ## First build / closure commands

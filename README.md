@@ -2,9 +2,10 @@
 
 Personal research project built around [gta-reversed](https://github.com/gta-reversed/gta-reversed)
 — a community effort to reverse and rewrite every GTA: San Andreas function. This
-workspace keeps a fork of it and develops a **native Linux port**: a faithful,
-source-level reconstruction of GTA:SA 1.0 US whose logic can be studied, modified
-and rebuilt from source instead of binary patches.
+workspace keeps a fork and now develops a **Godot SA Legacy Look Lab**, retaining
+the native Linux backend as a regression reference. The direction is visual
+restoration through existing C++ readers and legacy shaders, not PBR remastering
+or a completed full-game port.
 
 ## Legal scope (read first)
 
@@ -27,6 +28,7 @@ probe does not certify full gameplay or a manual parity pass.
 
 | Path | What it is |
 |---|---|
+| `godot/` | Separate Godot/GDExtension visual lab: source Grove Street, four environments, legacy materials, component diagnostics and repeatable measured camera route. See [lab delivery and tests](godot/README.md). |
 | `gta-reversed/` | Fork of gta-reversed (independent git repo with its own remote). Upstream = MSVC/Win32 DLL injected via ASI loader; this fork adds the **native Linux track**: `source/app/platform/linux/` (standalone `main` + subsystem harnesses), `oswrapper_linux.cpp`, `vendor/librw`. |
 | `Grand-Theft-Auto-San-Andreas/` | Local, legally owned game installation. Read-only; git-ignored. |
 | `Dockerfile` | Dev image `mad-sa:dev` (Ubuntu 24.04: GCC13/Clang, CMake/Ninja, Conan2, OpenAL/GL, SDL3 build deps). |
@@ -37,7 +39,28 @@ probe does not certify full gameplay or a manual parity pass.
 
 ## Build & run
 
-### Native Linux standalone (active track)
+### Godot legacy-look lab (primary direction)
+
+The [current goal](docs/goals/2026-09-11-godot-legacy-look-lab.md) preserves the
+[verbatim request](docs/goals/2026-09-11-godot-legacy-look-lab-request.md).
+See [visual contract](docs/visual_contract.md) and [standalone audit](docs/GODOT-STANDALONE-AUDIT.md).
+
+```bash
+./tools/godot-fetch.sh
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./tools/godot-build.sh
+./tools/godot-package.sh
+# From the asset-free package on the user's Fedora/Wayland host:
+./play-godot.sh -- --game-dir "/path/to/owned/GTA San Andreas" --seconds 95 --route
+```
+
+The package includes pinned Godot4.6.1 and its built extension, **no game data**.
+Default Wayland/Vulkan/Forward+; explicit Compatibility is a separate profile.
+Controls, dependencies, package verification and artifact paths are in
+[`godot/README.md`](godot/README.md). This is a district inspection demo, not CJ,
+traffic, missions or replacement physics. Original-reference parity and target
+RX780M performance remain unverified until controlled target-host testing.
+
+### Native Linux standalone (preserved regression track)
 
 Development happens in the `mad-sa:dev` container; `/workspace` is this repo,
 `/game` is the read-only game install.

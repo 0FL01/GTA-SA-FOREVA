@@ -34,6 +34,7 @@ RUN if [ -n "$UBUNTU_MIRROR" ]; then \
     cmake ninja-build pkg-config ccache git curl unzip zip \
     python3 python3-pip python3-venv \
     libopenal-dev libgl1-mesa-dev libegl1-mesa-dev libglu1-mesa-dev \
+    libvulkan1 mesa-vulkan-drivers \
     libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev libxss-dev \
     libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev \
     libxcomposite-dev libxdamage-dev libxinerama-dev libxkbfile-dev libxmu-dev libxmuu-dev \

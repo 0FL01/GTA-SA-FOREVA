@@ -6,6 +6,10 @@ Last updated: 2026-09-11
 Docs: root `README.md` (цель/легальный статус/сборка) · `AGENTS.md` (конвенции/verify) · `gta-reversed/README.md` (апстрим DLL-трек, секция нативного трека)
 Gates: `tools/etalon-sweep.sh` — one-pass sweep всех acceptance-команд (внутри `mad-sa:dev`, пути `/workspace`)
 
+## Direction change — 2026-09-11
+
+**Primary execution moved to [Godot SA Legacy Look Lab](2026-09-11-godot-legacy-look-lab.md)** at the user's explicit request. The new goal includes a verbatim chat archive and targets Fedora44/Wayland/Mesa/RX780M testing. This document is the preserved native control baseline/history, not the next feature queue. Its unfinished F1/F2/R6 are neither completed nor waived: their continuation is through the new Godot direction after the visual-first lab. Do not resume native feature work from the historical checkpoints below without checking the new goal. Keep the native backend and its regression gates intact.
+
 ## Objective
 В образе `mad-sa:dev` собирается ELF `mad-sa-linux` (x86_64), который стартует из ассетов `/game:ro`, тикает игровую логику и рендерит мир через OpenGL без Wine в рантайме.
 

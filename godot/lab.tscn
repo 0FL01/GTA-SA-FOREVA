@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://lab.gd" id="1_lab"]
+
+[node name="LegacyLookLab" type="Node3D"]
+script = ExtResource("1_lab")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+[node name="MeshRoot" type="Node3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+current = true
+fov = 60.0
+near = 0.1
+far = 800.0
+
+[node name="Overlay" type="CanvasLayer" parent="."]
+
+[node name="Shade" type="ColorRect" parent="Overlay"]
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 650.0
+offset_bottom = 246.0
+mouse_filter = 2
+color = Color(0.015, 0.02, 0.025, 0.82)
+
+[node name="Status" type="Label" parent="Overlay"]
+offset_left = 24.0
+offset_top = 21.0
+offset_right = 638.0
+offset_bottom = 238.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.94, 0.96, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/line_spacing = 2
+theme_override_font_sizes/font_size = 14
+text = "SA Legacy Look Lab\nStarting..."
