@@ -1,9 +1,9 @@
 # nc-lab workspace handover
 
 Updated: 2026-09-11. Working directory: `/home/opencode/ai/mad-sa`, user `opencode`.
-**USER PAUSE:** finish P1-A01 and stop so the user can replace agents. The current round is verified; do not launch P1-A02 or more children until resumed. See the full-port goal's pause checkpoint and journal GODOT-P1-04.
+**RESUMED:** user resumed after verified P1-A01 and replaced `@general` with `@cheap-worker` default / `@costly-worker` for ambiguous decisions. P1-A02 selected `in_progress`, no completion claim. See the full-port goal's resume checkpoint and journal GODOT-P1-04 (history).
 **Active direction:** [full standalone Godot port](goals/2026-09-11-godot-full-port.md), approved for long-term execution. The goal preserves the original complete plan and68 atomic steps; `PORT-READINESS.md` is the only roadmap. Read the goal checkpoint and `godot/README.md` before work. Native remains a regression reference. Fedora44/Wayland/Mesa/RX780M is the user's separate test host; server software evidence is not that host's acceptance.
-P0 delivery: `artifacts/godot/sa-legacy-look-lab-p0-linux-x86_64.tar.gz` (asset-free, pinned runtime included), details in GODOT-P0-03. P1-A01 now adds TXD-qualified identity in native `ddc9863d` and the root companion; clean package in `artifacts/godot/package/` passes real identity/upload/readback and retained-world gates. Finite-large UV works; source NaN candidates are rejected with provenance while the last world stays live. Native regression33/0 remains green. Target reflight stays open; next independent atom is P1-A02 only after user resume.
+P0 delivery: `artifacts/godot/sa-legacy-look-lab-p0-linux-x86_64.tar.gz` (asset-free, pinned runtime included), details in GODOT-P0-03. P1-A01 now adds TXD-qualified identity in native `ddc9863d` and the root companion; clean package in `artifacts/godot/package/` passes real identity/upload/readback and retained-world gates. Finite-large UV works; source NaN candidates are rejected with provenance while the last world stays live. Native regression33/0 remains green. Target reflight stays open; next independent atom P1-A02 is selected in_progress with no completion claim.
 The user copied this workspace **and the game directory with rsync**. The abandoned archive/manifest migration helpers were removed. Do not resume that migration or restore Git indexes from an archive.
 The workspace has a freshly rebuilt native runtime on this server. This is **not a completed full port or successful original new-game boot**.
 
@@ -11,7 +11,7 @@ Read first: `AGENTS.md`, `docs/PORT-READINESS.md`, `docs/LIVE-TEST-JOURNAL.md`, 
 
 ## Repository and current work
 
-- **Latest task:** user-paused after verified P1-A01, before agent replacement. Parent integrated disjoint lanes, ran direct/regression/package gates and records stage commits/push. Preserve the pause and single roadmap; target reflight and F1/F2/R6 remain open.
+- **Latest task:** user resumed after verified P1-A01 and replaced `@general` with `@cheap-worker`/`@costly-worker`. Parent integrated disjoint lanes, ran direct/regression/package gates and records stage commits/push. Preserve the single roadmap; target reflight and F1/F2/R6 remain open.
 - **Publication correction:** user-authorized normal SSH pushes succeeded for root52877f0/native8c62697b and remote master hashes were checked. The earlier failures were explicit HTTPS attempts, not failed SSH keys. Do not treat lack of HTTPS credentials as a current push blocker or read private keys.
 
 - Two independent Git repositories. Incoming rsync bases: root `3847ab367f62a2989dd936f62b300ab649c31388`, native `3adc8ec02ee7e400c7245e67969adbef243e187d`. The remote verification below is from the inherited WIP plus the bounded closure fixes, not those clean bases. Check normal Git status and preserve unrelated work; never reset to older GitHub heads.
@@ -20,7 +20,7 @@ Read first: `AGENTS.md`, `docs/PORT-READINESS.md`, `docs/LIVE-TEST-JOURNAL.md`, 
 - Fresh integrated Weston/Wayland diagnostic confirms main53/mission1234, hospitals8/police7, unadvanced0814@212669 and preceding016D@212645; five black08:00 frames, runtimeexit1/fullboot0. `artifacts/build-runs/nc-lab-wayland-boot.log` is server evidence; the incoming `round-final-core.log` and interrupted combined gates are historical only.
 - Remote CJ demo:244 swaps/28.042s, three app-owned GL0/restored1 captures and265 MangoHud CSV samples. Images were agent-reviewed; physical live acceptance and original parity remain open. Older CJ1645/28.017s, curb714/12.006s and main53/mission1219 results are local AMD780M/Mesa26.1.4 history, not server performance.
 - CPU-no-HUD negative539/0570@205876 remains intentional. Unknown commands/services stay terminal and unadvanced; expected exit1 is not full-boot success.
-- Existing `.opencode/`, `opencode.jsonc`, root `e2e_W*.tga`, and native `__pycache__` are user/pre-existing state, not files to sweep into a feature commit. Host-specific tool paths may require explicit review before use; do not run copied automation blindly.
+- Existing `.opencode/`, `opencode.jsonc`, root `e2e_W*.tga`, and native `__pycache__` are user/pre-existing state: do not read/modify/stage them and do not sweep them into a feature commit. Host-specific tool paths may require explicit review before use; do not run copied automation blindly.
 
 ## User-provided workspace and assets
 
@@ -35,7 +35,7 @@ Cleanup scope was only agent-created `artifacts/migration-nc-lab` on both hosts 
 - Debian13.4, kernel6.12.86,6vCPU,11.68GiB RAM/~7.7GiB available,236GiB free disk.
 - `opencode` UID/GID1003, home `/home/opencode`, linger enabled.
 - Docker29.4.3 **rootless** context, socket `/run/user/1003/docker.sock`, store `/home/opencode/.local/share/docker`. Created only the rootless `mad-sa-graphics-build` container (4CPU/6GiB), using `/workspace` and `/workspace/build`. Host root access was neither required nor used; root-daemon containers were untouched.
-- CPU quota/memory limits supported; cpuset and IO limits unavailable. Start around4CPU/6GiB and `-j2`; heavy GL gates one at a time. Five agents may work on disjoint source lanes, not five concurrent full GPU stress suites.
+- CPU quota/memory limits supported; cpuset and IO limits unavailable. Start around4CPU/6GiB and `-j2`; heavy GL gates one at a time. Worker count matches genuinely independent atoms on disjoint source lanes, not concurrent full GPU stress suites.
 - QEMU/bochs VGA, no render-node; Mesa25.0.7 present. Use software llvmpipe, not a hardware-FPS claim.
 - Built `mad-sa:dev` image `91f7df6f5c32` from the existing Ubuntu24.04 Dockerfile, with optional `UBUNTU_MIRROR=http://mirrors.edge.kernel.org/ubuntu` after default archive timeouts; normal signed apt validation remains enabled. The image now includes strace, Weston and MangoHud. Fresh Conan/CMake and clean-first GCC13.3 build replace copied build evidence.
 - Keep both `wayland/*:shared=True` and `xkbcommon/*:shared=True` with SDL3/3.4.14. Static Conan Wayland1.24 plus Mesa's system Wayland1.22 deadlocked window creation; Wayland-only shared then failed missing keyboard symbols. Both shared resolved it. `mangohud --dlsym` is needed for this SDL/EGL path's CSV on the distro package. Software renderer: Mesa25.2.8, llvmpipe LLVM20.1.2; Weston13 headless/pixman,1280×720. Use `LP_NUM_THREADS=2`.
@@ -46,7 +46,7 @@ Cleanup scope was only agent-created `artifacts/migration-nc-lab` on both hosts 
 - Inherited WIP stage is verified locally: `artifacts/build-runs/nc-lab-closure.log` records40/40 successful serial command invocations, including5451 VM checks and sweep33/0. Final Wayland boot, worker publication, CJ capture/CSV and actual root launcher also pass. `nc-lab-wayland-boot-final.log` is the final rebuilt diagnostic; CI-HL-01 records image review and failed experiments. The old interrupted combined run is not used as closure.
 - Explicit native commit22dee69e and root companion carry only intended source/build/docs/launcher changes. Conditional push needs HTTPS write authentication, currently unavailable. Full F1/F2/R6 remains open; no next feature round was started during this closure.
 - Native deferred dependencies are below; the active checkpoint is the linked Godot visual lab. Start by checking user/cwd/both Git statuses and preserving later WIP. Never resume archive migration or restore indexes/reset/clean.
-- For a subsequent stage use **five fresh stateless general children**, disjoint files, no child delegation; parent owns integration/gates. Keep-j2/one heavy GL, source FP rules, rootless Docker, both game mounts read-only and `/workspace/build`. Commit each verified stage with2–4 indented Changes bullets and push only when authorized authentication exists.
+- For a subsequent stage use `@cheap-worker` by default (`@costly-worker` only for ambiguous semantic/architectural/RE/debug decisions); worker count matches genuinely independent atoms, disjoint files, no child delegation; parent owns integration/gates/evidence. Keep-j2/one heavy GL, source FP rules, rootless Docker, both game mounts read-only and `/workspace/build`. Commit each substantial verified stage with2–4 indented Changes bullets and push only when authorized authentication exists.
 
 ## First build / closure commands
 

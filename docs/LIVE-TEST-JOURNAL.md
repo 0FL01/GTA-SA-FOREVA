@@ -47,6 +47,11 @@ No desktop-wide screenshots of unrelated applications. A software-rendered VDS r
 
 Append actual sessions below; do not erase failed runs or replace these pending rows with assumed success.
 
+## GODOT-P1-05 — 2026-09-11 / user resume, docs protocol only
+
+- **Scope/status:** user resumed long-term goal after verified P1-A01; replaced `@general` with `@cheap-worker` default / `@costly-worker` for ambiguous decisions. P1-A02 selected `in_progress`, no implementation started or completed. Docs protocol updated in `AGENTS.md`, full-port goal, `PORT-READINESS.md`, `REMOTE-HANDOVER.md`; GODOT-P1-04 retained as pause history. No product code, gates, commits or delegation in this round.
+- **State:** root `e7cadd4` / native `ddc9863d` clean tracked; protected `.opencode/opencode.jsonc`, `*.tga`, caches untouched. Full-port scope ACTIVE; single roadmap preserved; target reflight and F1/F2/R6 remain open.
+
 ## GODOT-P1-04 — 2026-09-11 / parent integration / user pause
 
 - **Scope/status:** P1-A01 TXD-lineage identity verified, native `ddc9863d` and root containing commit. User explicitly requested pause to replace agents; no P1-A02 started. Full-port/target-reference acceptance remains open.

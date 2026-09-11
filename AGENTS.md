@@ -22,6 +22,13 @@ Primary direction is the full standalone Godot port, developed from the legacy-l
 - Dev env is `Dockerfile` (`mad-sa:dev`); do not add VS/Windows-only steps to Linux build path. Game mounts at `/game:ro`, never copied into image.
 - Requires a legally owned game copy: no assets/exes in commits, no redistribution, no piracy instructions (see root `README.md`, Legal scope).
 
+## Execution workers
+- `@cheap-worker` is default for well-specified/verifiable implementation/test/docs; `@costly-worker` only for ambiguous semantic/architectural/RE/debug decisions.
+- No fixed worker count: number matches genuinely independent atoms with disjoint file ownership; children do not delegate.
+- Parent integrates/verifies/records evidence; commit+push after substantial verified rounds.
+- Single roadmap: `docs/PORT-READINESS.md`; atom ledger/backup in `docs/goals/2026-09-11-godot-full-port.md`; no competing roadmap.
+- Do not read/modify/stage `.opencode/opencode.jsonc`, `*.tga`, or caches (`__pycache__`, etc.).
+
 ## Commit style
 - Format non-trivial commits as `<type>(<scope>): <description>`, then a blank line and an indented `Changes:` list with 2–4 concrete bullets; use `feat`, `fix`, `chore`, `docs`, `refactor`, or `test`.
 - Do not use a bare one-line message for non-trivial changes; the message must explain the change without requiring the diff.

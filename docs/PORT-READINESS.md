@@ -2,14 +2,14 @@
 
 ## Active execution
 
-**Execution paused by user after P1-A01**, to replace agents. Do not start a new round until resume; full-port scope remains active.
+**Execution resumed by user after P1-A01**; worker model is `@cheap-worker` default / `@costly-worker` for ambiguous decisions; full-port scope remains active.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
 | Stage | State | Delivery / next gate |
 |---|---|---|
 | P0 | implemented; target reflight open | Finite UV/provenance/retained-world CPU and rendered clean-package gates pass; external Fedora reflight is not claimed |
-| P1 | A01 verified; paused | TXD-qualified identities verified; A02 metadata/catalog bounds is next only after user resume; LOD/COL/async remain pending |
+| P1 | A01 verified; A02 in_progress (selected, no completion claim) | TXD-qualified identities verified; A02 metadata/catalog bounds is current; LOD/COL/async remain pending |
 | P2 | pending | Minimal C++ authority hosted by Godot |
 | P3 | pending | First real player/Automobile gameplay slice |
 | P4 | pending | Genuine SCM boot, first mission and portable save loop |
@@ -19,7 +19,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P8 | pending | Complete source progression/content and PC-save compatibility |
 | P9 | pending | Cross-axis full-port and target release closure |
 
-P0 and P1-A01 implementation are integrated and server-verified; P0 external target reflight remains open. P1-A02 is reserved for after the user's pause. One decisive test per atom, broad regression only for changed shared boundaries. Commit/push after each major verified stage; update goal, this stage table and journal before the next round. The user's earlier Radeon780M launch is real feedback, not acceptance of new packages or the full game.
+P0 and P1-A01 implementation are integrated and server-verified; P0 external target reflight remains open. P1-A02 is selected in_progress with no implementation completion claim. One decisive test per atom, broad regression only for changed shared boundaries. Worker count matches independent atoms with disjoint files — @cheap-worker default, @costly-worker only for ambiguous decisions; children do not delegate; parent integrates/verifies/records evidence. Commit/push after each substantial verified round; update goal, this stage table and journal before the next round. The user's earlier Radeon780M launch is real feedback, not acceptance of new packages or the full game.
 
 The [2026-09-11 Godot goal](goals/2026-09-11-godot-legacy-look-lab.md) supersedes native feature work as the current direction; [the request is archived verbatim](goals/2026-09-11-godot-legacy-look-lab-request.md). The native status below remains a regression baseline, not a completed game. First deliverable is an asset-free district inspection lab; existing CJ/vehicle mechanics follow visual validation rather than changing simulation simultaneously. See `godot/README.md` for the pinned engine, build/package/run commands and target Fedora44/Wayland/Mesa/RX780M procedure. Full F1/F2 and native R6 remain unresolved.
 
