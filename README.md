@@ -69,7 +69,7 @@ After building in the container, run **on the host Wayland desktop**:
 ```bash
 ./play.sh                       # on-foot / nearby Landstal, until Esc / close
 ./play.sh --demo --seconds 35   # jump, enter, drive, brake, exit, walk
-./play.sh --demo-curb --seconds 12 # real 17 cm street curb, walk/sprint up/down
+./play.sh --demo-curb --seconds 12 # real 16.4 cm COL curb, walk/sprint up/down
 ./play.sh --player-cj --demo --seconds 28 # modular CJ startup-outfit preview
 ./play.sh --freecam              # original flying world viewer
 ./play.sh --freecam --hour 22 --weather CLOUDY_LA --freeze-time
@@ -100,8 +100,11 @@ muscle 50 (95% Normal, 5% Ripped); it is a preview, not skipped mission executio
 **Experimental SCM boot:** `./play.sh --new-game` executes the real main script,
 creates its persistent base player/world, and honors the initial black fade and
 08:00 clock. Currently mission 0 stops with exit **1** at unsupported
-`04CE ADD_SHORT_RANGE_SPRITE_BLIP_FOR_COORD`, IP **212086**, after 1207 mission commands, including
-32 property pickups/radar markers, 13 save tokens, 30 ENEX writes and 13 garage deactivations.
+`016C ADD_HOSPITAL_RESTART`, IP **212309**, after 1219 mission commands, including
+32 property pickups/radar markers, 13 save tokens, 30 ENEX writes, 14 garage deactivations
+and nine coordinate radar blips. Coordinate blips have their own source kind and
+remain visible during missions; all 62 texture-backed source radar sprites are
+prepared and uploaded, with the authored nearest filtering and explicit readiness.
 `014B/014C` now create and switch actual owned generator definitions: 88 binary-IPL
 definitions from 22 source-COL-resident sources, followed by 10 script definitions
 and 10 switches. Definition registration is **not vehicle spawning**. Processing
@@ -112,6 +115,15 @@ departure requiring unimplemented cleanup retains the previous world and exits
 explicitly. Source-rejected IPL model records are accounted separately from
 successful allocations. Shared CRT-compatible RNG is seeded once from platform
 time; original global random-call order is not yet reproduced.
+Source text-IPL type flags are now retained separately from the low-byte area,
+restoring 498 outdoor non-LOD placements to runtime eligibility. Renderer caps
+and source-COL residency remain independent; offline fixture behavior is unchanged.
+Prepared vehicle packets now cover Landstal and the source-correct fresh parked
+Rustler pose, including wheel transforms and propeller material alpha. These are
+verified CPU/GPU asset packets, **not spawned aircraft or aircraft physics**.
+Prepared source vertical-COL arithmetic and Object.dat classification likewise do
+not establish complete world-sector ground-query authority; generator fulfillment
+still requires that integration.
 Save tokens use actual model 1277, source visibility scheduling and the shared
 generation-qualified pool. A bounded controller-owned activity model now gates
 collection; accepted collection removes the object and appends its full reference
