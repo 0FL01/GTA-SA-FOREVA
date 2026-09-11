@@ -20,6 +20,10 @@ Personal RE research workspace for GTA:SA 1.0 US: upstream-model reverse (gta-re
 - Dev env is `Dockerfile` (`mad-sa:dev`); do not add VS/Windows-only steps to Linux build path. Game mounts at `/game:ro`, never copied into image.
 - Requires a legally owned game copy: no assets/exes in commits, no redistribution, no piracy instructions (see root `README.md`, Legal scope).
 
+## Commit style
+- Format non-trivial commits as `<type>(<scope>): <description>`, then a blank line and an indented `Changes:` list with 2–4 concrete bullets; use `feat`, `fix`, `chore`, `docs`, `refactor`, or `test`.
+- Do not use a bare one-line message for non-trivial changes; the message must explain the change without requiring the diff.
+
 ## Verify
 - `./build/mad-sa-linux --smoke` — minimal native gate (exit 0 + `smoke-ok`); full sweep: `tools/etalon-sweep.sh` inside container
 - `file build/mad-sa-linux` — ELF 64-bit x86-64; `ldd build/mad-sa-linux` — no wine/Win libs
