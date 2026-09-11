@@ -47,6 +47,13 @@ No desktop-wide screenshots of unrelated applications. A software-rendered VDS r
 
 Append actual sessions below; do not erase failed runs or replace these pending rows with assumed success.
 
+## GODOT-P1-07 — 2026-09-11 / bounded source LinkLods CPU verification
+
+- **Identity/scope:** native `0628fce4`, root containing entry. Real LAn text0/24/model3991/4043, child COL3/header3991/122faces, draws180/450; unique complete model/sibling closure, non-cache/multiplier1. Parent aliases child collision but has entity collision disabled after big-building setup; `bIsLod` clears independently of owns-COL. Global runtime catalog flags stay Unknown; no rendered LOD/publication claim.
+- **Checks:** actual CHAIN/DECISION plus class, multiplier threshold, underwater, alpha255 relation, forged state, unsupported/unchanged-output gates; previous50935-placement/6103-link oracle and synthetic disk bounds preserved. COL lookup passes pre-load/invalid Unsupported, KnownAbsent, real Ready/Empty and time-partner alias, owner lifetime and failed-load preservation. Per-model Unsupported branch is not claimed exercised. Coherent native/Godot builds, native smoke and collision-world exhaustive/indexed/ground/generation regression pass.
+- **Evidence:** `artifacts/build-runs/p1-a03-{lod-final,lookup-final,world,smoke}.log`; detailed `artifacts/graphics/NativeLodCatalog-probe.log`. Parent corrected cheap-worker semantic gaps using costly/source review: non-building collision assumptions, child-big scan order, COL-derived underwater and tautological partner test. Final explicit-input header was rebuilt/retested after review.
+- **Limits/next:** PREPARED CPU authority only, no GPU/original/Radeon acceptance. A04 must publish real matching render/COL lineage atomically; A05 owns async. Connectivity interrupted the first A04 research call only, after A03 commit/push; user resumed and implementation state was verified clean.
+
 ## GODOT-P1-06 — 2026-09-11 / prepared static catalog verification
 
 - Native `2d121583`: exact TXD/animation/signed-time metadata, complete per-node source metadata and cumulative/raw binary storage bounds. Actual-data oracle covers50935placements/242sources,12839placed IDs within14259static IDE entries,6103links/6086targets and zero unknown initial classes. This is CPU catalog evidence, not a new rendered/live target acceptance.

@@ -9,7 +9,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | Stage | State | Delivery / next gate |
 |---|---|---|
 | P0 | implemented; target reflight open | Finite UV/provenance/retained-world CPU and rendered clean-package gates pass; external Fedora reflight is not claimed |
-| P1 | A01–A02 verified; A03 in_progress | TXD-qualified identities and complete static catalog metadata/bounds verified; one source LinkLods chain is current; runtime COL coupling/async remain pending |
+| P1 | A01–A03 verified; A04 in_progress | TXD-qualified identities, static metadata/bounds and one bounded source LinkLods chain verified; actual render/COL generation boundary is current, async remains pending |
 | P2 | pending | Minimal C++ authority hosted by Godot |
 | P3 | pending | First real player/Automobile gameplay slice |
 | P4 | pending | Genuine SCM boot, first mission and portable save loop |
@@ -19,7 +19,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P8 | pending | Complete source progression/content and PC-save compatibility |
 | P9 | pending | Cross-axis full-port and target release closure |
 
-P0/P1-A01 are integrated and server-verified; P1-A02's reusable static catalog is verified but not a product visibility consumer. P0 target reflight remains open. P1-A03 is selected without a completion claim. One decisive test per atom, broad regression only for changed shared boundaries. Worker count matches independent atoms with disjoint files — @cheap-worker default, @costly-worker only for ambiguous decisions; children do not delegate; parent integrates/verifies/records evidence. Commit/push after each substantial verified round; update goal, this stage table and journal before the next round. Earlier Radeon780M feedback is not acceptance of new packages or the full game.
+P0/P1-A01 are integrated and server-verified; A02's static catalog and A03's unique-chain decision are verified prepared CPU authority, not a product LOD renderer. P0 target reflight remains open. A04 publication-boundary research is current without a completion claim. One decisive test per atom, broad regression only for changed shared boundaries. Worker count matches independent atoms with disjoint files — @cheap-worker default, @costly-worker only for ambiguous decisions; children do not delegate; parent integrates/verifies/records evidence. Commit/push after each substantial verified round; update goal, this stage table and journal before the next round. Earlier Radeon780M feedback is not acceptance of new packages or the full game.
 
 The [2026-09-11 Godot goal](goals/2026-09-11-godot-legacy-look-lab.md) supersedes native feature work as the current direction; [the request is archived verbatim](goals/2026-09-11-godot-legacy-look-lab-request.md). The native status below remains a regression baseline, not a completed game. First deliverable is an asset-free district inspection lab; existing CJ/vehicle mechanics follow visual validation rather than changing simulation simultaneously. See `godot/README.md` for the pinned engine, build/package/run commands and target Fedora44/Wayland/Mesa/RX780M procedure. Full F1/F2 and native R6 remain unresolved.
 
