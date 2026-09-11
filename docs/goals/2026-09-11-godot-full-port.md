@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE — user resumed 2026-09-11; worker model is @cheap-worker default / @costly-worker for ambiguous decisions; P1-A02 selected in_progress, no completion claim.
+Execution: ACTIVE — @cheap-worker default / @costly-worker for ambiguous decisions; P1-A02 verified, P1-A03 selected next.
 Activated: 2026-09-11
 Last updated: 2026-09-11
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -61,8 +61,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
 | P1-A01 | verified | Define TXD-lineage-aware model, texture, material and geometry identities in reusable immutable packets. | Native key fixtures; real Grove/roads gate retains52 same-name/different-lineage pairs, including model646128×128 and4172256×256 `planta256`; clean Wayland package upload/readback passes. |
-| P1-A02 | in_progress | Complete IDE/IPL metadata and parser bounds needed by the catalog without silent caps or fallback omissions. | Catalog fixture rejects malformed bounds and accounts for every expected placement. |
-| P1-A03 | pending | Reproduce source `LinkLods` child/parent decisions for one authored chain. | One source-authored chain matches expected links and runtime selection reasons. |
+| P1-A02 | verified | Complete IDE/IPL metadata and parser bounds needed by the catalog without silent caps or fallback omissions. | Native2d121583: atomic metadata fixtures, synthetic actual disk-reader bounds/budget rejections and all50935placements/242sources match independent oracle; ground109500checks retained. Catalog remains prepared, not a runtime visibility consumer. |
+| P1-A03 | in_progress | Reproduce source `LinkLods` child/parent decisions for one authored chain. | One source-authored chain matches expected links and runtime selection reasons. |
 | P1-A04 | pending | Couple that chain's COL relationship and generation to world publication. | A generation switch publishes matching render/collision lineage or publishes neither. |
 | P1-A05 | pending | Adapt the sole-owner parser worker/mailbox for asynchronous raw parsing with request and generation identity. | Queue/parse cancellation test proves stale results cannot cross generations. |
 | P1-A06 | pending | Budget Godot main-thread publication and retirement while retaining old complete state until commit. | Upload/retire interruption test shows bounded work and no mixed old/new generation. |
@@ -169,12 +169,19 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-- **Resume checkpoint:** user resumed 2026-09-11 and replaced `@general` with `@cheap-worker` (default for well-specified/verifiable implementation/test/docs) / `@costly-worker` (only ambiguous semantic/architectural/RE/debug decisions). P1-A01 stays verified; P1-A02 is selected `in_progress` with no implementation completion claim. Root `e7cadd4`/native `ddc9863d` clean tracked; protected `.opencode/opencode.jsonc`, `*.tga` and caches are not read/modified/staged. Prior pause request «завершай раунд,я хочу сделать замену @general на других агентов, нужна пауза» is preserved as history below. External target reflight remains pending. Full catalog/LOD/async publication and all six finish-line axes remain unresolved, not waived.
+- **Current checkpoint:** worker protocol committed/pushed as root `5c9881e`; P1-A02 committed/pushed as native `2d121583`, with evidence below. P1-A03 selects the real unique-model chain LAn text records0/24 (3991/4043), non-cache/multiplier1.0, for a bounded source LinkLods evaluator. It must prove complete model/sibling closure and source COL ownership before returning any known result; all other catalog runtime fields stay Unknown. Generation-matched rendering/COL and async publication remain A04/A05. External target reflight and all six finish-line axes remain unresolved. Protected user configuration/TGA/caches are untouched.
 - P0 material-boundary finding resolved: `bussign1` material0 requests `chrome`, absent from valid `signs.txd` with no authored parent. Source TxdStore lookup returns null. Streamed presentation preserves its unbound material/prelight/UV, not manufactured texels or dropped triangles; the20-triangle source fixture passes. Legacy offline fallback is unchanged. Undecodable real rasters, missing primary TXDs and unresolved parent semantics stay rejected. Implementation/server gates pass; only the separate target reflight remains open.
 - Conservative ambiguity resolution: nonfinite data fails the candidate region replacement with exact provenance while the last committed world remains live. Per-triangle quarantine is not approved. Finite-large values are valid and must be preserved exactly through the relevant numeric path, subject only to existing finite/size/index safety validation.
 - Available P0 evidence: fresh coherent extension/native builds; `artifacts/godot/region-contract.log`, `region-render.log`; real `region_lab.gd` in CPU and clean rendered package; `artifacts/build-runs/p0-native-sweep.log`33/0 because shared mesh ABI changed. Package image `artifacts/godot/p0-lab-package/forward_plus-p0-retained-rejection.png` shows intact previous roads scene and explicit rejected radar status. Remaining external gate is P0-A04, not a claim that the full port is blocked from independent development.
 
 ## Checkpoint history
+
+### P1-A02 source metadata and bounds — 2026-09-11
+
+- Reused `NativeWorldEntityInfo` and `NativeLodCatalog`, not a new metadata authority. Authored TXD, anim name and signed tobj hours are retained with existing first draw distance, flags, classification and Object.dat provenance. Static disk-catalog publication now requires complete per-placement metadata and cumulative population bounds before append; pure synthetic Assemble remains explicitly uncertified.
+- Parent rejected a proposed validation that treated IPL size fields as authoritative record extents. Owned190binary IPLs contain1140zero size fields,41667inst records and1045car generators. Source tBinaryIplFile spans ignore size and use count; actual storage is validated against member bytes independently of advertised ranges, including nonzero advisory ranges. Synthetic valid baseline then malformed other-section/advertised/actual-inst/actual-cargen/population-budget/cumulative cases prove atomic rejection; no game bytes copied.
+- Two decisive oracles pass: complete static IDE namespace14259models; placed namespace12839IDs (these counts are not interchangeable),50935placements=9268text+41667binary,242sources=52text+190binary,6103edges/6086targets,161time placements, classes34759Building/68AnimatedBuilding/16108Dummy/0Unknown. Original incorrect14259 placed-ID assertion was corrected only after independent raw-IPL enumeration proved12839.
+- Evidence: `artifacts/build-runs/p1-a02-metadata.log`, `p1-a02-catalog-verified.log`; generated `NativeLodCatalog-probe.log` includes DISKFIXTURE/CENSUS. Affected `p1-a02-ground-regression.log` passes109500checks, preserving Unsupported for unknown original bounds/model-wide LOD/order. `p1-a02-product-check.log`: ninja no work; these prepared catalog units are not in native/Godot product closures, so unchanged production/GL/package suites were not needlessly rerun. Native commit `2d121583`; root companion records the checkpoint. No full runtime LOD/visibility/ground parity claim.
 
 ### P1-A01 identity round / user pause — 2026-09-11
 

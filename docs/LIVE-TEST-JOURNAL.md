@@ -47,10 +47,16 @@ No desktop-wide screenshots of unrelated applications. A software-rendered VDS r
 
 Append actual sessions below; do not erase failed runs or replace these pending rows with assumed success.
 
-## GODOT-P1-05 — 2026-09-11 / user resume, docs protocol only
+## GODOT-P1-06 — 2026-09-11 / prepared static catalog verification
 
-- **Scope/status:** user resumed long-term goal after verified P1-A01; replaced `@general` with `@cheap-worker` default / `@costly-worker` for ambiguous decisions. P1-A02 selected `in_progress`, no implementation started or completed. Docs protocol updated in `AGENTS.md`, full-port goal, `PORT-READINESS.md`, `REMOTE-HANDOVER.md`; GODOT-P1-04 retained as pause history. No product code, gates, commits or delegation in this round.
-- **State:** root `e7cadd4` / native `ddc9863d` clean tracked; protected `.opencode/opencode.jsonc`, `*.tga`, caches untouched. Full-port scope ACTIVE; single roadmap preserved; target reflight and F1/F2/R6 remain open.
+- Native `2d121583`: exact TXD/animation/signed-time metadata, complete per-node source metadata and cumulative/raw binary storage bounds. Actual-data oracle covers50935placements/242sources,12839placed IDs within14259static IDE entries,6103links/6086targets and zero unknown initial classes. This is CPU catalog evidence, not a new rendered/live target acceptance.
+- `p1-a02-metadata.log` and `p1-a02-catalog-verified.log` pass; synthetic disk fixture exercises valid publication, advisory-size compatibility and independent descriptor/record/population failures while retaining its valid snapshot. Parent/source review corrected invalid authoritative-size assumptions: all1140stock descriptor sizes are zero; count-derived bytes are checked against member storage. A separate raw enumeration corrected namespace-versus-placed ID count confusion without changing product data.
+- Affected ground probe passes109500checks with source-unknown queries still Unsupported. Product check reports `ninja: no work to do`; these prepared units are not in the native/Godot runtime target, so no redundant GL/package pass was claimed. Source bytes/executable untouched. Logs under `artifacts/build-runs/p1-a02-*`; next atom is one source-authored LAn3991->4043 chain, not whole-world runtime LOD.
+
+## GODOT-P1-05 — 2026-09-11 / user resume, docs protocol checkpoint
+
+- **Scope/status:** user resumed long-term goal after verified P1-A01; replaced `@general` with `@cheap-worker` default / `@costly-worker` for ambiguous decisions, no fixed worker count. Protocol committed/pushed as root `5c9881e`; P1-A02 selected without a completion claim at that checkpoint. This docs entry is not runtime evidence; implementation/gates are recorded separately in GODOT-P1-06.
+- **Activation state:** root `e7cadd4` / native `ddc9863d` were clean tracked; protected configuration/TGA/caches untouched. Full-port scope ACTIVE; single roadmap and prior pause history preserved; target reflight/F1/F2/R6 remain open.
 
 ## GODOT-P1-04 — 2026-09-11 / parent integration / user pause
 
