@@ -100,8 +100,18 @@ muscle 50 (95% Normal, 5% Ripped); it is a preview, not skipped mission executio
 **Experimental SCM boot:** `./play.sh --new-game` executes the real main script,
 creates its persistent base player/world, and honors the initial black fade and
 08:00 clock. Currently mission 0 stops with exit **1** at unsupported
-`014B CREATE_CAR_GENERATOR`, IP **207007**, after 679 mission commands, including
+`04CE ADD_SHORT_RANGE_SPRITE_BLIP_FOR_COORD`, IP **212086**, after 1207 mission commands, including
 32 property pickups/radar markers, 13 save tokens, 30 ENEX writes and 13 garage deactivations.
+`014B/014C` now create and switch actual owned generator definitions: 88 binary-IPL
+definitions from 22 source-COL-resident sources, followed by 10 script definitions
+and 10 switches. Definition registration is **not vehicle spawning**. Processing
+uses the live player/camera and native pool; unresolved population, blockage,
+model retention, construction and cleanup remain explicit requirements.
+Source-COL/GL/world generations and generator residency publish together; a
+departure requiring unimplemented cleanup retains the previous world and exits
+explicitly. Source-rejected IPL model records are accounted separately from
+successful allocations. Shared CRT-compatible RNG is seeded once from platform
+time; original global random-call order is not yet reproduced.
 Save tokens use actual model 1277, source visibility scheduling and the shared
 generation-qualified pool. A bounded controller-owned activity model now gates
 collection; accepted collection removes the object and appends its full reference
