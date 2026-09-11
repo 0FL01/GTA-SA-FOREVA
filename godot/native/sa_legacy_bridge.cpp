@@ -743,6 +743,9 @@ bool ValidateEffectiveCol(const NativeCollisionModel& col, uint32_t expectedFace
 void SALegacyBridge::_bind_methods() {
     ClassDB::bind_method(D_METHOD("open_game", "game_dir", "radius", "cap"), &SALegacyBridge::OpenGame);
     ClassDB::bind_method(D_METHOD("load_region", "SA_position"), &SALegacyBridge::LoadRegion);
+    ClassDB::bind_method(D_METHOD("submit_region", "SA_position"), &SALegacyBridge::SubmitRegion);
+    ClassDB::bind_method(D_METHOD("poll_region"), &SALegacyBridge::PollRegion);
+    ClassDB::bind_method(D_METHOD("cancel_region", "request_id"), &SALegacyBridge::CancelRegion);
     ClassDB::bind_method(D_METHOD("environment", "weather", "hour"), &SALegacyBridge::Environment);
     ClassDB::bind_method(D_METHOD("close_game"), &SALegacyBridge::CloseGame);
 }
@@ -1011,9 +1014,78 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
     m_EffectiveColLibrary = decision.EffectiveColLibrary;
     m_HasLodPair = true;
 
+    // P1-A05: reserve the process-global owner for the whole worker lifetime
+    // before the parser thread starts. All native config above ran on main.
+    s_PagerOwner = this;
+
+    // Session epoch: never reset across close/reopen, bound to int64 max for
+    // Godot exposure. Only a successful Open advances it.
+    constexpr uint64_t kMaxGodotInt = static_cast<uint64_t>(std::numeric_limits<int64_t>::max());
+    if (m_SessionEpoch >= kMaxGodotInt) {
+        s_PagerOwner = nullptr;
+        StreamPager_Shutdown();
+        m_Catalog.reset();
+        m_Decision = NativeLodChainDecision{};
+        m_ChildPlacement = NativeCollisionPlacement{};
+        m_ParentPlacement = NativeCollisionPlacement{};
+        m_EffectiveCol.reset();
+        m_EffectiveColLibrary.clear();
+        m_HasLodPair = false;
+        return Result(false, "session epoch exhausted");
+    }
+    const uint64_t proposedEpoch = m_SessionEpoch + 1;
+
+    // Sole-owner parse: pure StreamPager_Update + Rendered + Frame + Counters
+    // at parse end. Captures no this/Godot state; no Godot API on the worker.
+    ParseFn parse = [](RawRegionPacket& packet) {
+        const std::shared_ptr<const NativePlacementOverrides> noOverrides;
+        char err[256]{};
+        if (!StreamPager_Update(packet.Request.X, packet.Request.Y, packet.Request.Z,
+                                packet.Scene, packet.Frame, err, sizeof(err),
+                                noOverrides, &packet.Rendered)) {
+            packet.Error.assign(err[0] != '\0' ? err : "unknown pager update failure");
+            return;
+        }
+        int loaded = 0;
+        int evicted = 0;
+        int peakModels = 0;
+        int peakTris = 0;
+        StreamPager_Counters(loaded, evicted, peakModels, peakTris);
+        packet.Counters[0] = loaded;
+        packet.Counters[1] = evicted;
+        packet.Counters[2] = peakModels;
+        packet.Counters[3] = peakTris;
+    };
+    std::string workerError;
+    std::unique_ptr<RegionWorker> worker =
+        RegionWorker::Create(parse, proposedEpoch, workerError);
+    if (!worker) {
+        // Factory failure cleans Init without deadlock (mutex already held,
+        // CloseGame not called here) and without fake Ready.
+        s_PagerOwner = nullptr;
+        StreamPager_Shutdown();
+        m_Catalog.reset();
+        m_Decision = NativeLodChainDecision{};
+        m_ChildPlacement = NativeCollisionPlacement{};
+        m_ParentPlacement = NativeCollisionPlacement{};
+        m_EffectiveCol.reset();
+        m_EffectiveColLibrary.clear();
+        m_HasLodPair = false;
+        const String detail = String::utf8(workerError.c_str());
+        return Result(false, detail.is_empty() ? "region worker creation failed" : detail);
+    }
+
+    m_SessionEpoch = proposedEpoch;
+    m_Worker = std::move(worker);
+    m_ExposedActive = false;
+    m_ExposedRequestId = 0;
+    m_ExposedEpoch = 0;
+    m_ExposedCancelled = false;
+    // m_NextRequestId, m_PublicationRevision, m_DiscardedStale intentionally
+    // preserved across close/reopen; only a published region advances revision.
+
     m_GameDir = path;
     m_Ready = true;
-    s_PagerOwner = this;
     Dictionary result = Result(true);
     result["radius"] = radius;
     result["cap"] = cap;
@@ -1026,18 +1098,11 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
     result["binary_instances"] = info.binaryInstances;
     result["asset_source"] = "external game directory; no executable read";
     result["publication_revision"] = m_PublicationRevision;
+    result["session_epoch"] = static_cast<int64_t>(m_SessionEpoch);
     return result;
 }
 
-Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
-    if (!IsMainThread()) {
-        std::lock_guard lock(s_PagerMutex);
-        Dictionary result = Result(false, "load_region must run on Godot's main thread");
-        result["publication_revision"] = m_PublicationRevision;
-        return result;
-    }
-
-    std::lock_guard lock(s_PagerMutex);
+Dictionary SALegacyBridge::PreparePublication(const RawRegionPacket& raw) {
     const auto failureResult = [this](const String& error, const String& errorCode = String(),
                                       const Dictionary& errorContext = Dictionary()) {
         Dictionary result = Result(false, error);
@@ -1048,25 +1113,14 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
         result["publication_revision"] = m_PublicationRevision;
         return result;
     };
-    if (!Finite(saPosition.x) || !Finite(saPosition.y) || !Finite(saPosition.z) ||
-        std::abs(saPosition.x) > 1'000'000.0f || std::abs(saPosition.y) > 1'000'000.0f ||
-        std::abs(saPosition.z) > 1'000'000.0f) {
-        return failureResult("SA_position must be finite and within the supported coordinate range");
+    // Native parse failure carried by the worker packet: same shape as a
+    // direct StreamPager_Update failure, revision unchanged, no GPU work.
+    if (!raw.Error.empty()) {
+        return failureResult(ErrorString(raw.Error.c_str()));
     }
-
-    if (!m_Ready || s_PagerOwner != this) {
-        return failureResult("load_region requires an open pager owned by this bridge");
-    }
-
-    WorldShotScene scene{};
-    E2EPagerFrame frame{};
-    std::vector<NativePlacementIdentity> rendered;
-    char nativeError[256]{};
-    const std::shared_ptr<const NativePlacementOverrides> noOverrides;
-    if (!StreamPager_Update(saPosition.x, saPosition.y, saPosition.z, scene, frame,
-                            nativeError, sizeof(nativeError), noOverrides, &rendered)) {
-        return failureResult(ErrorString(nativeError));
-    }
+    const WorldShotScene& scene = raw.Scene;
+    const E2EPagerFrame& frame = raw.Frame;
+    const std::vector<NativePlacementIdentity>& rendered = raw.Rendered;
     ValidationFailure validationFailure;
     if (!ValidateScene(scene, validationFailure)) {
         return failureResult(validationFailure.error, validationFailure.errorCode,
@@ -1290,11 +1344,12 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
         meshes[i] = entry;
     }
 
-    int sectorsLoaded = 0;
-    int sectorsEvicted = 0;
-    int modelsPeak = 0;
-    int trisPeak = 0;
-    StreamPager_Counters(sectorsLoaded, sectorsEvicted, modelsPeak, trisPeak);
+    // P1-A05: counters come from the worker packet (parse end on the parser
+    // thread). Main never calls StreamPager_Counters after worker start.
+    const int sectorsLoaded = raw.Counters[0];
+    const int sectorsEvicted = raw.Counters[1];
+    const int modelsPeak = raw.Counters[2];
+    const int trisPeak = raw.Counters[3];
     Dictionary stats;
     stats["instances"] = frame.instances;
     stats["models_unique"] = frame.modelsUnique;
@@ -1315,12 +1370,360 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
     stats["triangles_peak"] = trisPeak;
     stats["coordinate_basis"] = "SA XYZ -> Godot X,Z,-Y; source triangle order retained";
     stats["lod_status"] = "source pager representation; no Godot runtime LOD selection";
+    // Worker parse timing + request identity: no GPU timing claimed here.
+    stats["raw_parse_ms"] = raw.ParseMs;
+    stats["request_id"] = static_cast<int64_t>(raw.Request.RequestId);
+    stats["session_epoch"] = static_cast<int64_t>(raw.Request.SessionEpoch);
 
     Dictionary result = Result(true);
     result["meshes"] = meshes;
     result["stats"] = stats;
     result["collision_lineage"] = collisionLineage;
     ++m_PublicationRevision;
+    result["publication_revision"] = m_PublicationRevision;
+    return result;
+}
+
+namespace {
+
+constexpr uint64_t kMaxGodotIntU64 = static_cast<uint64_t>(std::numeric_limits<int64_t>::max());
+constexpr float kCoordLimit = 1'000'000.0f;
+
+bool ValidRegionCoords(const Vector3& pos) {
+    return Finite(pos.x) && Finite(pos.y) && Finite(pos.z) &&
+        std::abs(pos.x) <= kCoordLimit && std::abs(pos.y) <= kCoordLimit &&
+        std::abs(pos.z) <= kCoordLimit;
+}
+
+} // namespace
+
+Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
+    if (!IsMainThread()) {
+        std::lock_guard lock(s_PagerMutex);
+        Dictionary result = Result(false, "load_region must run on Godot's main thread");
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    }
+
+    std::lock_guard lock(s_PagerMutex);
+    const auto failureResult = [this](const String& error, const String& errorCode = String(),
+                                      const Dictionary& errorContext = Dictionary()) {
+        Dictionary result = Result(false, error);
+        if (!errorCode.is_empty()) {
+            result["error_code"] = errorCode;
+            result["error_context"] = errorContext;
+        }
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    };
+    if (!ValidRegionCoords(saPosition)) {
+        return failureResult("SA_position must be finite and within the supported coordinate range");
+    }
+    if (!m_Ready || s_PagerOwner != this || !m_Worker) {
+        return failureResult("load_region requires an open pager owned by this bridge");
+    }
+    // Sync and async never share the worker: an unpolled async request (even
+    // a cancel ack) rejects sync with revision unchanged.
+    if (m_ExposedActive) {
+        Dictionary context;
+        context["pending_request_id"] = static_cast<int64_t>(m_ExposedRequestId);
+        context["pending_session_epoch"] = static_cast<int64_t>(m_ExposedEpoch);
+        Dictionary result = failureResult(
+            "an async region request is pending; poll or cancel it before sync load",
+            "async_request_pending", context);
+        return result;
+    }
+    if (m_NextRequestId >= kMaxGodotIntU64) {
+        return failureResult("request sequence exhausted");
+    }
+    if (m_SessionEpoch == 0 || m_SessionEpoch > kMaxGodotIntU64) {
+        return failureResult("invalid session epoch");
+    }
+    const uint64_t requestId = m_NextRequestId + 1;
+    const uint64_t epoch = m_SessionEpoch;
+    const RegionRequest req{saPosition.x, saPosition.y, saPosition.z, requestId, epoch};
+    if (!m_Worker->Submit(req)) {
+        // ID consumed (never reused). No exposed update, revision unchanged.
+        m_NextRequestId = requestId;
+        return failureResult("region worker rejected the sync request");
+    }
+    m_NextRequestId = requestId;
+
+    std::unique_ptr<RawRegionPacket> packet;
+    const RegionWait waitState = m_Worker->Wait(requestId, packet);
+    if (waitState == RegionWait::Stopped) {
+        Dictionary result = failureResult("region worker stopped", "worker_stopped", Dictionary());
+        result["request_id"] = static_cast<int64_t>(requestId);
+        result["session_epoch"] = static_cast<int64_t>(epoch);
+        return result;
+    }
+    if (waitState == RegionWait::Superseded) {
+        Dictionary result =
+            failureResult("region request superseded", "superseded", Dictionary());
+        result["request_id"] = static_cast<int64_t>(requestId);
+        result["session_epoch"] = static_cast<int64_t>(epoch);
+        return result;
+    }
+    if (waitState == RegionWait::Cancelled) {
+        Dictionary result = failureResult("region request cancelled", "cancelled", Dictionary());
+        result["request_id"] = static_cast<int64_t>(requestId);
+        result["session_epoch"] = static_cast<int64_t>(epoch);
+        return result;
+    }
+    if (waitState != RegionWait::Ready || !packet) {
+        Dictionary result =
+            failureResult("region worker returned no packet", "worker_stopped", Dictionary());
+        result["request_id"] = static_cast<int64_t>(requestId);
+        result["session_epoch"] = static_cast<int64_t>(epoch);
+        return result;
+    }
+    // Raw header check before any GPU work.
+    if (packet->Request.RequestId != requestId || packet->Request.SessionEpoch != epoch) {
+        m_Worker->Retire(std::move(packet));
+        Dictionary result = failureResult("stale region packet", "stale_packet", Dictionary());
+        result["request_id"] = static_cast<int64_t>(requestId);
+        result["session_epoch"] = static_cast<int64_t>(epoch);
+        return result;
+    }
+    // Atomic conversion on main; the raw packet is held only here and retired
+    // before any Close can run (same main thread, lock held).
+    Dictionary prepared = PreparePublication(*packet);
+    m_Worker->Retire(std::move(packet));
+    prepared["request_id"] = static_cast<int64_t>(requestId);
+    prepared["session_epoch"] = static_cast<int64_t>(epoch);
+    return prepared;
+}
+
+Dictionary SALegacyBridge::SubmitRegion(const Vector3& saPosition) {
+    if (!IsMainThread()) {
+        std::lock_guard lock(s_PagerMutex);
+        Dictionary result = Result(false, "submit_region must run on Godot's main thread");
+        result["request_id"] = int64_t{0};
+        result["session_epoch"] = static_cast<int64_t>(m_SessionEpoch);
+        result["discarded_stale"] = m_DiscardedStale;
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    }
+    std::lock_guard lock(s_PagerMutex);
+    const auto failure = [this](const String& error) {
+        Dictionary result = Result(false, error);
+        result["request_id"] = int64_t{0};
+        result["session_epoch"] = static_cast<int64_t>(m_SessionEpoch);
+        result["discarded_stale"] = m_DiscardedStale;
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    };
+    if (!ValidRegionCoords(saPosition)) {
+        return failure("SA_position must be finite and within the supported coordinate range");
+    }
+    if (!m_Ready || s_PagerOwner != this || !m_Worker) {
+        return failure("submit_region requires an open pager owned by this bridge");
+    }
+    if (m_NextRequestId >= kMaxGodotIntU64) {
+        return failure("request sequence exhausted");
+    }
+    if (m_SessionEpoch == 0 || m_SessionEpoch > kMaxGodotIntU64) {
+        return failure("invalid session epoch");
+    }
+    const uint64_t requestId = m_NextRequestId + 1;
+    const uint64_t epoch = m_SessionEpoch;
+    const RegionRequest req{saPosition.x, saPosition.y, saPosition.z, requestId, epoch};
+    if (!m_Worker->Submit(req)) {
+        // Consume the ID (never reuse), keep the old exposed request intact.
+        m_NextRequestId = requestId;
+        return failure("region worker rejected the async request");
+    }
+    m_NextRequestId = requestId;
+    // Latest-only: a superseded unpolled request counts as discarded stale.
+    if (m_ExposedActive) {
+        if (m_DiscardedStale < std::numeric_limits<int64_t>::max()) {
+            ++m_DiscardedStale;
+        }
+    }
+    m_ExposedActive = true;
+    m_ExposedRequestId = requestId;
+    m_ExposedEpoch = epoch;
+    // A new submit wins over any pending cancel ack.
+    m_ExposedCancelled = false;
+
+    Dictionary result = Result(true);
+    result["request_id"] = static_cast<int64_t>(requestId);
+    result["session_epoch"] = static_cast<int64_t>(epoch);
+    result["discarded_stale"] = m_DiscardedStale;
+    result["publication_revision"] = m_PublicationRevision;
+    return result;
+}
+
+Dictionary SALegacyBridge::PollRegion() {
+    if (!IsMainThread()) {
+        std::lock_guard lock(s_PagerMutex);
+        Dictionary result = Result(false, "poll_region must run on Godot's main thread");
+        result["status"] = "error";
+        result["request_id"] = int64_t{0};
+        result["session_epoch"] = static_cast<int64_t>(m_SessionEpoch);
+        result["discarded_stale"] = m_DiscardedStale;
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    }
+    std::lock_guard lock(s_PagerMutex);
+    const auto idleResult = [this]() {
+        Dictionary result = Result(false, "");
+        result["status"] = "idle";
+        result["request_id"] = int64_t{0};
+        result["session_epoch"] = static_cast<int64_t>(m_SessionEpoch);
+        result["discarded_stale"] = m_DiscardedStale;
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    };
+    if (!m_Ready || s_PagerOwner != this || !m_Worker || !m_ExposedActive) {
+        return idleResult();
+    }
+    const uint64_t exposedId = m_ExposedRequestId;
+    const uint64_t exposedEpoch = m_ExposedEpoch;
+    std::unique_ptr<RawRegionPacket> packet;
+    const RegionWait state = m_Worker->TryPoll(exposedId, packet);
+
+    if (state == RegionWait::Pending) {
+        Dictionary result = Result(false, "");
+        result["status"] = "pending";
+        result["request_id"] = static_cast<int64_t>(exposedId);
+        result["session_epoch"] = static_cast<int64_t>(exposedEpoch);
+        result["discarded_stale"] = m_DiscardedStale;
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    }
+    if (state == RegionWait::Cancelled) {
+        // One-shot: next poll idles.
+        m_ExposedActive = false;
+        m_ExposedRequestId = 0;
+        m_ExposedEpoch = 0;
+        m_ExposedCancelled = false;
+        Dictionary result = Result(false, "region request cancelled");
+        result["error_code"] = "cancelled";
+        result["error_context"] = Dictionary();
+        result["status"] = "cancelled";
+        result["request_id"] = static_cast<int64_t>(exposedId);
+        result["session_epoch"] = static_cast<int64_t>(exposedEpoch);
+        result["discarded_stale"] = m_DiscardedStale;
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    }
+    if (state == RegionWait::Stopped) {
+        // Explicit terminal error, never pending forever. One-shot.
+        m_ExposedActive = false;
+        m_ExposedRequestId = 0;
+        m_ExposedEpoch = 0;
+        m_ExposedCancelled = false;
+        Dictionary result = Result(false, "region worker stopped");
+        result["error_code"] = "worker_stopped";
+        result["error_context"] = Dictionary();
+        result["status"] = "error";
+        result["request_id"] = static_cast<int64_t>(exposedId);
+        result["session_epoch"] = static_cast<int64_t>(exposedEpoch);
+        result["discarded_stale"] = m_DiscardedStale;
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    }
+    if (state == RegionWait::Superseded) {
+        // Should not happen for the latest exposed ID; report explicitly.
+        m_ExposedActive = false;
+        m_ExposedRequestId = 0;
+        m_ExposedEpoch = 0;
+        m_ExposedCancelled = false;
+        Dictionary result = Result(false, "region request superseded");
+        result["error_code"] = "superseded";
+        result["error_context"] = Dictionary();
+        result["status"] = "error";
+        result["request_id"] = static_cast<int64_t>(exposedId);
+        result["session_epoch"] = static_cast<int64_t>(exposedEpoch);
+        result["discarded_stale"] = m_DiscardedStale;
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    }
+    if (state != RegionWait::Ready || !packet) {
+        m_ExposedActive = false;
+        m_ExposedRequestId = 0;
+        m_ExposedEpoch = 0;
+        m_ExposedCancelled = false;
+        Dictionary result = Result(false, "region worker returned no packet");
+        result["error_code"] = "worker_stopped";
+        result["error_context"] = Dictionary();
+        result["status"] = "error";
+        result["request_id"] = static_cast<int64_t>(exposedId);
+        result["session_epoch"] = static_cast<int64_t>(exposedEpoch);
+        result["discarded_stale"] = m_DiscardedStale;
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    }
+    // Raw header check before any GPU work.
+    if (packet->Request.RequestId != exposedId || packet->Request.SessionEpoch != exposedEpoch ||
+        exposedEpoch != m_SessionEpoch) {
+        m_Worker->Retire(std::move(packet));
+        m_ExposedActive = false;
+        m_ExposedRequestId = 0;
+        m_ExposedEpoch = 0;
+        m_ExposedCancelled = false;
+        Dictionary result = Result(false, "stale region packet");
+        result["error_code"] = "stale_packet";
+        result["error_context"] = Dictionary();
+        result["status"] = "error";
+        result["request_id"] = static_cast<int64_t>(exposedId);
+        result["session_epoch"] = static_cast<int64_t>(exposedEpoch);
+        result["discarded_stale"] = m_DiscardedStale;
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    }
+    Dictionary prepared = PreparePublication(*packet);
+    const bool ok = prepared.get("ok", false).booleanize();
+    m_Worker->Retire(std::move(packet));
+    // One-shot: next poll idles. Invalid/stale/error/cancel never bump rev
+    // (PreparePublication only bumps on full success).
+    m_ExposedActive = false;
+    m_ExposedRequestId = 0;
+    m_ExposedEpoch = 0;
+    m_ExposedCancelled = false;
+    prepared["status"] = ok ? "ready" : "error";
+    prepared["request_id"] = static_cast<int64_t>(exposedId);
+    prepared["session_epoch"] = static_cast<int64_t>(exposedEpoch);
+    prepared["discarded_stale"] = m_DiscardedStale;
+    return prepared;
+}
+
+Dictionary SALegacyBridge::CancelRegion(int64_t requestId) {
+    if (!IsMainThread()) {
+        Dictionary result = Result(false, "cancel_region must run on Godot's main thread");
+        result["request_id"] = requestId;
+        return result;
+    }
+    std::lock_guard lock(s_PagerMutex);
+    const auto failure = [&](const String& error) {
+        Dictionary result = Result(false, error);
+        result["request_id"] = requestId;
+        result["session_epoch"] = static_cast<int64_t>(m_SessionEpoch);
+        result["discarded_stale"] = m_DiscardedStale;
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    };
+    if (requestId <= 0) {
+        return failure("unknown region request");
+    }
+    if (!m_Ready || s_PagerOwner != this || !m_Worker) {
+        return failure("cancel_region requires an open pager owned by this bridge");
+    }
+    // Only the latest exposed pending ID cancels; old/cancelled/taken fail.
+    if (!m_ExposedActive || m_ExposedCancelled ||
+        static_cast<uint64_t>(requestId) != m_ExposedRequestId) {
+        return failure("unknown region request");
+    }
+    if (!m_Worker->Cancel(static_cast<uint64_t>(requestId))) {
+        return failure("unknown region request");
+    }
+    // Cancel ack stays one-shot until poll; a superseding Submit clears it.
+    m_ExposedCancelled = true;
+    Dictionary result = Result(true);
+    result["request_id"] = requestId;
+    result["session_epoch"] = static_cast<int64_t>(m_ExposedEpoch);
+    result["discarded_stale"] = m_DiscardedStale;
     result["publication_revision"] = m_PublicationRevision;
     return result;
 }
@@ -1405,9 +1808,61 @@ Dictionary SALegacyBridge::Environment(const String& weather, int32_t hour) {
 }
 
 void SALegacyBridge::CloseGame() {
-    std::lock_guard lock(s_PagerMutex);
-    if (!m_Ready) {
+    std::unique_ptr<RegionWorker> worker;
+    uint64_t cancelId = 0;
+    bool hadExposed = false;
+    {
+        std::unique_lock<std::mutex> lock(s_PagerMutex);
+        if (!m_Ready) {
+            if (m_Worker) {
+                worker = std::move(m_Worker);
+                m_ExposedActive = false;
+                m_ExposedRequestId = 0;
+                m_ExposedEpoch = 0;
+                m_ExposedCancelled = false;
+            } else {
+                m_GameDir.clear();
+                m_Catalog.reset();
+                m_Decision = NativeLodChainDecision{};
+                m_ChildPlacement = NativeCollisionPlacement{};
+                m_ParentPlacement = NativeCollisionPlacement{};
+                m_EffectiveCol.reset();
+                m_EffectiveColLibrary.clear();
+                m_HasLodPair = false;
+                return;
+            }
+        } else {
+            // Capture the sole-owner worker; keep m_Ready/owner set across the
+            // unlock window so a concurrent Open fails instead of racing Init.
+            worker = std::move(m_Worker);
+            hadExposed = m_ExposedActive;
+            cancelId = m_ExposedRequestId;
+            m_ExposedActive = false;
+            m_ExposedRequestId = 0;
+            m_ExposedEpoch = 0;
+            m_ExposedCancelled = false;
+        }
+        // JOIN without holding s_PagerMutex: the parser thread never needs it
+        // (pure StreamPager_Update/Counters on the worker), so no deadlock.
+        lock.unlock();
+        if (worker) {
+            if (hadExposed && cancelId != 0) {
+                (void)worker->Cancel(cancelId);
+            }
+            // Stop joins the parser (in-flight parse finishes, result
+            // discarded) before any StreamPager_Shutdown below.
+            worker->Stop();
+        }
+        lock.lock();
+        if (s_PagerOwner == this) {
+            StreamPager_Shutdown();
+            s_PagerOwner = nullptr;
+        }
         m_GameDir.clear();
+        m_Ready = false;
+        // Clear pair owners; returned Godot packed arrays already own their bytes.
+        // m_PublicationRevision, m_SessionEpoch, m_NextRequestId and
+        // m_DiscardedStale are intentionally preserved across close/reopen.
         m_Catalog.reset();
         m_Decision = NativeLodChainDecision{};
         m_ChildPlacement = NativeCollisionPlacement{};
@@ -1415,23 +1870,7 @@ void SALegacyBridge::CloseGame() {
         m_EffectiveCol.reset();
         m_EffectiveColLibrary.clear();
         m_HasLodPair = false;
-        return;
     }
-    if (s_PagerOwner == this) {
-        StreamPager_Shutdown();
-        s_PagerOwner = nullptr;
-    }
-    m_GameDir.clear();
-    m_Ready = false;
-    // Clear pair owners; returned Godot packed arrays already own their bytes.
-    // m_PublicationRevision is intentionally preserved across close/reopen.
-    m_Catalog.reset();
-    m_Decision = NativeLodChainDecision{};
-    m_ChildPlacement = NativeCollisionPlacement{};
-    m_ParentPlacement = NativeCollisionPlacement{};
-    m_EffectiveCol.reset();
-    m_EffectiveColLibrary.clear();
-    m_HasLodPair = false;
 }
 
 } // namespace godot

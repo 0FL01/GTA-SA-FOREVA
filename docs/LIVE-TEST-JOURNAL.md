@@ -47,6 +47,15 @@ No desktop-wide screenshots of unrelated applications. A software-rendered VDS r
 
 Append actual sessions below; do not erase failed runs or replace these pending rows with assumed success.
 
+## GODOT-P1-09 — 2026-09-11 UTC / sole-owner async parser
+
+- **Scope/status:** P1-A05 verified in root containing commit; native unchanged95713252. Worker owns raw parsing/counters/retirement; main owns Godot conversion, paired-state commit and join-before-Shutdown. Nonreused request/epoch identities, one latest request, explicit cancellation/error and persistent publication revision. Not GPU-budgeted/hitch-free, full LOD, gameplay collision or full-port completion.
+- **Direct checks:** GCC13/C++20 barrier unit `region-worker-ok` proves queued/in-flight supersession/cancel/Stop ordering, error containment and one-shot ownership. Actual async CPU test, P0 finite/NaN, paired122-face chain and updated async-F6 lab tests pass. `p1-a05-gates.log` passes clean package audit, Wayland/Vulkan async fixture and ordinary40s route; `p1-a05-async-package-runtime.log` has expected retained radar errors, no Godot error and `region-async-ok`.
+- **Normal route:**40.1268 engine seconds/68.117834 wall seconds;10 async submissions,9 ready,1 cancel,0 async errors, final publication13 with no pending request. This exercises the real process loop; it is software llvmpipe/Weston13, not Radeon780M speed evidence. Initial/fixed-camera loads wait for the same worker and GPU conversion still stalls main.
+- **Capture:** `artifacts/godot/a05-async-package/forward_plus-manual-000000.png` reviewed: intact roads at retained publication2, paired122-face data, async cancellation and pending-F6-ignore counters. The fixture asserts cancellation before manual held frames and deep-equal COL/node identity; screenshots alone are not the cancellation proof.
+- **Fixes before acceptance:** worker outer exception guard, no per-parse function copy, off-lock packet destruction, observable Stop-test barrier; main-stall timestamp moved before bridge poll conversion; manual capture now drains pending work. Old F6 assertions were updated to wait for asynchronous completion without weakening retained-state checks. Final metadata-only timing label explicitly includes worker wait for sync diagnostics; a fresh3s packaged launch verifies label and hashes.
+- **Final hashes:** extension `660916a4871a91c122ba537bd6d56487f27528f9458eea7783f06dc5a2c35558`, lab script `14da5b03c170061a1ab92ca0c54032a00448fec9546d4574b49c331c5867569f`. Latest package is cache-free/asset-free; native/shared readers unchanged, so no redundant native sweep substituted for worker gates. A06 budget work remains the next separate atom; target/original acceptance remains open.
+
 ## GODOT-P1-08 — 2026-09-11 UTC / paired data + clean Vulkan package
 
 - Native95713252 + root companion pair actual3991/4043 DFF resources and122-face COL arrays at one generation. Lab validates/copies before commit, retains both on NaN rejection, clears both outside the chain/at teardown. Parent is hidden/prepared; gameplay physics and automatic LOD stay unsupported.

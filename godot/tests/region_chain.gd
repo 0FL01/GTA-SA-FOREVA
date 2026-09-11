@@ -154,10 +154,15 @@ func _run_normal(_options: Dictionary) -> void:
 	if not _check(lab._load_count == load_count, "rejected center retry suppression"):
 		return
 	var retry := InputEventKey.new()
+	var async_count: int = lab._async_submit_count
 	retry.physical_keycode = KEY_F6
 	retry.pressed = true
 	lab._unhandled_input(retry)
-	if not _check(lab._load_count == load_count + 1 and lab._publication_revision == roads_revision, "explicit F6 without publication"):
+	var deadline := Time.get_ticks_msec() + 30000
+	while lab._has_pending_region() and Time.get_ticks_msec() < deadline:
+		lab._poll_pending_region()
+		await process_frame
+	if not _check(not lab._has_pending_region() and lab._async_submit_count == async_count + 1 and lab._load_count == load_count and lab._publication_revision == roads_revision, "explicit async F6 without publication"):
 		return
 	if not _check(_deep_equal(lab._region_collision, held_collision), "F6 retains COL deep-equal"):
 		return

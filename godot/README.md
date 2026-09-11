@@ -136,8 +136,9 @@ non-finite data is rejected as a whole, leaving the last complete world active;
 it is not repaired by clamping coordinates or dropping individual triangles.
 Rejection diagnostics carry structured archive/model/placement/geometry/triangle
 context. The viewer restores its last accepted camera and keeps its committed
-scene; it does not claim gameplay collision coverage. F6 explicitly retries the
-rejected candidate. Ordinary retries near that center are suppressed.
+scene; it does not claim gameplay collision coverage. F6 asynchronously retries the
+rejected candidate; another F6 while pending is ignored and counted. Ordinary retries
+near that center are suppressed.
 
 The focused real lab integration test covers retained node identity, revision,
 retry/recovery and teardown cancellation (use the same pinned executable):
@@ -161,7 +162,8 @@ and the child COL arrays in one publication. The lab validates and retains them
 together; a rejected replacement preserves both. The parent resource stays hidden
 as a prepared alternate, **not automatic source LOD selection**. Packed COL data
 is not gameplay collision/physics authority. Leaving this chain's window publishes
-an empty paired-data section. Loading/publication remain synchronous.
+an empty paired-data section. Publication remains one main-thread operation; normal
+movement parsing now uses the worker below, while initial/fixed-camera loads wait.
 
 ```bash
 GODOT_BIN="$PWD/build/godot-deps/godot-4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64"
@@ -206,6 +208,41 @@ Godot may create a local `.godot/` import cache after launch; it is runtime stat
 not an input to republish. Re-run the package script to recreate a clean transfer
 tree.
 
+## Sole-owner parser worker (P1-A05)
+
+One C++ worker owns region parsing and counter capture, with one latest-request
+slot and bounded raw-packet ownership. Movement and F6 submit without waiting for
+parsing. Godot object creation stays on the main thread: it is **not yet upload-
+budgeted**, and startup/fixed-camera diagnostic loads deliberately remain blocking.
+Worker parse time and main-thread conversion/publication stall are separate metrics.
+
+The bridge exposes `submit_region`, `poll_region` and `cancel_region`; sync
+`load_region` uses the same worker/CV and rejects overlap with an exposed async
+request. Request IDs are never reused; reopening advances session epoch without
+resetting publication sequence. Superseded/cancelled work cannot publish. Cancel
+discards results rather than interrupting a parser inside file I/O; close joins
+before destroying pager/RW state. Both manual and fixed captures drain pending work
+before holding an immutable frame. Old render/COL stays live until a valid commit.
+
+```bash
+g++ -std=c++20 -Wall -Wextra -Wpedantic -Werror \
+  -I gta-reversed/source -I godot/native godot/native/sa_region_worker.cpp \
+  godot/tests/region_worker.cpp -pthread -o artifacts/graphics/region-worker-test
+timeout 30s artifacts/graphics/region-worker-test
+
+build/godot-deps/godot-4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64 \
+  --headless --path godot --script res://tests/region_async.gd -- \
+  --game-dir /game --capture-dir /workspace/artifacts/godot/async-cpu
+```
+
+Run inside the documented GCC13 container. Require `region-worker-ok` and
+`region-async-ok`, not exit0 alone. CPU barriers prove queued/in-flight cancellation,
+supersession and join ordering; the real-data script tests bridge/lab ownership,
+reopen epochs, paired122-face retention and capture cancellation. Repeat the latter
+from the clean package with explicit Wayland/Vulkan flags for integration evidence.
+This does not claim automatic source LOD, gameplay collision, hardware performance
+or original-image parity.
+
 ## Known differences, not hidden fixes
 
 ### TXD-qualified identity gate (P1-A01)
@@ -235,7 +272,8 @@ coefficients and model-local source material-slot boundaries reach ArrayMesh; se
 mip chains and renderer-specific flags are not yet carried by the reader boundary.
 Source authored LOD selection is not implemented in Godot; overlapping detail/LOD
 objects and vegetation sorting/edge aliasing remain visible discrepancies. Loading
-and publication are synchronous and measured, not advertised as hitch-free streaming.
+is asynchronous for movement/F6, while initial loads and main-thread GPU publication
+remain blocking and measured; this is not advertised as hitch-free streaming.
 The route crosses the bounded region's reload threshold; compare repeated cycles,
 not just the first frame. GPU VRAM and GPU-only timing are not inferred from CPU CSV.
 

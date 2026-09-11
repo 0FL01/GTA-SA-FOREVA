@@ -35,10 +35,15 @@ func _run() -> void:
 	if not _check(lab._load_count == count, "rejected center retry suppression"):
 		return
 	var retry := InputEventKey.new()
+	var async_count: int = lab._async_submit_count
 	retry.physical_keycode = KEY_F6
 	retry.pressed = true
 	lab._unhandled_input(retry)
-	if not _check(lab._load_count == count + 1 and lab._publication_revision == revision, "explicit retry without publication"):
+	var deadline := Time.get_ticks_msec() + 30000
+	while lab._has_pending_region() and Time.get_ticks_msec() < deadline:
+		lab._poll_pending_region()
+		await process_frame
+	if not _check(not lab._has_pending_region() and lab._async_submit_count == async_count + 1 and lab._load_count == count and lab._publication_revision == revision, "explicit async retry without publication"):
 		return
 	await lab._capture_current("p0-retained-rejection")
 	if not _check(lab._load_region(ROADS), "recovery after rejection"):

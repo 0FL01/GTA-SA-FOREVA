@@ -9,7 +9,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | Stage | State | Delivery / next gate |
 |---|---|---|
 | P0 | implemented; target reflight open | Finite UV/provenance/retained-world CPU and rendered clean-package gates pass; external Fedora reflight is not claimed |
-| P1 | A01–A04 verified; A05 in_progress | Qualified identities/catalog/chain and paired render/COL data verified; sole-owner parser-worker/cancellation is current, GPU budgets remain pending |
+| P1 | A01–A05 verified; A06 in_progress | Qualified identities/catalog/chain, paired render/COL and sole-owner async parser verified; budgeted main-thread publication/retirement research is current |
 | P2 | pending | Minimal C++ authority hosted by Godot |
 | P3 | pending | First real player/Automobile gameplay slice |
 | P4 | pending | Genuine SCM boot, first mission and portable save loop |
@@ -19,7 +19,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P8 | pending | Complete source progression/content and PC-save compatibility |
 | P9 | pending | Cross-axis full-port and target release closure |
 
-P0/P1-A01 are integrated; A02/A03 now feed A04's actual paired render/COL publication. Its parent resource is hidden/prepared, not automatic LOD or gameplay collision. Clean Vulkan package and native33/0 pass, including private C++ symbol isolation. P0 target reflight remains open; A05 worker ownership is current. Use decisive direct tests and affected regressions, variable disjoint cheap/costly lanes, parent integration/evidence and stage commit/push. Earlier Radeon780M feedback is not acceptance of new packages or the full game.
+P0/P1-A01 are integrated; A02/A03 feed A04's actual paired render/COL publication. Its parent resource is hidden/prepared, not automatic LOD or gameplay collision. A05 moves normal movement/F6 parsing to one worker with tested cancellation/epochs/join; clean Vulkan async/manual-capture/normal-route gates pass. GPU conversion and initial diagnostic loads still block: A06 budgets are current research, not implemented. P0 target reflight remains open. Use decisive direct tests and affected regressions, variable disjoint cheap/costly lanes, parent integration/evidence and stage commit/push. Earlier Radeon780M feedback is not acceptance of new packages or the full game.
 
 The [2026-09-11 Godot goal](goals/2026-09-11-godot-legacy-look-lab.md) supersedes native feature work as the current direction; [the request is archived verbatim](goals/2026-09-11-godot-legacy-look-lab-request.md). The native status below remains a regression baseline, not a completed game. First deliverable is an asset-free district inspection lab; existing CJ/vehicle mechanics follow visual validation rather than changing simulation simultaneously. See `godot/README.md` for the pinned engine, build/package/run commands and target Fedora44/Wayland/Mesa/RX780M procedure. Full F1/F2 and native R6 remain unresolved.
 

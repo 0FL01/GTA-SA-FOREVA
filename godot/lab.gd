@@ -110,6 +110,21 @@ var _flags := {
 	"post": false,
 	"vertex_only": false,
 }
+# P1-A05 async region state: latest-only pending request. The old complete
+# world and paired COL stay active while pending; raw parse runs off main.
+var _pending_region_active := false
+var _pending_region_request_id := 0
+var _pending_region_session_epoch := 0
+var _pending_region_center_sa := Vector3.ZERO
+var _pending_region_discarded_stale := 0
+var _last_region_raw_parse_ms := 0.0
+var _last_region_request_id := 0
+var _last_region_session_epoch := 0
+var _async_submit_count := 0
+var _async_ready_count := 0
+var _async_error_count := 0
+var _async_cancel_count := 0
+var _f6_ignored_while_pending := 0
 
 
 func _ready() -> void:
@@ -148,7 +163,7 @@ func _ready() -> void:
 	if _bridge == null:
 		_fatal("ClassDB could not instantiate SALegacyBridge", 3)
 		return
-	for method in ["open_game", "load_region", "environment", "close_game"]:
+	for method in ["open_game", "load_region", "submit_region", "poll_region", "cancel_region", "environment", "close_game"]:
 		if not _bridge.has_method(method):
 			_fatal("SALegacyBridge is missing method %s" % method, 3)
 			return
@@ -194,6 +209,8 @@ func _process(delta: float) -> void:
 		else:
 			_update_free_camera(delta)
 
+	# P1-A05: single nonblocking poll per frame; never blocks on raw parse.
+	_poll_pending_region()
 	if not _capture_hold:
 		_maybe_reload_region()
 	_record_frame(wall_delta)
@@ -244,9 +261,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_F5:
 				_toggle_flag("post")
 			KEY_F6:
-				if _region_candidate_unavailable and not _loading and not _capture_hold:
-					_region_retry_suppressed = false
-					_load_region(_failed_region_center_sa)
+				# P1-A05: explicit retry uses async submit, never a blocking wait.
+				# F6 while an async request is pending is ignored and documented
+				# in the overlay; the pending request keeps the old world.
+				if _region_candidate_unavailable and not _capture_hold:
+					if _pending_region_active:
+						_f6_ignored_while_pending += 1
+					elif _loading:
+						pass
+					else:
+						_region_retry_suppressed = false
+						_submit_region_async(_failed_region_center_sa)
 					_update_overlay()
 			KEY_F12:
 				if not _capture_pending:
@@ -448,8 +473,18 @@ func _cache_environments() -> bool:
 
 
 func _load_region(center_sa: Vector3) -> bool:
+	# Synchronous diagnostic path: initial load and fixed captures only.
+	# Normal movement and F6 use _submit_region_async plus _poll_pending_region.
+	# Fixed captures must never see a stale async commit: cancel and consume
+	# any outstanding async before issuing sync.
 	if _loading or _shutdown_started:
 		return false
+	if _has_pending_region():
+		_drain_pending_for_sync("sync-preempt")
+		if _shutdown_started:
+			return false
+		if _has_pending_region():
+			return false
 	_loading = true
 	var started := Time.get_ticks_usec()
 	var result: Variant = _bridge.call("load_region", center_sa)
@@ -459,6 +494,143 @@ func _load_region(center_sa: Vector3) -> bool:
 	if not result is Dictionary:
 		_fatal("load_region returned a non-Dictionary result", 4)
 		return false
+	return _commit_region_result(result, center_sa, started)
+
+
+func _has_pending_region() -> bool:
+	return _pending_region_active and _pending_region_request_id != 0
+
+
+func _submit_region_async(center_sa: Vector3) -> Dictionary:
+	# Latest-only async submit via the shared worker. Never blocks on raw
+	# parse; the old complete world and paired COL stay active until poll
+	# commits. Duplicate requests near the same pending center are ignored so
+	# per-frame movement does not resubmit identical work.
+	if _shutdown_started or not _bridge_open or _bridge == null:
+		return {"ok": false, "error": "bridge not open", "request_id": 0, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+	if not _bridge.has_method("submit_region"):
+		_fatal("SALegacyBridge is missing method submit_region", 3)
+		return {"ok": false, "error": "missing submit_region", "request_id": 0, "session_epoch": 0, "discarded_stale": 0, "publication_revision": _publication_revision}
+	if _loading:
+		return {"ok": false, "error": "sync load in progress", "request_id": 0, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+	if _pending_region_active:
+		if _planar_region_distance(center_sa, _pending_region_center_sa) < 1.0:
+			return {"ok": false, "error": "duplicate_pending", "request_id": _pending_region_request_id, "session_epoch": _pending_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+		if _planar_region_distance(center_sa, _pending_region_center_sa) < _region_reload_threshold():
+			return {"ok": false, "error": "duplicate_pending", "request_id": _pending_region_request_id, "session_epoch": _pending_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+	var submitted: Variant = _bridge.call("submit_region", center_sa)
+	if not submitted is Dictionary:
+		_fatal("submit_region returned a non-Dictionary result", 4)
+		return {"ok": false, "error": "non-Dictionary submit result", "request_id": 0, "session_epoch": 0, "discarded_stale": 0, "publication_revision": _publication_revision}
+	if not bool(submitted.get("ok", false)):
+		return submitted
+	var rid: Variant = submitted.get("request_id")
+	var epoch: Variant = submitted.get("session_epoch")
+	if not rid is int or not epoch is int or int(rid) <= 0 or int(epoch) <= 0:
+		_fatal("submit_region returned invalid request identity", 4)
+		return submitted
+	_pending_region_active = true
+	_pending_region_request_id = int(rid)
+	_pending_region_session_epoch = int(epoch)
+	_pending_region_center_sa = center_sa
+	_pending_region_discarded_stale = int(submitted.get("discarded_stale", 0))
+	_async_submit_count += 1
+	_update_overlay()
+	return submitted
+
+
+func _poll_pending_region() -> void:
+	# Single nonblocking poll per frame. Pending/idle with ok=false is not a
+	# failure; the old world stays active. Ready/error are one-shot and only
+	# applied when request_id and session_epoch match the pending request;
+	# foreign id/epoch is a terminal protocol error before any mutation.
+	if not _pending_region_active:
+		return
+	if _shutdown_started or not _bridge_open or _bridge == null:
+		return
+	if not _bridge.has_method("poll_region"):
+		return
+	var convert_started := Time.get_ticks_usec()
+	var polled: Variant = _bridge.call("poll_region")
+	if not polled is Dictionary:
+		_fatal("poll_region returned a non-Dictionary result", 4)
+		return
+	var status := str(polled.get("status", ""))
+	if status == "pending" or status == "idle":
+		return
+	var rid: Variant = polled.get("request_id")
+	var epoch: Variant = polled.get("session_epoch")
+	if not rid is int or not epoch is int or int(rid) != _pending_region_request_id or int(epoch) != _pending_region_session_epoch:
+		_pending_region_active = false
+		_pending_region_request_id = 0
+		_pending_region_session_epoch = 0
+		_fatal("async region protocol mismatch: foreign request_id/session_epoch", 4)
+		return
+	if status == "cancelled":
+		_pending_region_active = false
+		_pending_region_request_id = 0
+		_pending_region_session_epoch = 0
+		_async_cancel_count += 1
+		_update_overlay()
+		return
+	if status == "ready":
+		var center := _pending_region_center_sa
+		_pending_region_active = false
+		_pending_region_request_id = 0
+		_pending_region_session_epoch = 0
+		_async_ready_count += 1
+		_commit_region_result(polled, center, convert_started)
+		return
+	if status == "error":
+		var failed_center := _pending_region_center_sa
+		_pending_region_active = false
+		_pending_region_request_id = 0
+		_pending_region_session_epoch = 0
+		_async_error_count += 1
+		_reject_region_candidate(failed_center, polled)
+		return
+	_pending_region_active = false
+	_pending_region_request_id = 0
+	_pending_region_session_epoch = 0
+	_fatal("poll_region returned unknown status %s" % status, 4)
+
+
+func _cancel_pending_region() -> Dictionary:
+	if not _has_pending_region():
+		return {"ok": false, "error": "no pending region", "request_id": 0}
+	var rid := _pending_region_request_id
+	var result: Variant = _bridge.call("cancel_region", rid)
+	if not result is Dictionary:
+		_fatal("cancel_region returned a non-Dictionary result", 4)
+		return {"ok": false, "error": "non-Dictionary cancel result", "request_id": rid}
+	if bool(result.get("ok", false)):
+		_poll_pending_region()
+	return result
+
+
+func _drain_pending_for_sync(reason: String) -> void:
+	# Fixed captures and sync diagnostics must never see a stale async commit
+	# over the fixed frame: cancel the outstanding request, then consume its
+	# one-shot terminal (cancelled) without publishing. Cancel-before-poll
+	# discards even a ready-but-untaken packet, so no stale world is committed.
+	if not _has_pending_region():
+		return
+	if _bridge != null and _bridge_open and _bridge.has_method("cancel_region"):
+		var rid := _pending_region_request_id
+		var _cancelled: Variant = _bridge.call("cancel_region", rid)
+	if _bridge != null and _bridge_open and _bridge.has_method("poll_region") and not _shutdown_started:
+		_poll_pending_region()
+	# If the worker already retired the packet without a cancel ack (should not
+	# happen after cancel), a single poll above still consumes it exactly once.
+	if _has_pending_region() and reason == "sync-preempt":
+		pass
+
+
+func _commit_region_result(result: Dictionary, center_sa: Vector3, started_usec: int) -> bool:
+	# Shared validate + prepare + commit for sync and async ready payloads.
+	# Copy-before-commit: the full candidate (meshes, materials, COL) is staged
+	# before the old world is released; no await occurs between staging and
+	# publication. Async never bypasses this validation.
 	var ok_value: Variant = result.get("ok")
 	if not ok_value is bool:
 		_fatal("load_region returned an invalid ok value", 4)
@@ -571,7 +743,16 @@ func _load_region(center_sa: Vector3) -> bool:
 	_remember_accepted_camera()
 	if not _environment_data.is_empty():
 		LegacyMaterials.set_environment(_environment_materials(), _environment_data, _flags)
-	_last_load_stall_ms = float(Time.get_ticks_usec() - started) / 1000.0
+	# Worker raw_parse_ms is parse-only. Async stall measures conversion/publication;
+	# sync diagnostic stall also includes waiting for the worker. No GPU budget claim.
+	var stats_raw: Variant = candidate_stats.get("raw_parse_ms", 0.0)
+	_last_region_raw_parse_ms = float(stats_raw) if (stats_raw is float or stats_raw is int) and is_finite(float(stats_raw)) else 0.0
+	var top_rid: Variant = result.get("request_id", candidate_stats.get("request_id", 0))
+	_last_region_request_id = int(top_rid) if top_rid is int else 0
+	var top_epoch: Variant = result.get("session_epoch", candidate_stats.get("session_epoch", 0))
+	_last_region_session_epoch = int(top_epoch) if top_epoch is int else 0
+	_pending_region_discarded_stale = int(result.get("discarded_stale", _pending_region_discarded_stale)) if result.get("discarded_stale") is int else _pending_region_discarded_stale
+	_last_load_stall_ms = float(Time.get_ticks_usec() - started_usec) / 1000.0
 	_total_load_stall_ms += _last_load_stall_ms
 	return true
 
@@ -1011,9 +1192,31 @@ func _update_free_camera(delta: float) -> void:
 
 
 func _maybe_reload_region() -> void:
+	# P1-A05: normal movement submits async, never a blocking wait. The old
+	# complete world stays active while pending; no frame stalls on raw parse.
 	var camera_sa := _world_to_sa(camera.global_position)
-	var planar_delta := Vector2(camera_sa.x - _loaded_center_sa.x, camera_sa.y - _loaded_center_sa.y)
 	var reload_threshold := _region_reload_threshold()
+	if _pending_region_active:
+		if _region_retry_suppressed and _planar_region_distance(camera_sa, _failed_region_center_sa) < reload_threshold:
+			_restore_accepted_camera()
+			return
+		# Camera returned to the already-active world: discard the stale
+		# pending instead of republishing the same center.
+		if _has_published_region and _planar_region_distance(camera_sa, _loaded_center_sa) < reload_threshold:
+			_cancel_pending_region()
+			_remember_accepted_camera()
+			return
+		# Ignore duplicates near the same pending center; allow the latest to
+		# supersede only when the camera moved meaningfully from it. Never
+		# submit identical work every frame.
+		if _planar_region_distance(camera_sa, _pending_region_center_sa) < reload_threshold:
+			return
+		if _region_retry_suppressed and _planar_region_distance(camera_sa, _failed_region_center_sa) >= reload_threshold:
+			_region_retry_suppressed = false
+		_region_retry_suppressed = false
+		_submit_region_async(camera_sa)
+		return
+	var planar_delta := Vector2(camera_sa.x - _loaded_center_sa.x, camera_sa.y - _loaded_center_sa.y)
 	if planar_delta.length() < reload_threshold:
 		_remember_accepted_camera()
 		if _region_retry_suppressed and _planar_region_distance(camera_sa, _failed_region_center_sa) >= reload_threshold:
@@ -1023,7 +1226,7 @@ func _maybe_reload_region() -> void:
 		_restore_accepted_camera()
 		return
 	_region_retry_suppressed = false
-	_load_region(camera_sa)
+	_submit_region_async(camera_sa)
 
 
 func _region_reload_threshold() -> float:
@@ -1073,6 +1276,9 @@ func _capture_scenario(index: int) -> void:
 		_capture_pending = false
 		return
 	_capture_hold = true
+	# Fixed captures must never carry a stale async commit: cancel and consume
+	# outstanding async before any sync diagnostic or frame hold.
+	_drain_pending_for_sync("capture-fixed")
 	var scenario: Dictionary = CAPTURE_SCENARIOS[index]
 	var saved_flags := _flags.duplicate(true)
 	var saved_environment := _environment_data.duplicate(true)
@@ -1126,6 +1332,11 @@ func _capture_manual() -> void:
 		_capture_pending = false
 		return
 	_capture_hold = true
+	_drain_pending_for_sync("capture-manual")
+	if _shutdown_started or _has_pending_region():
+		_capture_pending = false
+		_capture_hold = false
+		return
 	await _capture_current("manual-%06d" % _frame_count)
 	if _shutdown_started:
 		return
@@ -1162,7 +1373,7 @@ func _open_frame_csv() -> bool:
 	if _csv_file == null:
 		_fatal("cannot open frame CSV: %s" % path, 5)
 		return false
-	_csv_file.store_line("frame,runtime_seconds,cpu_frame_interval_ms,cpu_process_ms,cpu_physics_ms,engine_static_memory_bytes,engine_static_memory_peak_bytes,resource_count,render_objects,render_primitives,render_draw_calls,route_enabled,capture_hold,route_clock_seconds,route_pass,route_pass_seconds,route_segment,environment_transition,open_game_sync_stall_ms,environment_cache_sync_stall_ms,load_count,last_bridge_load_call_ms,last_region_publication_stall_ms,total_region_publication_stall_ms,resident_meshes,resident_surfaces,bridge_region_stats_json,wall_seconds")
+	_csv_file.store_line("frame,runtime_seconds,cpu_frame_interval_ms,cpu_process_ms,cpu_physics_ms,engine_static_memory_bytes,engine_static_memory_peak_bytes,resource_count,render_objects,render_primitives,render_draw_calls,route_enabled,capture_hold,route_clock_seconds,route_pass,route_pass_seconds,route_segment,environment_transition,open_game_sync_stall_ms,environment_cache_sync_stall_ms,load_count,last_bridge_load_call_ms,last_region_publication_stall_ms,total_region_publication_stall_ms,resident_meshes,resident_surfaces,bridge_region_stats_json,wall_seconds,pending_request_id,pending_session_epoch,last_raw_parse_ms,async_submit_count,async_ready_count,async_error_count,async_cancel_count,last_request_id,last_session_epoch,f6_ignored_while_pending")
 	return true
 
 
@@ -1199,6 +1410,16 @@ func _record_frame(delta: float) -> void:
 		_resident_surfaces,
 		_region_stats_csv,
 		"%.6f" % _wall_seconds,
+		_pending_region_request_id if _pending_region_active else 0,
+		_pending_region_session_epoch if _pending_region_active else 0,
+		"%.4f" % _last_region_raw_parse_ms,
+		_async_submit_count,
+		_async_ready_count,
+		_async_error_count,
+		_async_cancel_count,
+		_last_region_request_id,
+		_last_region_session_epoch,
+		_f6_ignored_while_pending,
 	]
 	_csv_file.store_csv_line(PackedStringArray(values.map(func(value): return str(value))))
 	if _frame_count % 60 == 0:
@@ -1285,6 +1506,23 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"last_region_error": _last_region_error.duplicate(true),
 			"collision_status": "unsupported; this viewer does not generate gameplay collision",
 			"paired_data": _paired_data_summary(),
+			"pending_request": {
+				"active": _pending_region_active,
+				"request_id": _pending_region_request_id if _pending_region_active else 0,
+				"session_epoch": _pending_region_session_epoch if _pending_region_active else 0,
+				"center_sa": _vector_to_array(_pending_region_center_sa) if _pending_region_active else [],
+				"discarded_stale": _pending_region_discarded_stale,
+			},
+			"last_async": {
+				"request_id": _last_region_request_id,
+				"session_epoch": _last_region_session_epoch,
+				"raw_parse_ms": _last_region_raw_parse_ms,
+				"submit_count": _async_submit_count,
+				"ready_count": _async_ready_count,
+				"error_count": _async_error_count,
+				"cancel_count": _async_cancel_count,
+				"f6_ignored_while_pending": _f6_ignored_while_pending,
+			},
 		},
 		"post_effect": {
 			"requested": _flags.post,
@@ -1302,7 +1540,7 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"load_count": _load_count,
 			"rejected_load_count": _rejected_load_count,
 			"active_publication_revision": _publication_revision,
-			"publication": "synchronous bounded replacement; the previous complete publication remains active until a valid candidate is fully staged",
+			"publication": "bounded replacement; the previous complete publication remains active until a valid candidate is fully staged. Initial and fixed captures use synchronous diagnostics; movement/F6 use async submit plus nonblocking poll",
 			"lod_status": "no Godot runtime LOD selection; source representation is whatever the bridge publishes",
 		},
 		"route": {
@@ -1323,6 +1561,12 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"last_bridge_load_call_ms": _last_bridge_load_call_ms,
 			"last_region_publication_stall_ms": _last_load_stall_ms,
 			"total_region_publication_stall_ms": _total_load_stall_ms,
+			"last_region_raw_parse_ms": _last_region_raw_parse_ms,
+			"async_submit_count": _async_submit_count,
+			"async_ready_count": _async_ready_count,
+			"async_error_count": _async_error_count,
+			"async_cancel_count": _async_cancel_count,
+			"timing_split": "raw_parse_ms is worker parse; async stall includes main conversion/publication, while sync diagnostic stall also includes worker wait. No upload-budget or faster-GPU claim",
 		},
 		"data_hashes": combined_hashes,
 		"source_identity": {
@@ -1344,7 +1588,7 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 		"bridge_open_metadata": _open_metadata,
 		"bridge_region_stats": _region_stats,
 		"limitations": [
-			"Region publication is synchronous and may hitch; no hitch-free streaming claim.",
+			"Async raw parse runs off main; main conversion/publication may still hitch. No hitch-free, upload-budgeted, or faster-GPU claim.",
 			"Route frame intervals start after synchronous initialization; measured open/environment/load stalls are reported separately, while manifest hashing and driver discovery are not timed.",
 			"Residency, absent Godot runtime LOD selection, and fog visibility are separate facts.",
 			"Post toggle implements PC ColourFilter only; PS2 filter/radiosity/heat haze remain unavailable.",
@@ -1383,7 +1627,13 @@ func _update_overlay() -> void:
 	status_label.text += "textures=%s prelight=%s vertex-only=%s fog=%s PC-filter=%s\n" % [_on_off(_flags.textures), _on_off(_flags.prelight), _on_off(_flags.vertex_only), _on_off(_flags.fog), _on_off(_flags.post)]
 	status_label.text += "CPU process %.2f ms | engine static %.1f MiB | resources %d\n" % [cpu_frame_ms, memory_mib, int(Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT))]
 	status_label.text += "bounded radius %.0f cap %d | meshes %d surfaces %d | loads %d rejected %d | publication %d\n" % [_radius, _cap, _resident_meshes, _resident_surfaces, _load_count, _rejected_load_count, _publication_revision]
-	status_label.text += "sync open %.2f ms | env %.2f ms | load+publish last %.2f ms total %.2f ms\n" % [_open_game_stall_ms, _environment_cache_stall_ms, _last_load_stall_ms, _total_load_stall_ms]
+	status_label.text += "sync open %.2f ms | env %.2f ms | load+publish last %.2f ms total %.2f ms | raw_parse last %.2f ms\n" % [_open_game_stall_ms, _environment_cache_stall_ms, _last_load_stall_ms, _total_load_stall_ms, _last_region_raw_parse_ms]
+	if _pending_region_active:
+		status_label.text += "async pending req %d epoch %d discarded %d\n" % [_pending_region_request_id, _pending_region_session_epoch, _pending_region_discarded_stale]
+	else:
+		status_label.text += "async idle submits %d ready %d err %d cancel %d last req %d\n" % [_async_submit_count, _async_ready_count, _async_error_count, _async_cancel_count, _last_region_request_id]
+	if _f6_ignored_while_pending > 0:
+		status_label.text += "F6 ignored while pending: %d\n" % _f6_ignored_while_pending
 	if _region_candidate_unavailable:
 		status_label.text += "REGION CANDIDATE UNAVAILABLE: %s | showing committed revision %d; F6 retry\n" % [_bounded_status_string(_last_region_error.get("error", "unspecified bridge error"), 180), _publication_revision]
 	status_label.text += "WASD move  Q/E fall/rise  Shift fast  RMB look  Esc release/quit  R route\n"
@@ -1426,6 +1676,23 @@ func _finish_shutdown(code: int) -> void:
 
 
 func _close_bridge() -> void:
+	# P1-A05: cancel and consume outstanding async before RW shutdown so no
+	# stale commit lands during teardown, then prevent deferred callbacks.
+	if _pending_region_active and _bridge != null and _bridge_open:
+		if _bridge.has_method("cancel_region"):
+			var _cancel_id := _pending_region_request_id
+			var _cancel_out: Variant = _bridge.call("cancel_region", _cancel_id)
+		if _bridge.has_method("poll_region"):
+			var _drain_out: Variant = _bridge.call("poll_region")
+			_pending_region_active = false
+			_pending_region_request_id = 0
+			_pending_region_session_epoch = 0
+			if _drain_out is Dictionary and str(_drain_out.get("status", "")) == "cancelled":
+				_async_cancel_count += 1
+		else:
+			_pending_region_active = false
+			_pending_region_request_id = 0
+			_pending_region_session_epoch = 0
 	_shutdown_started = true
 	_capture_pending = false
 	_capture_hold = false
