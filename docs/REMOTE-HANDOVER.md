@@ -10,6 +10,9 @@ Read first: `AGENTS.md`, `docs/PORT-READINESS.md`, `docs/LIVE-TEST-JOURNAL.md`, 
 
 ## Repository and current work
 
+- **Latest task:** completed RECON and [draft full-port plan](goals/2026-09-11-godot-full-port.md) for user review; do not start implementation before that review. The UV flight failure is reproduced without GPU at roads14_lan, SF/LV radar and countryside bridge regions. See [source evidence](GODOT-FULL-PORT-RECON.md); finite-large UV and genuine source NaN are distinct cases. Product code remains unchanged in this planning round.
+- **Publication correction:** user-authorized normal SSH pushes succeeded for root52877f0/native8c62697b and remote master hashes were checked. The earlier failures were explicit HTTPS attempts, not failed SSH keys. Do not treat lack of HTTPS credentials as a current push blocker or read private keys.
+
 - Two independent Git repositories. Incoming rsync bases: root `3847ab367f62a2989dd936f62b300ab649c31388`, native `3adc8ec02ee7e400c7245e67969adbef243e187d`. The remote verification below is from the inherited WIP plus the bounded closure fixes, not those clean bases. Check normal Git status and preserve unrelated work; never reset to older GitHub heads.
 - The five families `NativeRestarts*`, `NativeWorldGround*`, `NativeVehicleAssetQueue*`, `NativeLiveEntityBounds*`, `NativeLodCatalog*` and Session/Host/VehiclePool/Streaming/CMake/probe integration are preserved in native commit `22dee69e52564a52a54a948d463bdf47cfb3c4d0`. Preserve any later unstaged/untracked work normally.
 - Five fresh stateless general reviews completed without child delegation. Restarts are product-integrated; same-worker400/476 CPU packets, native live-bound blockage, world-ground authority and authored LOD catalog remain **prepared**, with no new production spawn/LOD/ground consumer. World-ground queries remain Unsupported for missing original bounds/model-wide LOD/order/coverage.

@@ -2,6 +2,8 @@
 
 ## Primary direction: Godot legacy-look lab
 
+Latest next-stage proposal: [full Godot port — draft for review](goals/2026-09-11-godot-full-port.md), backed by [five-lane RECON and parent UV reproduction](GODOT-FULL-PORT-RECON.md). This expands the intended finish line to complete portable game functionality, not only free-roam graphics. It is not an approved implementation round yet. The user's live Radeon780M report is positive but includes the known UV failure beyond Grove.
+
 The [2026-09-11 Godot goal](goals/2026-09-11-godot-legacy-look-lab.md) supersedes native feature work as the current direction; [the request is archived verbatim](goals/2026-09-11-godot-legacy-look-lab-request.md). The native status below remains a regression baseline, not a completed game. First deliverable is an asset-free district inspection lab; existing CJ/vehicle mechanics follow visual validation rather than changing simulation simultaneously. See `godot/README.md` for the pinned engine, build/package/run commands and target Fedora44/Wayland/Mesa/RX780M procedure. Full F1/F2 and native R6 remain unresolved.
 
 ## Native regression baseline

@@ -47,6 +47,14 @@ No desktop-wide screenshots of unrelated applications. A software-rendered VDS r
 
 Append actual sessions below; do not erase failed runs or replace these pending rows with assumed success.
 
+## GODOT-LIVE-02 — 2026-09-11 / user report + parent RECON
+
+- **User evidence:** «Демка с godot выглядит круто, всё окей за исключением подобного при пролёте за пределы грув стрита». Supplied runtime log: Godot4.6.1, Vulkan1.4.354 Forward+, AMD Radeon780M/RADV PHOENIX. This records a real user-reported target launch and qualitative feedback, not complete manual acceptance, FPS measurements or original-reference parity.
+- **Failure:** `load_region failed: pager UV is nonfinite or out of range`, through `_maybe_reload_region`/`_process` to `_fatal`. Exact user camera coordinates not supplied. Parent headless reproduction against unchanged52877f0/8c62697b binaries: Grove success, roads14_lan/SF radar/LV radar/countryside bridge fail with the same message. `artifacts/build-runs/godot-uv-recon.log` records all five cases.
+- **Source finding:** parent verified finite U27,062,702 (`0x4bce78d7`) in the original roads14_lan IMG entry; separate source scan found NaN UVs in radar/bridge models. `godot-uv-source-recon.log` and [RECON](GODOT-FULL-PORT-RECON.md) distinguish invalid magnitude assumptions from genuinely nonfinite source data. No clamp, triangle removal or validation change was applied.
+- **Disposition:** user requested a researched full Godot-port plan for review. [Draft goal](goals/2026-09-11-godot-full-port.md) starts with this regression and includes mechanics, complete content/SCM/progression/save, world/rendering, UI/input/audio/video. The plan is not implementation approval; the flight bug remains open.
+- **Publication update:** both delivered commits were successfully pushed through their existing SSH origins on explicit user request; remote master refs matched52877f0/8c62697b. Earlier HTTPS authentication failures are historical, not a current SSH blocker. No private key was read.
+
 ## GODOT-LAB-01 — 2026-09-11 / parent agent / nc-lab
 
 - **Personal test archive:** `artifacts/godot/sa-legacy-look-lab-linux-x86_64.tar.gz`,73,282,549 bytes; SHA256 `a908e464f0f3c1c02be7cf9efae19d073ab16e6ab3597659b915722aac9ba7dd`. Final21-file package excludes caches/assets; code/binary hashes equal the measured final run. This is the requested private test handoff, not a claim of blanket redistribution rights for native reader code.

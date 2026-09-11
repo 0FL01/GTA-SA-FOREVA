@@ -4,6 +4,7 @@ Status: complete — bounded runnable-lab delivery; original/target-GPU acceptan
 Source: user instruction 2026-09-11, preserved verbatim in [chat request](2026-09-11-godot-legacy-look-lab-request.md).
 Last updated: 2026-09-11
 Predecessor: [native OpenGL goal](2026-09-08-linux-native-opengl-port.md).
+Follow-up: [full Godot-port plan for review](2026-09-11-godot-full-port.md), based on [new RECON](../GODOT-FULL-PORT-RECON.md). The user reports a successful Radeon780M launch and positive visual feedback, with a reproduced UV failure outside Grove. The delivered bounded milestone is historical evidence, not a whole-map acceptance pass.
 
 ## Objective
 
@@ -72,7 +73,7 @@ Complete the frozen Required Outcomes using the listed Change Envelope and Prima
 
 - Native baseline verified: 5451 VM checks,40 serial commands,sweep33/0, llvmpipe Wayland demo. Strict SCM frontier main53/mission1234,8 hospitals/7 police,Unsupported0814@212669; no full boot.
 - New Godot runtime:4.6.1 Wayland/Vulkan Forward+ district delivery verified. Final long route exits0; nine held-frame captures agree with their manifests/UI. Forward+/Compatibility pixel oracles and real-data smoke pass; native additive reader rebuild and sweep33/0 pass. Fedora44 GPU host and exact original visual captures are not accessible from this server; they remain external acceptance, not invented results.
-- Publication: previous HTTPS pushes failed missing username/write authentication; no credentials or SSH read. Preserve local commits.
+- Publication update: on the user's explicit request, normal SSH `git push origin HEAD:master` succeeded for root52877f0 and native8c62697b; `git ls-remote` matched both local HEADs. Earlier HTTPS-only failures did not establish broken SSH authorization. Private keys were not inspected.
 
 ## Material Decisions
 
@@ -98,4 +99,4 @@ Complete the frozen Required Outcomes using the listed Change Envelope and Prima
 - Commands/artifacts: pinned fetch/build/package; `material_contract.gd`, `lab_smoke.gd`, rendered `material_render.gd` on both profiles; clean package95s Wayland route; read-only `strace`; native build/sweep33/0; launcher validation and both Git diff checks. Root whitespace check excludes only the verbatim request's seven original trailing spaces; they are preserved, not code/style regressions. Details/measurements in GODOT-LAB-01 and `godot/README.md`.
 - Diff scope: root Godot project/tools/docs plus4 native additive metadata files; original assets remain external/read-only; no PBR/new physics/asset redistribution/user configuration/caches staged. Native backend retained.
 - Decision: Godot is viable for continued legacy-shader presentation work with native data authority. Do not migrate gameplay yet on the strength of this district: first resolve measured LOD/foliage/sampling discrepancies and obtain target/reference comparisons in a new goal. Actual time/performance evidence is software-only; no person-week estimate or RX780M FPS is promoted to a result.
-- Publication limitation: local commits are preserved; HTTPS push lacks write authentication. User live acceptance and original-reference comparison remain **not-run/unverified**, independently of delivered demo closure.
+- Publication: both delivered commits were subsequently pushed and remotely verified via their existing SSH origins. User-reported Radeon780M launch/visual feedback is now available with a UV flight regression; full target routes and controlled original-reference comparison remain unverified.
