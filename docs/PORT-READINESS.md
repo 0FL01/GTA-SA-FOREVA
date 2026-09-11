@@ -1,8 +1,23 @@
-# Native port readiness roadmap
+# Development roadmap — full Godot port
 
-## Primary direction: Godot legacy-look lab
+## Active execution
 
-Latest next-stage proposal: [full Godot port — draft for review](goals/2026-09-11-godot-full-port.md), backed by [five-lane RECON and parent UV reproduction](GODOT-FULL-PORT-RECON.md). This expands the intended finish line to complete portable game functionality, not only free-roam graphics. It is not an approved implementation round yet. The user's live Radeon780M report is positive but includes the known UV failure beyond Grove.
+User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
+
+| Stage | State | Delivery / next gate |
+|---|---|---|
+| P0 | implemented; target reflight open | Finite UV/provenance/retained-world CPU and rendered clean-package gates pass; external Fedora reflight is not claimed |
+| P1 | pending | World/catalog identities, source LOD/COL and asynchronous publication |
+| P2 | pending | Minimal C++ authority hosted by Godot |
+| P3 | pending | First real player/Automobile gameplay slice |
+| P4 | pending | Genuine SCM boot, first mission and portable save loop |
+| P5 | pending | Whole-world entities and all source vehicle families |
+| P6 | pending | Population/AI/combat/police/recovery/interactions |
+| P7 | pending, joins P3/P4 | Complete visual/audio/UI/input/video families |
+| P8 | pending | Complete source progression/content and PC-save compatibility |
+| P9 | pending | Cross-axis full-port and target release closure |
+
+P0 implementation is integrated and server-verified; next independent round is P1-A01 catalog identity while the external target reflight remains open. One decisive test per atom, broad regression only for changed shared boundaries. Commit/push after each major verified stage; update goal, this stage table and journal before the next round. The user's earlier Radeon780M launch is real feedback, not acceptance of the new P0 package or the full game.
 
 The [2026-09-11 Godot goal](goals/2026-09-11-godot-legacy-look-lab.md) supersedes native feature work as the current direction; [the request is archived verbatim](goals/2026-09-11-godot-legacy-look-lab-request.md). The native status below remains a regression baseline, not a completed game. First deliverable is an asset-free district inspection lab; existing CJ/vehicle mechanics follow visual validation rather than changing simulation simultaneously. See `godot/README.md` for the pinned engine, build/package/run commands and target Fedora44/Wayland/Mesa/RX780M procedure. Full F1/F2 and native R6 remain unresolved.
 
@@ -45,9 +60,9 @@ Current machine/worktree handoff: [remote handover](REMOTE-HANDOVER.md).
 | Restarts | **Integrated slice** 8 hospitals / 7 police and owned source selection; ordinary selection does not mutate one-shot revision | Actual death/arrest/resurrection/world/control/camera lifecycle remains missing |
 | Population / missions / audio | Missing or isolated subsystem probes | Ped/traffic/police AI, ordinary missions, integrated game audio and a sustained original new-game boot |
 
-## Ordered checkpoints — not a promise to batch unrelated changes
+## Native reference history / deferred dependencies (not a second active roadmap)
 
-1. **Inherited WIP closure — verified.** Native `22dee69e` preserves the rsynced work and closes fresh build/read-only assets/five-lane/combined runtime checks:40/40 serial commands,5451 VM checks,33/0 sweep, headless Wayland/MangoHud and inspected app frames. No migration resumed; rootless only. Publication requires unavailable HTTPS authentication, not additional root permissions.
+1. **Inherited WIP closure — verified.** Native `22dee69e` preserves the rsynced work and closes fresh build/read-only assets/five-lane/combined runtime checks:40/40 serial commands,5451 VM checks,33/0 sweep, headless Wayland/MangoHud and inspected app frames. No migration resumed; rootless only. Later SSH origin pushes succeeded; earlier HTTPS-only failures are historical.
 2. **Restart integration — verified bounded slice.** Actual main53 + mission1234,15 registrations, unadvanced0814@212669, preceding016D@212645; independent selection probes and CPU-negative539/0570 pass. Death/arrest remains missing. This stage is closed before another feature round.
 3. **Finish generator demand consumers.** Owned model jobs → authoritative ground/live blockage/visibility/population → actual render/COL/physics/pool insertion and cleanup. CPU packet readiness is not a spawned vehicle.
 4. **Continue genuine SCM boot.** Implement the next reached operation and its real owner/consumer; repeat until original startup runs rather than stopping at a strict frontier. Do not weaken the frontier checks merely to obtain exit0.

@@ -76,29 +76,66 @@ bool ValidUnit(float value) {
     return Finite(value) && value >= 0.0f && value <= 1.0f;
 }
 
-bool ValidateScene(const WorldShotScene& scene, String& error) {
+struct ValidationFailure {
+    String error;
+    String errorCode;
+    Dictionary errorContext;
+};
+
+String SourceString(const std::string& value) {
+    return String::utf8(value.data(), static_cast<int64_t>(value.size()));
+}
+
+const char* NonfiniteName(float value) {
+    if (std::isnan(value)) {
+        return "nan";
+    }
+    return std::signbit(value) ? "-inf" : "+inf";
+}
+
+void SetNonfiniteUvFailure(const WorldShotMesh& mesh, size_t uvIndex, float value,
+                           ValidationFailure& failure) {
+    const size_t triangle = uvIndex / 6;
+    const auto& surface = mesh.surfaces[triangle];
+    const String model = SourceString(mesh.sourceModelName);
+    failure.error = String("pager returned nonfinite UV for model '") + model +
+        "' (id " + String::num_int64(mesh.sourceModelId) + ")";
+    failure.errorCode = "nonfinite_uv";
+    failure.errorContext["archive"] = SourceString(mesh.sourceArchiveName);
+    failure.errorContext["model"] = model;
+    failure.errorContext["model_id"] = mesh.sourceModelId;
+    failure.errorContext["txd"] = SourceString(mesh.sourceTxdName);
+    failure.errorContext["placement_id"] = static_cast<int64_t>(mesh.sourcePlacementId);
+    failure.errorContext["geometry"] = surface.sourceGeometry;
+    failure.errorContext["triangle"] = surface.sourceTriangle;
+    failure.errorContext["material_slot"] = surface.sourceMaterial;
+    failure.errorContext["uv_component"] = (uvIndex % 2 == 0) ? "u" : "v";
+    failure.errorContext["value"] = NonfiniteName(value);
+}
+
+bool ValidateScene(const WorldShotScene& scene, ValidationFailure& failure) {
     if (scene.meshes.empty()) {
-        error = "pager returned no meshes";
+        failure.error = "pager returned no meshes";
         return false;
     }
     if (scene.images.size() > kMaxSceneImages) {
-        error = "pager returned too many images";
+        failure.error = "pager returned too many images";
         return false;
     }
 
     size_t imageBytes = 0;
     for (const auto& image : scene.images) {
         if (image.w <= 0 || image.h <= 0 || image.w > 4096 || image.h > 4096) {
-            error = "decoded texture dimensions are out of range";
+            failure.error = "decoded texture dimensions are out of range";
             return false;
         }
         const size_t pixels = static_cast<size_t>(image.w) * static_cast<size_t>(image.h);
         if (pixels > std::numeric_limits<size_t>::max() / 4 || image.rgba.size() != pixels * 4) {
-            error = "decoded texture byte size is invalid";
+            failure.error = "decoded texture byte size is invalid";
             return false;
         }
         if (imageBytes > kMaxImageBytes - image.rgba.size()) {
-            error = "decoded texture publication exceeds the size limit";
+            failure.error = "decoded texture publication exceeds the size limit";
             return false;
         }
         imageBytes += image.rgba.size();
@@ -107,12 +144,12 @@ bool ValidateScene(const WorldShotScene& scene, String& error) {
     size_t sceneTriangles = 0;
     for (const auto& mesh : scene.meshes) {
         if (mesh.tris <= 0) {
-            error = "pager returned a mesh with no triangles";
+            failure.error = "pager returned a mesh with no triangles";
             return false;
         }
         const size_t triangles = static_cast<size_t>(mesh.tris);
         if (triangles > kMaxSceneTriangles || sceneTriangles > kMaxSceneTriangles - triangles) {
-            error = "pager scene exceeds the triangle limit";
+            failure.error = "pager scene exceeds the triangle limit";
             return false;
         }
         sceneTriangles += triangles;
@@ -120,44 +157,55 @@ bool ValidateScene(const WorldShotScene& scene, String& error) {
             mesh.uv.size() != triangles * 6 || mesh.triImg.size() != triangles ||
             mesh.triCol.size() != triangles * 3 || mesh.dayColors.size() != triangles * 12 ||
             mesh.nightColors.size() != triangles * 12 || mesh.surfaces.size() != triangles) {
-            error = "pager mesh attribute sizes are inconsistent";
+            failure.error = "pager mesh attribute sizes are inconsistent";
             return false;
         }
         for (float value : mesh.pos) {
             if (!Finite(value) || std::abs(value) > 1'000'000.0f) {
-                error = "pager position is nonfinite or out of range";
+                failure.error = "pager position is nonfinite or out of range";
                 return false;
             }
         }
         for (float value : mesh.nrm) {
             if (!Finite(value) || std::abs(value) > 1.001f) {
-                error = "pager normal is nonfinite or out of range";
+                failure.error = "pager normal is nonfinite or out of range";
                 return false;
             }
         }
-        for (float value : mesh.uv) {
-            if (!Finite(value) || std::abs(value) > 1'000'000.0f) {
-                error = "pager UV is nonfinite or out of range";
+        for (size_t uvIndex = 0; uvIndex < mesh.uv.size(); ++uvIndex) {
+            if (!Finite(mesh.uv[uvIndex])) {
+                SetNonfiniteUvFailure(mesh, uvIndex, mesh.uv[uvIndex], failure);
                 return false;
             }
         }
         for (float value : mesh.triCol) {
             if (!ValidUnit(value)) {
-                error = "pager material color is outside [0,1]";
+                failure.error = "pager material color is outside [0,1]";
                 return false;
             }
         }
         for (size_t triangle = 0; triangle < triangles; ++triangle) {
             const int image = mesh.triImg[triangle];
             if (image < -1 || image >= static_cast<int>(scene.images.size())) {
-                error = "pager material references an invalid image";
+                failure.errorCode = image == -2 ? "missing_texture" : "invalid_image_index";
+                failure.error = String("pager material references an invalid image for model '") +
+                    SourceString(mesh.sourceModelName) + "' txd '" + SourceString(mesh.sourceTxdName) +
+                    "' triangle " + String::num_int64(mesh.surfaces[triangle].sourceTriangle);
+                failure.errorContext["model"] = SourceString(mesh.sourceModelName);
+                failure.errorContext["model_id"] = mesh.sourceModelId;
+                failure.errorContext["txd"] = SourceString(mesh.sourceTxdName);
+                failure.errorContext["archive"] = SourceString(mesh.sourceArchiveName);
+                failure.errorContext["geometry"] = mesh.surfaces[triangle].sourceGeometry;
+                failure.errorContext["triangle"] = mesh.surfaces[triangle].sourceTriangle;
+                failure.errorContext["material_slot"] = mesh.surfaces[triangle].sourceMaterial;
+                failure.errorContext["placement_id"] = static_cast<int64_t>(mesh.sourcePlacementId);
                 return false;
             }
             const auto& surface = mesh.surfaces[triangle];
             if (!std::all_of(surface.color.begin(), surface.color.end(), ValidUnit) ||
                 !Finite(surface.ambient) || !Finite(surface.diffuse) || surface.ambient < 0.0f ||
                 surface.diffuse < 0.0f || surface.ambient > 16.0f || surface.diffuse > 16.0f) {
-                error = "pager surface values are nonfinite or out of range";
+                failure.error = "pager surface values are nonfinite or out of range";
                 return false;
             }
         }
@@ -221,7 +269,8 @@ const char* AlphaName(AlphaMode mode) {
     return "opaque";
 }
 
-using MaterialKey = std::tuple<int, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, int32_t, int>;
+using MaterialKey = std::tuple<int, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t,
+                               int32_t, int, int>;
 
 MaterialKey MakeMaterialKey(const WorldShotMesh& mesh, size_t triangle, AlphaMode alpha) {
     const auto& surface = mesh.surfaces[triangle];
@@ -235,6 +284,7 @@ MaterialKey MakeMaterialKey(const WorldShotMesh& mesh, size_t triangle, AlphaMod
         std::bit_cast<uint32_t>(surface.diffuse),
         static_cast<int32_t>(alpha),
         surface.sourceMaterial,
+        surface.sourceGeometry,
     };
 }
 
@@ -315,6 +365,15 @@ bool AddSurface(const WorldShotMesh& source, const SurfaceGroup& group, Ref<Arra
         error = "Godot rejected an ArrayMesh surface";
         return false;
     }
+    const auto publishedFormat = mesh->surface_get_format(before);
+    if (!publishedFormat.has_flag(Mesh::ARRAY_FORMAT_TEX_UV)) {
+        error = "Godot omitted ArrayMesh UV attributes";
+        return false;
+    }
+    if (publishedFormat.has_flag(Mesh::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+        error = "Godot compressed ArrayMesh attributes; finite source UVs cannot be preserved";
+        return false;
+    }
 
     const size_t triangle = group.representative;
     const auto& surface = source.surfaces[triangle];
@@ -331,7 +390,9 @@ bool AddSurface(const WorldShotMesh& source, const SurfaceGroup& group, Ref<Arra
     material["diffuse"] = static_cast<double>(surface.diffuse);
     material["alpha_mode"] = AlphaName(group.alpha);
     material["family"] = "world";
+    material["source_model"] = SourceString(source.sourceModelName);
     material["source_material_slot"] = surface.sourceMaterial;
+    material["source_geometry"] = surface.sourceGeometry;
     return true;
 }
 
@@ -369,6 +430,11 @@ bool MakeMesh(const WorldShotMesh& source, const WorldShotScene& scene,
     surfaceCount += mesh->get_surface_count();
     output["mesh"] = mesh;
     output["surface_materials"] = materials;
+    output["source_model"] = SourceString(source.sourceModelName);
+    output["source_model_id"] = source.sourceModelId;
+    output["source_txd"] = SourceString(source.sourceTxdName);
+    output["source_archive"] = SourceString(source.sourceArchiveName);
+    output["source_placement_id"] = static_cast<int64_t>(source.sourcePlacementId);
     return true;
 }
 
@@ -452,22 +518,37 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
     result["binary_ipl_files"] = info.binaryIplFiles;
     result["binary_instances"] = info.binaryInstances;
     result["asset_source"] = "external game directory; no executable read";
+    result["publication_revision"] = m_PublicationRevision;
     return result;
 }
 
 Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
     if (!IsMainThread()) {
-        return Result(false, "load_region must run on Godot's main thread");
-    }
-    if (!Finite(saPosition.x) || !Finite(saPosition.y) || !Finite(saPosition.z) ||
-        std::abs(saPosition.x) > 1'000'000.0f || std::abs(saPosition.y) > 1'000'000.0f ||
-        std::abs(saPosition.z) > 1'000'000.0f) {
-        return Result(false, "SA_position must be finite and within the supported coordinate range");
+        std::lock_guard lock(s_PagerMutex);
+        Dictionary result = Result(false, "load_region must run on Godot's main thread");
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
     }
 
     std::lock_guard lock(s_PagerMutex);
+    const auto failureResult = [this](const String& error, const String& errorCode = String(),
+                                      const Dictionary& errorContext = Dictionary()) {
+        Dictionary result = Result(false, error);
+        if (!errorCode.is_empty()) {
+            result["error_code"] = errorCode;
+            result["error_context"] = errorContext;
+        }
+        result["publication_revision"] = m_PublicationRevision;
+        return result;
+    };
+    if (!Finite(saPosition.x) || !Finite(saPosition.y) || !Finite(saPosition.z) ||
+        std::abs(saPosition.x) > 1'000'000.0f || std::abs(saPosition.y) > 1'000'000.0f ||
+        std::abs(saPosition.z) > 1'000'000.0f) {
+        return failureResult("SA_position must be finite and within the supported coordinate range");
+    }
+
     if (!m_Ready || s_PagerOwner != this) {
-        return Result(false, "load_region requires an open pager owned by this bridge");
+        return failureResult("load_region requires an open pager owned by this bridge");
     }
 
     WorldShotScene scene{};
@@ -475,11 +556,15 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
     char nativeError[256]{};
     if (!StreamPager_Update(saPosition.x, saPosition.y, saPosition.z, scene, frame,
                             nativeError, sizeof(nativeError))) {
-        return Result(false, ErrorString(nativeError));
+        return failureResult(ErrorString(nativeError));
     }
-    String validationError;
-    if (!ValidateScene(scene, validationError)) {
-        return Result(false, validationError);
+    ValidationFailure validationFailure;
+    if (!ValidateScene(scene, validationFailure)) {
+        return failureResult(validationFailure.error, validationFailure.errorCode,
+                             validationFailure.errorContext);
+    }
+    if (m_PublicationRevision == std::numeric_limits<int64_t>::max()) {
+        return failureResult("publication revision exhausted");
     }
 
     std::vector<Ref<ImageTexture>> textures;
@@ -487,7 +572,7 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
     for (const auto& image : scene.images) {
         Ref<ImageTexture> texture = MakeTexture(image);
         if (texture.is_null()) {
-            return Result(false, "Godot rejected a decoded RGBA texture");
+            return failureResult("Godot rejected a decoded RGBA texture");
         }
         textures.push_back(texture);
     }
@@ -499,12 +584,12 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
         Dictionary mesh;
         String meshError;
         if (!MakeMesh(source, scene, imageModes, textures, mesh, meshError, surfaceCount)) {
-            return Result(false, meshError);
+            return failureResult(meshError);
         }
         meshes.push_back(mesh);
     }
     if (meshes.is_empty()) {
-        return Result(false, "validated scene produced no Godot meshes");
+        return failureResult("validated scene produced no Godot meshes");
     }
 
     int sectorsLoaded = 0;
@@ -536,6 +621,8 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
     Dictionary result = Result(true);
     result["meshes"] = meshes;
     result["stats"] = stats;
+    ++m_PublicationRevision;
+    result["publication_revision"] = m_PublicationRevision;
     return result;
 }
 
@@ -621,6 +708,7 @@ Dictionary SALegacyBridge::Environment(const String& weather, int32_t hour) {
 void SALegacyBridge::CloseGame() {
     std::lock_guard lock(s_PagerMutex);
     if (!m_Ready) {
+        m_GameDir.clear();
         return;
     }
     if (s_PagerOwner == this) {

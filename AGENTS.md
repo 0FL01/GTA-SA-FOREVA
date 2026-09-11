@@ -1,6 +1,6 @@
 # mad-sa
 Personal RE research workspace for GTA:SA 1.0 US: upstream-model reverse (gta-reversed fork) + native Linux standalone track. Wine is dev-reference only, never runtime.
-Primary direction is now the separate Godot legacy-look lab; preserve the native backend as a regression reference, not a completed full game.
+Primary direction is the full standalone Godot port, developed from the legacy-look lab; preserve the native backend as a regression reference, not a completed full game.
 
 ## Map
 - `godot/` — Godot presentation/GDExtension lab; `godot/README.md` has pinned fetch/build/package/test commands. Authoritative readers remain C++; no PBR/physics replacement.
@@ -36,7 +36,7 @@ Primary direction is now the separate Godot legacy-look lab; preserve the native
 - Windows-only reference build: `python gta-reversed/setup.py`, `cmake --build build`
 
 ## Docs
-- `docs/goals/2026-09-11-godot-legacy-look-lab.md` — current Godot goal; verbatim request linked there. `docs/visual_contract.md` separates restoration intent from unverified original/GPU parity.
+- `docs/goals/2026-09-11-godot-full-port.md` — active goal, immutable plan backup and atom ledger; `docs/PORT-READINESS.md` is the single roadmap. `docs/visual_contract.md` separates restoration intent from unverified original/GPU parity.
 - `README.md` — project purpose, legal scope, build/run, gate table
 - `docs/goals/2026-09-08-linux-native-opengl-port.md` — frozen contract R1–R6 + evidence
 - `gta-reversed/README.md` — upstream build + ASI-loader model + native Linux track section

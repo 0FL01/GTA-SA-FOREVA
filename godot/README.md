@@ -112,6 +112,48 @@ on a slow software renderer). `wall_seconds` and `cpu_frame_interval_ms` use the
 monotonic clock; the first interval is0. Thus `--seconds 95` can take longer than
 95 wall seconds. Startup parsing/publication costs are recorded separately.
 
+## Region P0 Gate
+
+Run the focused region checks from the repository root against an external game
+installation. The runner only reads `--game-dir`; logs are written under the
+ignored `artifacts/godot/` directory.
+
+```bash
+./tools/godot-region-test.sh cpu --game-dir "/path/to/owned/GTA San Andreas"
+./tools/godot-region-test.sh render --game-dir "/path/to/owned/GTA San Andreas"
+```
+
+The `cpu` profile is headless. The `render` profile must be requested explicitly
+and uses native Wayland with Vulkan Forward+ and Dummy audio, so an unattended
+CPU run cannot hang waiting for a display. `GODOT_BIN` overrides the fetched
+pinned4.6.1 runtime. The runner preserves a nonzero engine exit and, even after a
+zero exit, requires the profile's fixed success marker and rejects Godot error
+diagnostics. CPU and rendered checks pass on the build server; hardware reflight
+remains a separate target gate.
+
+The P0 contract keeps finite source UV values unchanged. A candidate containing
+non-finite data is rejected as a whole, leaving the last complete world active;
+it is not repaired by clamping coordinates or dropping individual triangles.
+Rejection diagnostics carry structured archive/model/placement/geometry/triangle
+context. The viewer restores its last accepted camera and keeps its committed
+scene; it does not claim gameplay collision coverage. F6 explicitly retries the
+rejected candidate. Ordinary retries near that center are suppressed.
+
+The focused real lab integration test covers retained node identity, revision,
+retry/recovery and teardown cancellation (use the same pinned executable):
+
+```bash
+"$PWD/build/godot-deps/godot-4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64" \
+  --headless --path godot --script res://tests/region_lab.gd -- \
+  --game-dir "/path/to/owned/GTA San Andreas" --capture-dir "$PWD/artifacts/godot/p0-lab"
+```
+
+Expect `region-lab-ok`; repeat with Wayland/Vulkan flags for rendered package
+inspection. Authored unbound textures (e.g. valid `signs.txd` without `chrome` and
+without an authored parent) retain source material/prelight, not dummy texels.
+Missing dictionaries, undecodable real rasters and unresolved parent semantics
+remain honest candidate errors; this is not whole-map texture/LOD completion.
+
 ## Package
 
 After a successful native build:

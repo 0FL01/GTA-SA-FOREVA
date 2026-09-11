@@ -5,6 +5,7 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
+#include <cstdint>
 #include <string>
 
 namespace godot {
@@ -27,6 +28,8 @@ protected:
 private:
     std::string m_GameDir;
     bool m_Ready = false;
+    // Object-lifetime sequence: close/reopen preserves it; only a published region advances it.
+    int64_t m_PublicationRevision = 0;
 };
 
 } // namespace godot

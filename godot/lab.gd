@@ -9,6 +9,7 @@ const FAST_MULTIPLIER := 4.0
 const MOUSE_SENSITIVITY := 0.0022
 const ROUTE_SEGMENT_SECONDS := 6.0
 const SURFACE_INFO_KEYS := [&"texture", &"color", &"ambient", &"diffuse", &"alpha_mode", &"family", &"filter"]
+const REGION_ERROR_CONTEXT_KEYS := [&"archive", &"model", &"model_id", &"txd", &"placement_id", &"geometry", &"triangle", &"material_slot", &"uv_component", &"value"]
 
 const ENVIRONMENT_STATES := [
 	{"id": "EXTRASUNNY_LA12", "label": "Clear noon", "weather": "EXTRASUNNY_LA", "hour": 12},
@@ -68,6 +69,18 @@ var _bridge_open := false
 var _last_overlay_update := -1.0
 var _last_capture_at := -1.0
 var _loaded_center_sa := Vector3.ZERO
+var _has_published_region := false
+var _publication_revision := 0
+var _rejected_load_count := 0
+var _last_region_error: Dictionary = {}
+var _region_candidate_unavailable := false
+var _region_retry_suppressed := false
+var _failed_region_center_sa := Vector3.ZERO
+var _accepted_camera_valid := false
+var _accepted_camera_transform := Transform3D.IDENTITY
+var _accepted_camera_target_world := Vector3.ZERO
+var _accepted_camera_pitch := 0.0
+var _accepted_camera_yaw := 0.0
 var _camera_target_world := Vector3.ZERO
 var _environment_index := 0
 var _environment_data: Dictionary = {}
@@ -229,6 +242,11 @@ func _unhandled_input(event: InputEvent) -> void:
 				_toggle_flag("fog")
 			KEY_F5:
 				_toggle_flag("post")
+			KEY_F6:
+				if _region_candidate_unavailable and not _loading and not _capture_hold:
+					_region_retry_suppressed = false
+					_load_region(_failed_region_center_sa)
+					_update_overlay()
 			KEY_F12:
 				if not _capture_pending:
 					_capture_pending = true
@@ -247,6 +265,7 @@ func _notification(what: int) -> void:
 
 
 func _exit_tree() -> void:
+	_shutdown_started = true
 	_close_bridge()
 	if _csv_file != null:
 		_csv_file.flush()
@@ -428,7 +447,7 @@ func _cache_environments() -> bool:
 
 
 func _load_region(center_sa: Vector3) -> bool:
-	if _loading:
+	if _loading or _shutdown_started:
 		return false
 	_loading = true
 	var started := Time.get_ticks_usec()
@@ -436,7 +455,19 @@ func _load_region(center_sa: Vector3) -> bool:
 	_last_bridge_load_call_ms = float(Time.get_ticks_usec() - started) / 1000.0
 	_load_count += 1
 	_loading = false
-	if not _bridge_result_ok(result, "load_region"):
+	if not result is Dictionary:
+		_fatal("load_region returned a non-Dictionary result", 4)
+		return false
+	var ok_value: Variant = result.get("ok")
+	if not ok_value is bool:
+		_fatal("load_region returned an invalid ok value", 4)
+		return false
+	if not ok_value:
+		return _reject_region_candidate(center_sa, result)
+
+	var revision_value: Variant = result.get("publication_revision")
+	if not revision_value is int or int(revision_value) <= _publication_revision:
+		_fatal("load_region returned a non-monotonic publication_revision", 4)
 		return false
 
 	var meshes_value: Variant = result.get("meshes")
@@ -479,6 +510,9 @@ func _load_region(center_sa: Vector3) -> bool:
 				or not surface_info.color is Color
 				or not (surface_info.ambient is float or surface_info.ambient is int)
 				or not (surface_info.diffuse is float or surface_info.diffuse is int)
+				or not is_finite(float(surface_info.ambient))
+				or not is_finite(float(surface_info.diffuse))
+				or not _color_is_finite(surface_info.color)
 				or not (surface_info.alpha_mode is String or surface_info.alpha_mode is StringName)
 				or StringName(surface_info.alpha_mode) not in [&"opaque", &"cutout", &"blend"]
 				or not (surface_info.family is String or surface_info.family is StringName)
@@ -487,11 +521,10 @@ func _load_region(center_sa: Vector3) -> bool:
 				_fatal("load_region returned invalid surface material values", 4)
 				return false
 
-	_release_region()
-	_region_stats = result.stats.duplicate(true)
-	_region_stats_csv = JSON.stringify(_region_stats)
-	_resident_meshes = 0
-	_resident_surfaces = 0
+	var candidate_stats: Dictionary = result.stats.duplicate(true)
+	var candidate_instances: Array[MeshInstance3D] = []
+	var candidate_materials: Array = []
+	var candidate_surfaces := 0
 	for mesh_info in meshes:
 		var mesh: ArrayMesh = mesh_info.mesh
 		var instance := MeshInstance3D.new()
@@ -500,16 +533,80 @@ func _load_region(center_sa: Vector3) -> bool:
 		for surface_index in range(mesh.get_surface_count()):
 			var material := LegacyMaterials.make_surface(surface_materials[surface_index])
 			instance.set_surface_override_material(surface_index, material)
-			_materials.append(material)
-			_resident_surfaces += 1
+			candidate_materials.append(material)
+			candidate_surfaces += 1
+		candidate_instances.append(instance)
+
+	_release_region()
+	_region_stats = candidate_stats
+	_region_stats_csv = JSON.stringify(_region_stats)
+	_materials = candidate_materials
+	_resident_meshes = candidate_instances.size()
+	_resident_surfaces = candidate_surfaces
+	for instance in candidate_instances:
 		mesh_root.add_child(instance)
-		_resident_meshes += 1
 	_loaded_center_sa = center_sa
+	_has_published_region = true
+	_publication_revision = int(revision_value)
+	_region_candidate_unavailable = false
+	_region_retry_suppressed = false
+	_remember_accepted_camera()
 	if not _environment_data.is_empty():
 		LegacyMaterials.set_environment(_environment_materials(), _environment_data, _flags)
 	_last_load_stall_ms = float(Time.get_ticks_usec() - started) / 1000.0
 	_total_load_stall_ms += _last_load_stall_ms
 	return true
+
+
+func _reject_region_candidate(center_sa: Vector3, result: Dictionary) -> bool:
+	var revision_value: Variant = result.get("publication_revision")
+	if not revision_value is int or int(revision_value) != _publication_revision:
+		_fatal("failed load_region returned an invalid publication_revision", 4)
+		return false
+
+	_rejected_load_count += 1
+	_last_region_error = _region_error_status(result, center_sa)
+	_region_candidate_unavailable = true
+	_failed_region_center_sa = center_sa
+	_region_retry_suppressed = _has_published_region
+	var human_error := str(_last_region_error.get("error", "unspecified bridge error"))
+	if not _has_published_region:
+		_fatal("load_region failed before the first publication: %s" % human_error, 4)
+		return false
+
+	_restore_accepted_camera()
+	var code := str(_last_region_error.get("error_code", "uncoded"))
+	printerr("legacy-look-lab: region candidate unavailable at %s; retaining publication %d: %s (%s)" % [center_sa, _publication_revision, human_error, code])
+	_update_overlay()
+	return false
+
+
+func _region_error_status(result: Dictionary, center_sa: Vector3) -> Dictionary:
+	var status := {
+		"error": _bounded_status_string(result.get("error", "unspecified bridge error"), 320),
+		"requested_center_sa": _status_vector_to_array(center_sa),
+		"publication_revision": int(result.get("publication_revision", _publication_revision)),
+	}
+	var error_code: Variant = result.get("error_code")
+	if error_code is String or error_code is StringName:
+		status["error_code"] = _bounded_status_string(error_code, 80)
+	var context_value: Variant = result.get("error_context")
+	if context_value is Dictionary:
+		var context := {}
+		for key in REGION_ERROR_CONTEXT_KEYS:
+			if not context_value.has(key):
+				continue
+			var value: Variant = context_value[key]
+			if value is String or value is StringName:
+				context[key] = _bounded_status_string(value, 160)
+			elif value is float:
+				context[key] = value if is_finite(value) else str(value)
+			elif value is int or value is bool:
+				context[key] = value
+			else:
+				context[key] = _bounded_status_string(value, 160)
+		status["error_context"] = context
+	return status
 
 
 func _release_region() -> void:
@@ -527,7 +624,10 @@ func _bridge_result_ok(result: Variant, operation: String) -> bool:
 	if not result is Dictionary:
 		_fatal("%s returned a non-Dictionary result" % operation, 4)
 		return false
-	if not result.get("ok", false):
+	if not result.get("ok") is bool:
+		_fatal("%s returned an invalid ok value" % operation, 4)
+		return false
+	if not result.ok:
 		_fatal("%s failed: %s" % [operation, result.get("error", "unspecified bridge error")], 4)
 		return false
 	return true
@@ -639,8 +739,44 @@ func _update_free_camera(delta: float) -> void:
 func _maybe_reload_region() -> void:
 	var camera_sa := _world_to_sa(camera.global_position)
 	var planar_delta := Vector2(camera_sa.x - _loaded_center_sa.x, camera_sa.y - _loaded_center_sa.y)
-	if planar_delta.length() >= maxf(50.0, _radius * 0.35):
-		_load_region(camera_sa)
+	var reload_threshold := _region_reload_threshold()
+	if planar_delta.length() < reload_threshold:
+		_remember_accepted_camera()
+		if _region_retry_suppressed and _planar_region_distance(camera_sa, _failed_region_center_sa) >= reload_threshold:
+			_region_retry_suppressed = false
+		return
+	if _region_retry_suppressed and _planar_region_distance(camera_sa, _failed_region_center_sa) < reload_threshold:
+		_restore_accepted_camera()
+		return
+	_region_retry_suppressed = false
+	_load_region(camera_sa)
+
+
+func _region_reload_threshold() -> float:
+	return maxf(50.0, _radius * 0.35)
+
+
+func _planar_region_distance(first: Vector3, second: Vector3) -> float:
+	return Vector2(first.x - second.x, first.y - second.y).length()
+
+
+func _remember_accepted_camera() -> void:
+	if not _has_published_region:
+		return
+	_accepted_camera_transform = camera.global_transform
+	_accepted_camera_target_world = _camera_target_world
+	_accepted_camera_pitch = _pitch
+	_accepted_camera_yaw = _yaw
+	_accepted_camera_valid = true
+
+
+func _restore_accepted_camera() -> void:
+	if not _accepted_camera_valid:
+		return
+	camera.global_transform = _accepted_camera_transform
+	_camera_target_world = _accepted_camera_target_world
+	_pitch = _accepted_camera_pitch
+	_yaw = _accepted_camera_yaw
 
 
 func _toggle_flag(flag: String) -> void:
@@ -681,6 +817,20 @@ func _capture_scenario(index: int) -> void:
 	_apply_environment(_environment_cache[state_index], state_index)
 	if _loaded_center_sa.distance_to(FIXED_TARGET_SA) > 1.0:
 		if not _load_region(FIXED_TARGET_SA):
+			if _shutdown_started:
+				return
+			_flags = saved_flags
+			_apply_environment(saved_environment, saved_environment_index)
+			camera.global_transform = saved_camera_transform
+			_camera_target_world = saved_camera_target
+			_pitch = saved_pitch
+			_yaw = saved_yaw
+			_remember_accepted_camera()
+			_capture_index = index + 1
+			_capture_pending = false
+			_capture_hold = false
+			_update_overlay()
+			_write_run_manifest(scenario.id, false, "", "skipped_region_unavailable", str(_last_region_error.get("error", "region candidate unavailable")))
 			return
 	await _capture_current(scenario.id)
 	if _shutdown_started:
@@ -729,7 +879,7 @@ func _capture_current(capture_id: String) -> void:
 			_fatal("failed to save application framebuffer %s (error %d)" % [image_path, save_error], 5)
 			return
 		image_written = true
-	_write_run_manifest(capture_id, image_written, image_path)
+	_write_run_manifest(capture_id, image_written, image_path, "completed")
 
 
 func _open_frame_csv() -> bool:
@@ -781,7 +931,7 @@ func _record_frame(delta: float) -> void:
 		_csv_file.flush()
 
 
-func _write_run_manifest(capture_id: String, image_written: bool, image_path: String) -> void:
+func _write_run_manifest(capture_id: String, image_written: bool, image_path: String, capture_status := "not_requested", capture_note := "") -> void:
 	var version := Engine.get_version_info()
 	var viewport_size := get_viewport().get_visible_rect().size
 	var state: Dictionary = ENVIRONMENT_STATES[_environment_index]
@@ -791,12 +941,14 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 		combined_hashes.merge(region_hashes, true)
 	var manifest := {
 		"capture_id": capture_id,
+		"capture_status": capture_status,
+		"capture_note": capture_note,
 		"evidence_profile": _profile_id(),
 		"image_written": image_written,
 		"image_source": "application framebuffer" if image_written else "none",
 		"desktop_capture": false,
 		"image_path": image_path,
-		"headless_notice": "Headless execution does not produce rendered image evidence." if not _can_capture_images else "",
+		"headless_notice": "Headless execution does not produce rendered image evidence." if DisplayServer.get_name().to_lower() == "headless" else "",
 		"comparison_status": "original_reference_missing",
 		"parity_result": "not_evaluated",
 		"original_parity_acceptance": "pending controlled original captures and discrepancy review",
@@ -848,13 +1000,24 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"sky_bottom": _color_to_array(_environment_data.get("sky_bottom", Color.BLACK)),
 		},
 		"toggles": _flags.duplicate(true),
+		"region_publication": {
+			"active": _has_published_region,
+			"active_publication_revision": _publication_revision,
+			"active_center_sa": _vector_to_array(_loaded_center_sa) if _has_published_region else [],
+			"candidate_status": "unavailable" if _region_candidate_unavailable else "none",
+			"retry_suppressed": _region_retry_suppressed,
+			"retry_control": "F6",
+			"rejected_load_count": _rejected_load_count,
+			"last_region_error": _last_region_error.duplicate(true),
+			"collision_status": "unsupported; this viewer does not generate gameplay collision",
+		},
 		"post_effect": {
 			"requested": _flags.post,
 			"available": true,
 			"enabled": _post_rect.visible,
 			"status": "PC ColourFilter only; PS2 filter/radiosity/heat haze unavailable",
-			"pass1_rgba": _color_to_array(_environment_data.post_pass1),
-			"pass2_rgba": _color_to_array(_environment_data.post_pass2),
+			"pass1_rgba": _color_to_array(_environment_data.get("post_pass1", Color.BLACK)),
+			"pass2_rgba": _color_to_array(_environment_data.get("post_pass2", Color.BLACK)),
 		},
 		"bounded_residency": {
 			"radius_sa_units": _radius,
@@ -862,7 +1025,9 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"resident_meshes": _resident_meshes,
 			"resident_surfaces": _resident_surfaces,
 			"load_count": _load_count,
-			"publication": "synchronous bounded replacement; previous scene resources are freed after a valid new payload",
+			"rejected_load_count": _rejected_load_count,
+			"active_publication_revision": _publication_revision,
+			"publication": "synchronous bounded replacement; the previous complete publication remains active until a valid candidate is fully staged",
 			"lod_status": "no Godot runtime LOD selection; source representation is whatever the bridge publishes",
 		},
 		"route": {
@@ -908,6 +1073,7 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"Route frame intervals start after synchronous initialization; measured open/environment/load stalls are reported separately, while manifest hashing and driver discovery are not timed.",
 			"Residency, absent Godot runtime LOD selection, and fog visibility are separate facts.",
 			"Post toggle implements PC ColourFilter only; PS2 filter/radiosity/heat haze remain unavailable.",
+			"Gameplay collision is unsupported; the viewer does not generate collision data.",
 			"No controlled original capture was supplied, so discrepancy labels are not parity passes.",
 			"Target Fedora 44 / Wayland / Mesa / RX 780M acceptance is pending a run on that hardware.",
 		],
@@ -941,10 +1107,13 @@ func _update_overlay() -> void:
 	status_label.text += "State %d: %s / %s @ %.2fh | route %s\n" % [_environment_index + 1, state.label, _environment_data.get("weather", state.weather), float(_environment_data.get("hour", state.hour)), "ON" if _route_enabled else "off"]
 	status_label.text += "textures=%s prelight=%s vertex-only=%s fog=%s PC-filter=%s\n" % [_on_off(_flags.textures), _on_off(_flags.prelight), _on_off(_flags.vertex_only), _on_off(_flags.fog), _on_off(_flags.post)]
 	status_label.text += "CPU process %.2f ms | engine static %.1f MiB | resources %d\n" % [cpu_frame_ms, memory_mib, int(Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT))]
-	status_label.text += "bounded radius %.0f cap %d | meshes %d surfaces %d | loads %d | LOD unavailable\n" % [_radius, _cap, _resident_meshes, _resident_surfaces, _load_count]
+	status_label.text += "bounded radius %.0f cap %d | meshes %d surfaces %d | loads %d rejected %d | publication %d\n" % [_radius, _cap, _resident_meshes, _resident_surfaces, _load_count, _rejected_load_count, _publication_revision]
 	status_label.text += "sync open %.2f ms | env %.2f ms | load+publish last %.2f ms total %.2f ms\n" % [_open_game_stall_ms, _environment_cache_stall_ms, _last_load_stall_ms, _total_load_stall_ms]
+	if _region_candidate_unavailable:
+		status_label.text += "REGION CANDIDATE UNAVAILABLE: %s | showing committed revision %d; F6 retry\n" % [_bounded_status_string(_last_region_error.get("error", "unspecified bridge error"), 180), _publication_revision]
 	status_label.text += "WASD move  Q/E fall/rise  Shift fast  RMB look  Esc release/quit  R route\n"
-	status_label.text += "1 clear  2 evening  3 night  4 overcast | F1-F4 diagnostics | F5 PC filter | F12 capture\n"
+	status_label.text += "1 clear  2 evening  3 night  4 overcast | F1-F4 diagnostics | F5 PC filter | F6 retry | F12 capture\n"
+	status_label.text += "LOD unavailable | gameplay collision unsupported\n"
 	status_label.text += "Original reference missing: discrepancy not measured; no parity pass."
 
 
@@ -979,6 +1148,10 @@ func _finish_shutdown(code: int) -> void:
 
 
 func _close_bridge() -> void:
+	_shutdown_started = true
+	_capture_pending = false
+	_capture_hold = false
+	_region_retry_suppressed = false
 	if _bridge_open and _bridge != null:
 		_bridge.call("close_game")
 	_bridge_open = false
@@ -1000,6 +1173,17 @@ func _color_to_array(value: Color) -> Array:
 	return [value.r, value.g, value.b, value.a]
 
 
+func _color_is_finite(value: Color) -> bool:
+	return is_finite(value.r) and is_finite(value.g) and is_finite(value.b) and is_finite(value.a)
+
+
+func _status_vector_to_array(value: Vector3) -> Array:
+	var result := []
+	for component in [value.x, value.y, value.z]:
+		result.append(component if is_finite(component) else str(component))
+	return result
+
+
 func _environment_materials() -> Array:
 	var result := _materials.duplicate()
 	result.append(_sky_material)
@@ -1015,3 +1199,7 @@ func _profile_id() -> String:
 
 func _on_off(value: bool) -> String:
 	return "on" if value else "off"
+
+
+func _bounded_status_string(value: Variant, maximum_length: int) -> String:
+	return str(value).left(maximum_length)
