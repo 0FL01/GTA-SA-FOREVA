@@ -47,6 +47,14 @@ No desktop-wide screenshots of unrelated applications. A software-rendered VDS r
 
 Append actual sessions below; do not erase failed runs or replace these pending rows with assumed success.
 
+## GODOT-P1-04 — 2026-09-11 / parent integration / user pause
+
+- **Scope/status:** P1-A01 TXD-lineage identity verified, native `ddc9863d` and root containing commit. User explicitly requested pause to replace agents; no P1-A02 started. Full-port/target-reference acceptance remains open.
+- **Source fixture:** Grove and roads regions at radius120/cap1200 expose52 same-name/different-source pairs without aliasing. `planta256` on model646 resolves to `gta_potplants.txd`128×128/filter0x1102; model4172 resolves to `cityhall_tr_lan.txd`256×256/filter0x1106. Child-to-parent search, actual IMG owner and sampler are identity-bearing. No unrelated resident TXD fallback; complete source-null is retained, incomplete lineage fails closed.
+- **Checks:** GCC13 key-value probe; headless and clean-package Wayland/Vulkan Forward+ identity fixture (366 meshes/1056 surfaces/328 texture keys); unchanged P0 finite27062702 and3 NaN checks; native coherent rebuild and sweep33/0; clean-package actual lab retention/F6/recovery/deferred teardown. Logs `artifacts/build-runs/p1-{identity-final,package-identity-runtime,p0-regression,native-sweep,package-retention-runtime,close}.log` contain the direct evidence; `p1-round-gates-ok` is the final marker.
+- **Image/environment:** `artifacts/godot/p1-paused/forward_plus-p0-retained-rejection.png` reviewed: roads scene remains intact at revision2 with explicit rejected radar/F6 status. Godot4.6.1, Weston13/pixman, Vulkan1.4.318/llvmpipe LLVM20.1.2; not target Radeon performance or original parity. Extension SHA256 `2a6eded80b1becd81acf164abee09a38b8c3625075f404b3a5425906768fe54b`; lab script unchanged from P0.
+- **Integration findings fixed:** source DEFAULT.DAT-before-GTA.DAT IDE order and last TXDP assignment; C++ assertion comma and GDScript type/hash API errors; fixture's raw DFF0x11102 corrected to source RW low16 sampler0x1102 (separate mip-generation flag, not loss of sampler state). No assertion was weakened to accept a wrong texture. Parent owns validation; all current general tasks have ended.
+
 ## GODOT-P0-03 — 2026-09-11 / parent integration / nc-lab
 
 - **Status:** automated + agent-image-reviewed; P0 implementation/server gates verified, new Fedora/Radeon reflight not-run. User approved full P0–P9 execution; goal contains immutable plan and68 atoms, roadmap is reused rather than duplicated.

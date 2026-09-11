@@ -1,6 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
+Execution: PAUSED BY USER after the verified P1-A01 round; do not start another round until the user resumes after changing agents.
 Activated: 2026-09-11
 Last updated: 2026-09-11
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -55,11 +56,11 @@ Atom gates name the smallest decisive proof, not every regression command. Stage
 
 P0 implementation and available server gates are verified; target reflight stays explicitly open. Independent P1 catalog/identity work can advance without pretending the external target gate passed. Synchronous calls have no in-flight worker cancellation: teardown/deferred capture cancellation is tested here, while asynchronous parser cancellation and render/COL coupling belong to P1.
 
-### P1 - World/catalog and publication foundation (`pending`)
+### P1 - World/catalog and publication foundation (`ACTIVE`)
 
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
-| P1-A01 | pending | Define TXD-lineage-aware model, texture, material and geometry identities in reusable immutable packets. | A same-name/different-lineage fixture resolves both textures/materials without collision. |
+| P1-A01 | verified | Define TXD-lineage-aware model, texture, material and geometry identities in reusable immutable packets. | Native key fixtures; real Grove/roads gate retains52 same-name/different-lineage pairs, including model646128×128 and4172256×256 `planta256`; clean Wayland package upload/readback passes. |
 | P1-A02 | pending | Complete IDE/IPL metadata and parser bounds needed by the catalog without silent caps or fallback omissions. | Catalog fixture rejects malformed bounds and accounts for every expected placement. |
 | P1-A03 | pending | Reproduce source `LinkLods` child/parent decisions for one authored chain. | One source-authored chain matches expected links and runtime selection reasons. |
 | P1-A04 | pending | Couple that chain's COL relationship and generation to world publication. | A generation switch publishes matching render/collision lineage or publishes neither. |
@@ -168,12 +169,20 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-- Current stage: **P0 implementation verified, target reflight pending**. Next independent atom: **P1-A01** after the P0 source/evidence commit. Full-port finish line remains active and unresolved.
+- **Pause checkpoint:** user requested «завершай раунд,я хочу сделать замену @general на других агентов, нужна пауза». P1-A01 is verified and recorded below; no next round has started. Next independent atom is P1-A02 **only after user resume**. P0 root `e1305e6`/native `4674ce65` are committed/pushed; external target reflight remains pending. Full catalog/LOD/async publication and all six finish-line axes remain unresolved, not waived.
 - P0 material-boundary finding resolved: `bussign1` material0 requests `chrome`, absent from valid `signs.txd` with no authored parent. Source TxdStore lookup returns null. Streamed presentation preserves its unbound material/prelight/UV, not manufactured texels or dropped triangles; the20-triangle source fixture passes. Legacy offline fallback is unchanged. Undecodable real rasters, missing primary TXDs and unresolved parent semantics stay rejected. Implementation/server gates pass; only the separate target reflight remains open.
 - Conservative ambiguity resolution: nonfinite data fails the candidate region replacement with exact provenance while the last committed world remains live. Per-triangle quarantine is not approved. Finite-large values are valid and must be preserved exactly through the relevant numeric path, subject only to existing finite/size/index safety validation.
 - Available P0 evidence: fresh coherent extension/native builds; `artifacts/godot/region-contract.log`, `region-render.log`; real `region_lab.gd` in CPU and clean rendered package; `artifacts/build-runs/p0-native-sweep.log`33/0 because shared mesh ABI changed. Package image `artifacts/godot/p0-lab-package/forward_plus-p0-retained-rejection.png` shows intact previous roads scene and explicit rejected radar status. Remaining external gate is P0-A04, not a claim that the full port is blocked from independent development.
 
 ## Checkpoint history
+
+### P1-A01 identity round / user pause — 2026-09-11
+
+- Native `ddc9863d` plus root containing commit carry owned model/geometry/material/texture keys, actual IMG/member TXD lineage and resolved owner, sampler-qualified caches and structured bridge metadata. Streamed lookup is child->authored parent only, no unrelated resident fallback; DEFAULT.DAT IDEs precede GTA.DAT IDEs, later TXDP assignment wins. Incomplete/cyclic/malformed/over-depth lineage rejects the candidate, complete source-null remains distinct from undecodable raster. Offline native path is retained. This is not full catalog/LOD/mip/MatFX/async completion.
+- Parent fixed the final review's DAT/duplicate-parent defect, the standalone assert macro's initializer-comma issue and two GDScript API/type errors. Exact fixture exposed `0x11102` versus runtime `0x1102`: librw texture.cpp strips the separate mip-generation flag, so the test pins correct low16 sampler bits rather than a TXD-default sampler. No resource bytes, finite UV or geometry were altered.
+- Decisive gate: `NativeAssetIdentityProbe.cpp` built with GCC13/C++20/assertions and exits0. `asset_identity.gd` passes headless and on clean-package Wayland/Vulkan Forward+:2 publications,366 meshes,1056 surfaces,123 model keys,524 material keys,328 texture keys,52 same-name/source-lineage pairs. Models646/4172 retain separate `gta_potplants.txd`/`cityhall_tr_lan.txd` owners,128×128/256×256 images and0x1102/0x1106 DFF samplers. Same full keys reuse one resource within publication; distinct scoped keys cannot alias. Texture bytes are hashed after actual upload/readback.
+- Regressions: coherent extension/native35-unit rebuild; P0 CPU exact27062702 +3 NaN-provenance cases pass; native sweep33/0. Real lab retention/F6/recovery/deferred-teardown fixture passes from clean rendered package and its retained-city image was reviewed. Logs: `p1-identity-final.log`, `p1-package-identity-runtime.log`, `p1-p0-regression.log`, `p1-native-sweep.log`, `p1-package-retention-runtime.log`, `p1-close.log` in `artifacts/build-runs/`; final marker `p1-round-gates-ok`. Software server only, no new Fedora GPU acceptance.
+- Extension SHA256 `2a6eded80b1becd81acf164abee09a38b8c3625075f404b3a5425906768fe54b`; unchanged lab script `2abc10803e6c9a74060433c96025b1fb9f091573a2e691ba9021c2c338dea518`. Package remains asset-free with external read-only game data. All current child work is finished; the pause is user-directed, not a full-port completion or an implementation blocker.
 
 ### P0 implementation checkpoint — 2026-09-11
 

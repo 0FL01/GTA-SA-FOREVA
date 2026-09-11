@@ -178,6 +178,27 @@ tree.
 
 ## Known differences, not hidden fixes
 
+### TXD-qualified identity gate (P1-A01)
+
+Streamed texture resolution now searches only the complete authored child-to-parent
+TXD chain. Image keys own the resolved IMG/member lineage, owner, texture name and
+runtime RW filter/address bits. Same-name textures from different TXDs do not alias;
+source-null stays distinct from missing/undecodable lineage. Model, geometry and
+material identities are exposed as structured surface metadata. This is not full
+catalog, mip/MatFX, LOD or asynchronous-streaming completion.
+
+```bash
+build/godot-deps/godot-4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64 \
+  --headless --path godot --script res://tests/asset_identity.gd -- --game-dir /game
+```
+
+Require `asset-identity-ok` and no script errors. The source-backed fixture uses
+radius120/cap1200 around Grove and roads: model646's128×128 and model4172's256×256
+`planta256` have distinct owners, resources and DFF-authored samplers (`0x1102`
+versus `0x1106`; DFF's separate `0x10000` mip-generation flag is not part of RW's
+stored filter/address word). Run the same script with the documented explicit
+Wayland/Vulkan/Forward+ flags for real GPU upload/readback verification.
+
 Only the bounded outdoor district is presented: no CJ/vehicle simulation, missions,
 interiors or new physics. Source positions/normals/UV0/day-night colors and material
 coefficients and model-local source material-slot boundaries reach ArrayMesh; secondary UV/MatFX, original

@@ -1,8 +1,9 @@
 # nc-lab workspace handover
 
 Updated: 2026-09-11. Working directory: `/home/opencode/ai/mad-sa`, user `opencode`.
+**USER PAUSE:** finish P1-A01 and stop so the user can replace agents. The current round is verified; do not launch P1-A02 or more children until resumed. See the full-port goal's pause checkpoint and journal GODOT-P1-04.
 **Active direction:** [full standalone Godot port](goals/2026-09-11-godot-full-port.md), approved for long-term execution. The goal preserves the original complete plan and68 atomic steps; `PORT-READINESS.md` is the only roadmap. Read the goal checkpoint and `godot/README.md` before work. Native remains a regression reference. Fedora44/Wayland/Mesa/RX780M is the user's separate test host; server software evidence is not that host's acceptance.
-Latest P0 delivery: `artifacts/godot/sa-legacy-look-lab-p0-linux-x86_64.tar.gz` (asset-free, pinned runtime included), details in GODOT-P0-03 journal entry. Finite-large UV works; source NaN candidates are rejected with provenance while the last world remains live. Native4674ce65 and coherent regression33/0 verified. New target reflight remains open; next independent development atom is P1-A01.
+P0 delivery: `artifacts/godot/sa-legacy-look-lab-p0-linux-x86_64.tar.gz` (asset-free, pinned runtime included), details in GODOT-P0-03. P1-A01 now adds TXD-qualified identity in native `ddc9863d` and the root companion; clean package in `artifacts/godot/package/` passes real identity/upload/readback and retained-world gates. Finite-large UV works; source NaN candidates are rejected with provenance while the last world stays live. Native regression33/0 remains green. Target reflight stays open; next independent atom is P1-A02 only after user resume.
 The user copied this workspace **and the game directory with rsync**. The abandoned archive/manifest migration helpers were removed. Do not resume that migration or restore Git indexes from an archive.
 The workspace has a freshly rebuilt native runtime on this server. This is **not a completed full port or successful original new-game boot**.
 
@@ -10,7 +11,7 @@ Read first: `AGENTS.md`, `docs/PORT-READINESS.md`, `docs/LIVE-TEST-JOURNAL.md`, 
 
 ## Repository and current work
 
-- **Latest task:** approved active full-port implementation, fresh disjoint general lanes with parent integration, Pareto direct gates and stage commits/push. P0 available gates are green; target reflight is tracked separately, not waived. Continue independent catalog/identity work in P1 without starting a second roadmap or forgetting F1/F2/R6.
+- **Latest task:** user-paused after verified P1-A01, before agent replacement. Parent integrated disjoint lanes, ran direct/regression/package gates and records stage commits/push. Preserve the pause and single roadmap; target reflight and F1/F2/R6 remain open.
 - **Publication correction:** user-authorized normal SSH pushes succeeded for root52877f0/native8c62697b and remote master hashes were checked. The earlier failures were explicit HTTPS attempts, not failed SSH keys. Do not treat lack of HTTPS credentials as a current push blocker or read private keys.
 
 - Two independent Git repositories. Incoming rsync bases: root `3847ab367f62a2989dd936f62b300ab649c31388`, native `3adc8ec02ee7e400c7245e67969adbef243e187d`. The remote verification below is from the inherited WIP plus the bounded closure fixes, not those clean bases. Check normal Git status and preserve unrelated work; never reset to older GitHub heads.

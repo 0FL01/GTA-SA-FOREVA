@@ -16,6 +16,7 @@
 #include <godot_cpp/variant/typed_array.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
+#include "app/platform/linux/NativeAssetIdentity.h"
 #include "app/platform/linux/StreamPager.h"
 #include "app/platform/linux/TimeCycle.h"
 
@@ -86,6 +87,51 @@ String SourceString(const std::string& value) {
     return String::utf8(value.data(), static_cast<int64_t>(value.size()));
 }
 
+Dictionary ArchiveMemberIdentity(const NativeAssetIdentity::ArchiveMember& source) {
+    Dictionary identity;
+    identity["archive"] = SourceString(source.archive);
+    identity["member"] = SourceString(source.member);
+    return identity;
+}
+
+Dictionary ModelIdentity(const WorldShotMesh& source) {
+    NativeAssetIdentity::ArchiveMember dff{
+        source.sourceArchiveName,
+        source.sourceModelName + ".dff",
+    };
+    Dictionary identity;
+    identity["dff"] = ArchiveMemberIdentity(dff);
+    identity["model_id"] = source.sourceModelId;
+    return identity;
+}
+
+Dictionary GeometryIdentity(const WorldShotMesh& source, const WorldShotSurface& surface) {
+    Dictionary identity;
+    identity["model"] = ModelIdentity(source);
+    identity["index"] = surface.sourceGeometry;
+    return identity;
+}
+
+Dictionary MaterialIdentity(const WorldShotMesh& source, const WorldShotSurface& surface) {
+    Dictionary identity;
+    identity["geometry"] = GeometryIdentity(source, surface);
+    identity["slot"] = surface.sourceMaterial;
+    return identity;
+}
+
+Dictionary TextureIdentity(const WorldShotImage& source) {
+    Array lineage;
+    for (const auto& member : source.sourceIdentity.lineage) {
+        lineage.push_back(ArchiveMemberIdentity(member));
+    }
+    Dictionary identity;
+    identity["lineage"] = lineage;
+    identity["owner"] = ArchiveMemberIdentity(source.sourceIdentity.owner);
+    identity["name"] = SourceString(source.sourceIdentity.name);
+    identity["filter"] = static_cast<int64_t>(source.sourceIdentity.filter);
+    return identity;
+}
+
 const char* NonfiniteName(float value) {
     if (std::isnan(value)) {
         return "nan";
@@ -111,6 +157,63 @@ void SetNonfiniteUvFailure(const WorldShotMesh& mesh, size_t uvIndex, float valu
     failure.errorContext["material_slot"] = surface.sourceMaterial;
     failure.errorContext["uv_component"] = (uvIndex % 2 == 0) ? "u" : "v";
     failure.errorContext["value"] = NonfiniteName(value);
+}
+
+void SetTextureIdentityFailure(const WorldShotMesh& mesh, size_t triangle, int imageIndex,
+                               const WorldShotImage& image, const char* reason,
+                               ValidationFailure& failure) {
+    const auto& surface = mesh.surfaces[triangle];
+    failure.error = String("pager returned invalid texture identity for model '") +
+        SourceString(mesh.sourceModelName) + "' (id " + String::num_int64(mesh.sourceModelId) +
+        "), image " + String::num_int64(imageIndex) + ": " + reason;
+    failure.errorCode = "invalid_texture_identity";
+    failure.errorContext["archive"] = SourceString(mesh.sourceArchiveName);
+    failure.errorContext["model"] = SourceString(mesh.sourceModelName);
+    failure.errorContext["model_id"] = mesh.sourceModelId;
+    failure.errorContext["txd"] = SourceString(mesh.sourceTxdName);
+    failure.errorContext["placement_id"] = static_cast<int64_t>(mesh.sourcePlacementId);
+    failure.errorContext["geometry"] = surface.sourceGeometry;
+    failure.errorContext["triangle"] = surface.sourceTriangle;
+    failure.errorContext["material_slot"] = surface.sourceMaterial;
+    failure.errorContext["image_index"] = imageIndex;
+    failure.errorContext["reason"] = reason;
+    if (image.hasSourceIdentity) {
+        failure.errorContext["texture_identity"] = TextureIdentity(image);
+    }
+}
+
+bool ValidateTextureIdentity(const WorldShotMesh& mesh, size_t triangle, int imageIndex,
+                             const WorldShotImage& image, ValidationFailure& failure) {
+    const auto reject = [&](const char* reason) {
+        SetTextureIdentityFailure(mesh, triangle, imageIndex, image, reason, failure);
+        return false;
+    };
+    if (!image.hasSourceIdentity) {
+        return reject("missing_source_identity");
+    }
+    const auto& identity = image.sourceIdentity;
+    if (identity.lineage.empty()) {
+        return reject("empty_lineage");
+    }
+    if (std::any_of(identity.lineage.begin(), identity.lineage.end(), [](const auto& member) {
+            return member.archive.empty() || member.member.empty();
+        })) {
+        return reject("incomplete_lineage_member");
+    }
+    if (identity.owner.archive.empty() || identity.owner.member.empty()) {
+        return reject("incomplete_owner");
+    }
+    if (identity.name.empty()) {
+        return reject("empty_name");
+    }
+    if (std::find(identity.lineage.begin(), identity.lineage.end(), identity.owner) ==
+        identity.lineage.end()) {
+        return reject("owner_not_in_lineage");
+    }
+    if (identity.filter != image.filter) {
+        return reject("filter_mismatch");
+    }
+    return true;
 }
 
 bool ValidateScene(const WorldShotScene& scene, ValidationFailure& failure) {
@@ -199,6 +302,10 @@ bool ValidateScene(const WorldShotScene& scene, ValidationFailure& failure) {
                 failure.errorContext["triangle"] = mesh.surfaces[triangle].sourceTriangle;
                 failure.errorContext["material_slot"] = mesh.surfaces[triangle].sourceMaterial;
                 failure.errorContext["placement_id"] = static_cast<int64_t>(mesh.sourcePlacementId);
+                return false;
+            }
+            if (image >= 0 && !ValidateTextureIdentity(
+                    mesh, triangle, image, scene.images[static_cast<size_t>(image)], failure)) {
                 return false;
             }
             const auto& surface = mesh.surfaces[triangle];
@@ -381,9 +488,11 @@ bool AddSurface(const WorldShotMesh& source, const SurfaceGroup& group, Ref<Arra
     if (image >= 0) {
         material["texture"] = textures[static_cast<size_t>(image)];
         material["filter"] = static_cast<int64_t>(scene.images[static_cast<size_t>(image)].filter);
+        material["texture_identity"] = TextureIdentity(scene.images[static_cast<size_t>(image)]);
     } else {
         material["texture"] = Variant();
         material["filter"] = int64_t{0};
+        material["texture_identity"] = Dictionary();
     }
     material["color"] = Color(surface.color[0], surface.color[1], surface.color[2], surface.color[3]);
     material["ambient"] = static_cast<double>(surface.ambient);
@@ -393,6 +502,9 @@ bool AddSurface(const WorldShotMesh& source, const SurfaceGroup& group, Ref<Arra
     material["source_model"] = SourceString(source.sourceModelName);
     material["source_material_slot"] = surface.sourceMaterial;
     material["source_geometry"] = surface.sourceGeometry;
+    material["model_identity"] = ModelIdentity(source);
+    material["geometry_identity"] = GeometryIdentity(source, surface);
+    material["material_identity"] = MaterialIdentity(source, surface);
     return true;
 }
 
