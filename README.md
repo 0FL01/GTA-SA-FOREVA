@@ -19,6 +19,12 @@ and rebuilt from source instead of binary patches.
 
 ## Repository map
 
+Current progress: [readiness roadmap](docs/PORT-READINESS.md) ·
+[manual live-test journal](docs/LIVE-TEST-JOURNAL.md) ·
+[nc-lab/WIP handover](docs/REMOTE-HANDOVER.md).
+The detailed historical evidence remains in `docs/goals/`; a green subsystem
+probe does not certify full gameplay or a manual parity pass.
+
 | Path | What it is |
 |---|---|
 | `gta-reversed/` | Fork of gta-reversed (independent git repo with its own remote). Upstream = MSVC/Win32 DLL injected via ASI loader; this fork adds the **native Linux track**: `source/app/platform/linux/` (standalone `main` + subsystem harnesses), `oswrapper_linux.cpp`, `vendor/librw`. |
