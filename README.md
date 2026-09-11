@@ -90,7 +90,7 @@ ceiling). `--hour` accepts fractional hours in [0,24); the timecycle advances
 one game minute per real second unless `--freeze-time` is supplied.
 
 This is an **interactive gameplay slice, not full San Andreas parity**. A real
-skinned `andre` with four IFP clips and a real Landstal persist across ticks;
+skinned `andre` with six IFP clips and a real Landstal persist across ticks;
 movement, jumping/landing, collision blocking, entering/driving/exiting and a
 collision-aware third-person camera operate in the same loop as rendering.
 `--player-cj` replaces Andre with the owned five-part CJ mesh, four composed
@@ -100,17 +100,24 @@ muscle 50 (95% Normal, 5% Ripped); it is a preview, not skipped mission executio
 **Experimental SCM boot:** `./play.sh --new-game` executes the real main script,
 creates its persistent base player/world, and honors the initial black fade and
 08:00 clock. Currently mission 0 stops with exit **1** at unsupported
-`0570 CREATE_CONTACT_BLIP`, IP **205876**, after 539 mission commands, including
+`014B CREATE_CAR_GENERATOR`, IP **207007**, after 679 mission commands, including
 32 property pickups/radar markers, 13 save tokens, 30 ENEX writes and 13 garage deactivations.
 Save tokens use actual model 1277, source visibility scheduling and the shared
-generation-qualified pool. Collection still stops before side effects where the
-original player task/event authority is required; a rendered disk is not a working save menu.
-The HUD has verified sprite 33 (`radar_race`), but its host service is not yet enabled.
+generation-qualified pool. A bounded controller-owned activity model now gates
+collection; accepted collection removes the object and appends its full reference
+to the 20-entry collected ring. `0214` consumes that event once; `0215` performs
+generation-aware removal. Actual landing clips gate eligibility until their finish
+callback and subsequent task processing. Unknown task/weapon authority still fails
+closed. SDL feedback is connected; virtual-gamepad tests verify one 120 ms rumble,
+and absence of a controller is a normal outcome. This is not a save frontend or
+save-file implementation. Sprite 33 (`radar_race`) is enabled only after GPU readiness.
 The source-sized garage registry consumes real player/COL state. Fourteen initial
 door placement overrides are shared by rendering and collision; the first garage
 update disables collision for 13 open doors without duplicating their geometry.
-Opening/restoration, garage-camera transitions and vehicle-pool maintenance still
-require their original consumers; they are explicit unsupported boundaries.
+An owned 110-slot native vehicle pool supplies the garage census: empty far tidy
+plans complete, while nonempty destruction and near-collision plans remain explicit
+unsupported requirements. Missing original traffic is not claimed to be an empty
+original-game pool. Opening/restoration and garage-camera transitions remain unported.
 Sale presentation uses the actual model, green radar sprite, projected Pricedown
 price and localized TAB prompt/denials. Player cash starts at zero; a funded
 interaction requires still-unported script purchase logic, not an invented debit.
