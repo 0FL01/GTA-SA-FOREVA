@@ -169,6 +169,14 @@ queries, not an invented floor six metres below every water polygon. Ordered
 block limit; the water path's extra list is empty. Underwater effects, reflections
 and complete weather parity remain open.
 For a shoreline check: `./play.sh --freecam --cam 820,-1880,6 --freeze-time`.
+The low-cloud layer uses the original `particle:cloud1`, source positions,
+additive blending and timecycle low-cloud RGB, including smog-altitude blending.
+It is visible in the applicable fixed sunny weathers, not forcibly enabled in
+extra-sunny/cloudy weather. Check it with
+`./play.sh --freecam --cam 1600,-1700,30 --weather SUNNY_LA --freeze-time`.
+The native camera remains 60 degrees; source sprite sizing independently uses
+70 degrees. Fluffy/volumetric clouds, weather transitions and the unreversed
+buffered-sprite rasterizer are not claimed complete.
 Shared `vehicle.txd`
 textures now resolve in the original common-before-model order. Vehicle damage
 transitions/specular/reflections, complete water-depth queries, reflections,
