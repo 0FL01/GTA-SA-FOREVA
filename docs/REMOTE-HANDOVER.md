@@ -1,47 +1,70 @@
 # nc-lab workspace handover
 
-Prepared: 2026-09-11. Destination: `/home/opencode/ai/mad-sa`.
-This is a **workspace/WIP handover**, not a successful remote game run or a completed full port.
+Updated: 2026-09-11. Working directory: `/home/opencode/ai/mad-sa`, user `opencode`.
+The user copied this workspace **and the game directory with rsync**. The abandoned archive/manifest migration helpers were removed. Do not resume that migration or restore Git indexes from an archive.
+The workspace has a freshly rebuilt native runtime on this server. This is **not a completed full port or successful original new-game boot**.
 
 Read first: `AGENTS.md`, `docs/PORT-READINESS.md`, `docs/LIVE-TEST-JOURNAL.md`, then the current section and latest entries of `docs/goals/2026-09-08-linux-native-opengl-port.md`.
 
 ## Repository and current work
 
-- Two independent Git repositories. Source root base: `6421b01adbc7a6bf11083ed90560ff3f16e1b5c2`; native HEAD: `3adc8ec02ee7e400c7245e67969adbef243e187d`. Any later root documentation-only commit is recorded by Git/transfer metadata.
-- Preserve all current unstaged/untracked work. In particular the five new families `NativeRestarts*`, `NativeWorldGround*`, `NativeVehicleAssetQueue*`, `NativeLiveEntityBounds*`, `NativeLodCatalog*`, plus changed Session/Host/VehiclePool/Streaming and parent CMake/probe integration.
-- Current WIP child evidence: restart registration/selection1234 commands then0814@212669; same-worker400/476 CPU packets; native live-bound blockage; authored LOD graph. World-ground authority remains Unsupported for missing original bounds/model-wide LOD/order coverage. These are bounded findings, not full spawn/LOD/restart lifecycles.
-- Parent added NativeRestarts.cpp to native CMake and updated strict frontier probes to1234/0814 with preceding016D@212645. `artifacts/graphics/round-final-core.log`: coherent product build and **5451 VM checks passed**. The subsequent combined gates were interrupted; final restart host/queue/bounds/ground/LOD/runtime closure and production commit/push remain to do. Do not assert old binaries/probes prove the final dirty tree.
-- Last fully verified committed runtime: main53/mission1219/016C, five black08:00 frames, fullboot0; CJ1645 swaps/28.017s, curb714/12.006s, regression33/0. Historical evidence is local AMD780M/Mesa26.1.4, not this server.
+- Two independent Git repositories. Incoming rsync bases: root `3847ab367f62a2989dd936f62b300ab649c31388`, native `3adc8ec02ee7e400c7245e67969adbef243e187d`. The remote verification below is from the inherited WIP plus the bounded closure fixes, not those clean bases. Check normal Git status and preserve unrelated work; never reset to older GitHub heads.
+- The five families `NativeRestarts*`, `NativeWorldGround*`, `NativeVehicleAssetQueue*`, `NativeLiveEntityBounds*`, `NativeLodCatalog*` and Session/Host/VehiclePool/Streaming/CMake/probe integration are preserved in native commit `22dee69e52564a52a54a948d463bdf47cfb3c4d0`. Preserve any later unstaged/untracked work normally.
+- Five fresh stateless general reviews completed without child delegation. Restarts are product-integrated; same-worker400/476 CPU packets, native live-bound blockage, world-ground authority and authored LOD catalog remain **prepared**, with no new production spawn/LOD/ground consumer. World-ground queries remain Unsupported for missing original bounds/model-wide LOD/order/coverage.
+- Fresh integrated Weston/Wayland diagnostic confirms main53/mission1234, hospitals8/police7, unadvanced0814@212669 and preceding016D@212645; five black08:00 frames, runtimeexit1/fullboot0. `artifacts/build-runs/nc-lab-wayland-boot.log` is server evidence; the incoming `round-final-core.log` and interrupted combined gates are historical only.
+- Remote CJ demo:244 swaps/28.042s, three app-owned GL0/restored1 captures and265 MangoHud CSV samples. Images were agent-reviewed; physical live acceptance and original parity remain open. Older CJ1645/28.017s, curb714/12.006s and main53/mission1219 results are local AMD780M/Mesa26.1.4 history, not server performance.
 - CPU-no-HUD negative539/0570@205876 remains intentional. Unknown commands/services stay terminal and unadvanced; expected exit1 is not full-boot success.
 - Existing `.opencode/`, `opencode.jsonc`, root `e2e_W*.tga`, and native `__pycache__` are user/pre-existing state, not files to sweep into a feature commit. Host-specific tool paths may require explicit review before use; do not run copied automation blindly.
 
-## Transfer scope / exclusions
+## User-provided workspace and assets
 
-Transfer keeps both `.git` histories (including librw submodule objects), code, dirty/untracked work, docs and permitted local evidence/build caches. Cache paths and binaries are preserved as historical state, **not portable build readiness**.
+`Grand-Theft-Auto-San-Andreas/` was supplied by the user via rsync. Preserve it unchanged and mount it at `/game:ro`; the workspace alias is also mounted read-only. Real asset parsing/rendering and bounded runtime probes have run on the server. This is not a byte-for-byte audit of the entire install. Do not recopy, modify, delete, commit or bake game data into an image.
 
-The game install `Grand-Theft-Auto-San-Andreas/` is **not transferred**, following the current `never edit/commit/copy` instruction. Raw game-format payloads outside that directory, environment/SSH material, local-only external symlinks, known unrelated desktop captures, and the transfer staging directory are excluded. The transfer manifest records the exact selection. Nothing is removed from the local workspace.
+Both Git histories, including librw submodule metadata, and current WIP are present. Copied cache paths and binaries are historical state, **not proof of portable build readiness**. Preserve unrelated user config and evidence.
 
-Consequently real-asset runtime/probes on nc-lab need a separately permitted legal asset provision first. Never download substitutes, commit game data, bake it into an image, or bypass the copy restriction by reconstructing assets from evidence.
+Cleanup scope was only agent-created `artifacts/migration-nc-lab` on both hosts and the already absent sibling staging directories. No product source, game directory, user rsync result or Git index was restored/deleted during cleanup. There is no migration manifest prerequisite for further work.
 
-## Observed server state (read-only RECON)
+## Server state and verified setup
 
 - Debian13.4, kernel6.12.86,6vCPU,11.68GiB RAM/~7.7GiB available,236GiB free disk.
 - `opencode` UID/GID1003, home `/home/opencode`, linger enabled.
-- Docker29.4.3 **rootless** context, socket `/run/user/1003/docker.sock`, store `/home/opencode/.local/share/docker`; no user containers running at RECON. Leave the17 existing root-daemon containers untouched.
+- Docker29.4.3 **rootless** context, socket `/run/user/1003/docker.sock`, store `/home/opencode/.local/share/docker`. Created only the rootless `mad-sa-graphics-build` container (4CPU/6GiB), using `/workspace` and `/workspace/build`. Host root access was neither required nor used; root-daemon containers were untouched.
 - CPU quota/memory limits supported; cpuset and IO limits unavailable. Start around4CPU/6GiB and `-j2`; heavy GL gates one at a time. Five agents may work on disjoint source lanes, not five concurrent full GPU stress suites.
 - QEMU/bochs VGA, no render-node; Mesa25.0.7 present. Use software llvmpipe, not a hardware-FPS claim.
-- No `mad-sa:dev`, Weston or MangoHud verified installed. No server package/image changes were made during RECON. Current task only transfers the workspace.
-- Read-only HTTPS Git access works. Root remote now exists (`0FL01/GTA-SA-FOREVA`); native is `0FL01/gta-reversed`. Observed remote HEADs6c4681d/0076f901 lag the local histories. Prior HTTPS push lacked authentication; current write authorization is unverified. Do not overwrite local history by resetting to those remote heads, force-push, read credentials, or rewrite remotes without cause.
+- Built `mad-sa:dev` image `91f7df6f5c32` from the existing Ubuntu24.04 Dockerfile, with optional `UBUNTU_MIRROR=http://mirrors.edge.kernel.org/ubuntu` after default archive timeouts; normal signed apt validation remains enabled. The image now includes strace, Weston and MangoHud. Fresh Conan/CMake and clean-first GCC13.3 build replace copied build evidence.
+- Keep both `wayland/*:shared=True` and `xkbcommon/*:shared=True` with SDL3/3.4.14. Static Conan Wayland1.24 plus Mesa's system Wayland1.22 deadlocked window creation; Wayland-only shared then failed missing keyboard symbols. Both shared resolved it. `mangohud --dlsym` is needed for this SDL/EGL path's CSV on the distro package. Software renderer: Mesa25.2.8, llvmpipe LLVM20.1.2; Weston13 headless/pixman,1280×720. Use `LP_NUM_THREADS=2`.
+- Read-only HTTPS Git access works. Root remote is `0FL01/GTA-SA-FOREVA`; native is `0FL01/gta-reversed`. Fresh native push of22dee69e failed `could not read Username for 'https://github.com': terminal prompts disabled`. Do not reset local history to old remote heads, force-push, read credentials or rewrite remotes; SSH is not used. Missing HTTPS write authentication is a publication limitation, not a reason for host root access.
 
-## Next checkpoint
+## Closed stage and next checkpoint
 
-1. Check user, target path, transfer verification, both HEADs and dirty statuses. Do not start another feature round before closing current WIP.
-2. Build the existing Ubuntu24.04 `mad-sa:dev` image under **opencode's rootless Docker**, preserving Conan SDL3/3.4.14, GCC13 and `/workspace`. Container root maps to host opencode; do not blindly carry over host `--user 1000:1000` commands.
-3. Generate fresh Conan/CMake build paths rather than trust copied absolute caches. Preserve local evidence before replacing build outputs. Use `/game:ro` and, if a runner requires it, an additional read-only workspace game-path mount, only once assets are legitimately available.
-4. Run smoke, the five new probes, actual restart Host/VM gates, affected pickup/feedback/coordinate/generator boundary gates, worker publication/shutdown and `tools/etalon-sweep.sh`. Record command, exit, source snapshot and backend. Source-ground arithmetic requires no-fast-math/FP contraction off. Do not disable tests or change expectations absent source evidence.
-5. Validate EGL surfaceless first; then Weston headless + SDL Wayland + MangoHud with continuous `log_duration=0`. Read only app-owned framebuffer captures; overlay is excluded from pre-swap captures but CSV can verify logging. These remote gates have NOT yet been run.
-6. Close the round, update readiness/live journal/chronology, commit explicit intended files in the appropriate repo, and push only with available authorized authentication. Nontrivial messages: `type(scope): description`, blank line, indented `Changes:` with2–4 bullets.
-7. Continue F1/F2 via **five fresh stateless general children per round**, disjoint files, parent integration and verification. Children do not delegate. Do not call prepared asset/graph/census APIs completed original systems.
+- Inherited WIP stage is verified locally: `artifacts/build-runs/nc-lab-closure.log` records40/40 successful serial command invocations, including5451 VM checks and sweep33/0. Final Wayland boot, worker publication, CJ capture/CSV and actual root launcher also pass. `nc-lab-wayland-boot-final.log` is the final rebuilt diagnostic; CI-HL-01 records image review and failed experiments. The old interrupted combined run is not used as closure.
+- Explicit native commit22dee69e and root companion carry only intended source/build/docs/launcher changes. Conditional push needs HTTPS write authentication, currently unavailable. Full F1/F2/R6 remains open; no next feature round was started during this closure.
+- Next engineering dependencies are below and in the roadmap: real model-demand/ground/blockage/population/spawn/cleanup consumers and actual0814 ownership, not fake Ready/no-op services. Start by checking user/cwd/both Git statuses and preserving later WIP. Never resume archive migration or restore indexes/reset/clean.
+- For a subsequent stage use **five fresh stateless general children**, disjoint files, no child delegation; parent owns integration/gates. Keep-j2/one heavy GL, source FP rules, rootless Docker, both game mounts read-only and `/workspace/build`. Commit each verified stage with2–4 indented Changes bullets and push only when authorized authentication exists.
+
+## First build / closure commands
+
+Use the existing `Dockerfile`/README recipe, not a new migration framework. Run Docker as `opencode` with its `rootless` context. Start with `-j2` and one heavy GL suite at a time; no hardware acceleration is available on this VDS.
+
+Inside `mad-sa:dev`, with `/workspace` as cwd and legal assets at `/game:ro`:
+
+```sh
+conan install --requires=sdl/3.4.14 -o 'sdl/*:pulseaudio=False' \
+  -o 'wayland/*:shared=True' -o 'xkbcommon/*:shared=True' \
+  -c tools.build:jobs=2 -of build-conan -g CMakeDeps -g CMakeToolchain --build=missing
+cmake -S gta-reversed -B build -DGTASA_BUILD_LEGACY=OFF \
+  -DCMAKE_TOOLCHAIN_FILE=/workspace/build-conan/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target mad-sa-linux -j2
+./build/mad-sa-linux --smoke
+python3 -B gta-reversed/source/app/platform/linux/NativeScriptSessionProbe.py
+python3 -B gta-reversed/source/app/platform/linux/NativeRestartsProbe.py --build --game-dir /game
+python3 -B gta-reversed/source/app/platform/linux/NativeRestartsProbe.py --run --game-dir /game
+bash tools/etalon-sweep.sh
+```
+
+Then build/run the queue, live-bounds, world-ground and LOD probes using their own CLI, and the affected runtime/boundary/pickup/feedback/streaming gates. Do not claim the whole round green from the abbreviated command list above. Establish surfaceless EGL/llvmpipe before headless Weston/Wayland; validate MangoHud separately. Physical input/audio/rumble and GPU performance remain hardware-host gates.
+
+Update the roadmap and append actual dated results to the live journal and goal chronology. Log manual failures as well as passes; screenshots or CPU tests are not user live acceptance.
 
 ## Important next engineering dependencies
 

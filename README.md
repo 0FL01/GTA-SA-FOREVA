@@ -55,11 +55,12 @@ In-container build (SDL3 via Conan, then CMake):
 
 ```bash
 conan install --requires=sdl/3.4.14 -o 'sdl/*:pulseaudio=False' \
+      -o 'wayland/*:shared=True' -o 'xkbcommon/*:shared=True' -c tools.build:jobs=2 \
       -of build-conan -g CMakeDeps -g CMakeToolchain --build=missing
 cmake -S gta-reversed -B build -DGTASA_BUILD_LEGACY=OFF \
       -DCMAKE_TOOLCHAIN_FILE=/workspace/build-conan/conan_toolchain.cmake \
       -DCMAKE_BUILD_TYPE=Release
-cmake --build build --target mad-sa-linux
+cmake --build build --target mad-sa-linux -j2
 file build/mad-sa-linux                 # ELF 64-bit, x86-64
 ./build/mad-sa-linux --smoke            # first gate
 ```
@@ -67,6 +68,15 @@ file build/mad-sa-linux                 # ELF 64-bit, x86-64
 Result: `build/mad-sa-linux`, an x86_64 ELF that links **no Wine / Win libraries**
 (check with `ldd`). The native track reads game assets directly (`IMG/DFF/TXD/
 GXT/dat` via `OS_File*`) and never touches `gta-sa.exe`.
+
+Keep Wayland and xkbcommon shared: SDL and Mesa EGL must use the same `libwayland-client`
+implementation. Statically embedding Conan Wayland while Mesa loads the system
+copy can deadlock during window creation (observed with Wayland 1.24 / 1.22).
+SDL's dynamic Wayland loader also needs shared xkbcommon for keyboard symbols.
+On headless software-rendering servers use `LIBGL_ALWAYS_SOFTWARE=1` and
+`LP_NUM_THREADS=2`; run EGL gates before Weston headless/Wayland, one GL run at a time.
+The launcher uses `mangohud --dlsym` so SDL's dynamically resolved EGL swaps
+also reach the overlay/logger on the Ubuntu 24.04 MangoHud package.
 
 ### Interactive OpenGL + Wayland + MangoHud
 
@@ -106,11 +116,15 @@ muscle 50 (95% Normal, 5% Ripped); it is a preview, not skipped mission executio
 **Experimental SCM boot:** `./play.sh --new-game` executes the real main script,
 creates its persistent base player/world, and honors the initial black fade and
 08:00 clock. Currently mission 0 stops with exit **1** at unsupported
-`016C ADD_HOSPITAL_RESTART`, IP **212309**, after 1219 mission commands, including
+`0814`, IP **212669**, after **53 main / 1234 mission** commands, including
 32 property pickups/radar markers, 13 save tokens, 30 ENEX writes, 14 garage deactivations
 and nine coordinate radar blips. Coordinate blips have their own source kind and
 remain visible during missions; all 62 texture-backed source radar sprites are
 prepared and uploaded, with the authored nearest filtering and explicit readiness.
+`016C/016D` register eight hospitals and seven police restarts; the previous
+committed instruction is `016D@212645`. Owned restart selection is tested, but
+death/arrest/resurrection is not implemented. The five black 08:00 diagnostic
+frames and expected Unsupported exit **1** are **not a completed new-game boot**.
 `014B/014C` now create and switch actual owned generator definitions: 88 binary-IPL
 definitions from 22 source-COL-resident sources, followed by 10 script definitions
 and 10 switches. Definition registration is **not vehicle spawning**. Processing

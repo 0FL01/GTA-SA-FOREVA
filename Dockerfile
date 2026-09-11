@@ -8,6 +8,10 @@
 #   happens in the `mad-sa-linux` native track (`-DGTASA_BUILD_LEGACY=OFF`).
 FROM ubuntu:24.04
 
+# Optional signed Ubuntu mirror for hosts unable to reach the default archive.
+# Empty keeps the image's original archive/security URIs and keyring checks.
+ARG UBUNTU_MIRROR=
+
 ENV DEBIAN_FRONTEND=noninteractive \
     CMAKE_GENERATOR=Ninja \
     CONAN_HOME=/opt/conan \
@@ -21,7 +25,11 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # - RE CLI: binutils (objdump), file; GUI (Ghidra/Cutter) stays on host.
 #   Python RE libs (lief/capstone) come via pip below - rizin is NOT in
 #   Ubuntu noble repos, so it is intentionally not an apt dependency.
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN if [ -n "$UBUNTU_MIRROR" ]; then \
+        sed -i -e "s|http://archive.ubuntu.com/ubuntu/|$UBUNTU_MIRROR/|g" \
+               -e "s|http://security.ubuntu.com/ubuntu/|$UBUNTU_MIRROR/|g" /etc/apt/sources.list.d/ubuntu.sources; \
+    fi \
+    && apt-get update && apt-get install -y --no-install-recommends \
     build-essential gcc-multilib g++-multilib clang lld \
     cmake ninja-build pkg-config ccache git curl unzip zip \
     python3 python3-pip python3-venv \
@@ -37,7 +45,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxcb-composite0-dev libxcb-ewmh-dev libxcb-res0-dev libxcb-util-dev \
     libwayland-dev libudev-dev libdbus-1-dev libibus-1.0-dev \
     libjpeg-turbo8-dev libogg-dev libvorbis-dev \
-    wine64 mingw-w64 binutils file \
+    wine64 mingw-w64 binutils file strace weston mangohud \
     && rm -rf /var/lib/apt/lists/*
 
 # Conan 2 (Ubuntu 24.04 pip is externally-managed -> break-system-packages is intended here)

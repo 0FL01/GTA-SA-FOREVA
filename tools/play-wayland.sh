@@ -13,12 +13,14 @@ fi
 command -v mangohud >/dev/null
 mkdir -p "$root/artifacts/graphics"
 export SDL_VIDEODRIVER=wayland
-# Conan's static xkbcommon otherwise searches its container-only locale path.
+# Conan's xkbcommon otherwise searches its container-only locale path.
 if [[ -d /usr/share/X11/locale ]]; then
     export XLOCALEDIR=/usr/share/X11/locale
 fi
 # Continuous logging avoids the broken post-log benchmark panel in the host's
 # MangoHud 0.8.3-rc1 package (reports v0.8.2). CSV rows flush during the run.
 export MANGOHUD_CONFIG="${MANGOHUD_CONFIG:-fps,frametime,gpu_name,gpu_stats,cpu_stats,autostart_log=1,log_duration=0,log_interval=100,output_folder=$root/artifacts/graphics}"
-exec mangohud "$root/build/mad-sa-linux" --play \
+# SDL resolves EGL entry points dynamically; older MangoHud packages need this
+# hook as well as the ordinary GL preload to observe swaps and write CSV rows.
+exec mangohud --dlsym "$root/build/mad-sa-linux" --play \
     --game-dir "$root/Grand-Theft-Auto-San-Andreas" "$@"
