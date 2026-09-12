@@ -1,3 +1,4 @@
+#include "sa_input_bridge.h"
 #include "sa_legacy_bridge.h"
 
 #include <godot_cpp/core/class_db.hpp>
@@ -8,6 +9,7 @@ using namespace godot;
 static void InitialiseSALegacy(ModuleInitializationLevel level) {
     if (level == MODULE_INITIALIZATION_LEVEL_SCENE) {
         ClassDB::register_class<SALegacyBridge>();
+        ClassDB::register_class<SALegacyInput>();
     }
 }
 

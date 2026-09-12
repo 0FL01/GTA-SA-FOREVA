@@ -55,6 +55,7 @@ set(NATIVE_LOD_SOURCES
 add_library(sa_legacy SHARED
     register_types.cpp
     sa_legacy_bridge.cpp
+    sa_input_bridge.cpp
     sa_region_plan.cpp
     sa_region_worker.cpp
     os_file_posix.cpp
@@ -96,11 +97,14 @@ set_target_properties(sa_legacy PROPERTIES
 # P2-A01 owned startup core: existing session + POSIX OS adapter only.
 # P2-A02 adds the owned source clock plus the existing source RNG (both
 # unchanged API reuse; no extension linkage change).
-# sa_legacy above is unchanged; this core is not linked into the extension yet.
+# P2-A03 adds the pure owned source pad (sibling NativeSourcePad.h/.cpp, no
+# session/clock/IO dependency). sa_input_bridge.cpp above is the only
+# extension TU that uses it.
 set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceRng.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceClock.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePad.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/os_file_posix.cpp"
 )
 add_library(sa_core STATIC ${SA_CORE_SOURCES})
@@ -115,11 +119,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
         PROPERTIES COMPILE_OPTIONS "-fexceptions"
     )
-    # Strict source float semantics for the clock and the reused RNG;
-    # no source-file edits, only build flags.
+    # Strict source float semantics for the clock, the reused RNG, and the
+    # pad axis quantizer; no source-file edits, only build flags.
     set_source_files_properties(
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceClock.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceRng.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePad.cpp"
         PROPERTIES COMPILE_OPTIONS "-fno-fast-math;-ffp-contract=off"
     )
 endif()
@@ -137,3 +142,22 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_clock_probe PRIVATE
         -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
 endif()
+
+# P2-A03 owned source-pad probe: links ONLY sa_core, never the extension.
+# Prints the versioned canonical trace to stdout (`--trace`, no path arg, no
+# game assets): header plus 11 canonical rows including duplicate2, matching
+# the C++ literal oracles that input_trace.gd compares FULL-text.
+add_executable(sa_core_input_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePadProbe.cpp"
+)
+target_link_libraries(sa_core_input_probe PRIVATE sa_core)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_core_input_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+endif()
+
+# P2-A03 extension seam: static sa_core link AFTER both targets are defined.
+# The archive pulls ONLY the Pad object (SubmitSample/QuantizeAxis/FormatFrame/
+# StatusName); Session/Clock/IO objects stay unreferenced. exports.map keeps
+# its single sa_legacy_library_init entry; bind/data/worker/.so APIs unchanged.
+target_link_libraries(sa_legacy PRIVATE sa_core)

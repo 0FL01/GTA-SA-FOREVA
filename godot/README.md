@@ -248,6 +248,45 @@ JSON; `GameMs` horizon rejects before `uint32` wrap while `NC`/`Pause` wrap;
 strict binary32 (`-fno-fast-math -ffp-contract=off`), no x87 parity; no
 frame-partition invariance; missing game data is nonzero exit.
 
+## Source pad input seam (P2-A03)
+
+Pure `NativeSourcePad` consumes caller-stamped samples (nonzero sequence,
+nondecreasing tick, signed left axes, three Mode0 buttons); Old/New masks
+derive non-consuming Down/Pressed/Released. Identical replay is idempotent;
+conflicts/backwards/invalid leave state unchanged. Holding needs persistent
+host device state; no-submit freezes, identical resubmit expires pressed, and
+a tap between samples is unobserved. Registered SCENE Node `SALegacyInput`
+receives actual synthetic `Input.parse_input_event` callbacks for device-0
+left axes + X/A/Y, then samples at explicit timestamps. Default axis profile:
+no inversion/swap, abs<=0.3 zero else trunc(v*128). `sa_core` gains only the
+pad object; `sa_input_bridge.cpp` is the sole extension user and links
+`sa_core` privately (Session/Clock/IO stay unreferenced). `exports.map` keeps
+its single entry; bind/data/worker/`.so` APIs are unchanged.
+
+```bash
+./tools/godot-build.sh
+build/godot-native/sa_core_input_probe --trace > "$PWD/artifacts/godot/pad-trace.txt"
+GODOT_BIN="$PWD/build/godot-deps/godot-4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64"
+"$GODOT_BIN" --headless --path godot --script res://tests/input_trace.gd -- \
+  --reference-trace "$PWD/artifacts/godot/pad-trace.txt"
+```
+
+Require `input-trace-ok` (synthetic, not physical) plus FULL versioned
+`native-source-pad-trace-v1` text match (11 canonical rows including
+duplicate2) against the probe's C++ literal oracles. Core statuses are
+lower_snake (`ok`, `duplicate_idempotent`, `invalid_sequence`,
+`duplicate_conflict`, `backward_tick`, `non_finite_axis`, `axis_out_of_range`,
+`invalid_buttons`); ignored is the owned literal `ignored`. Named limits:
+device 0 only; X->1/A->2/Y->4, left axes 0/1, other devices/types/buttons/axes
+ignored; invalid supported axes reject (never clamp) with
+`rejected_events`/`last_event_status`; negative seq/tick reject as owned
+`invalid_sequence` before the uint64 cast (bounded host validation), seq 0 is
+a core error, duplicate idempotent is ok true; fixture axis 0.304 gives 38 via
+trunc(0.304*128); no keyboard/focus/hotplug/remap/pause/clock/auto-latch/
+inference/CJ/camera claims; no assets or game dir; the script only reads the
+explicit fixture and writes nothing. Full native sweep, rendered package, and
+regression gates are parent-run, not part of this lane.
+
 ## Sole-owner parser worker (P1-A05)
 
 One C++ worker owns region parsing and counter capture, with one latest-request
