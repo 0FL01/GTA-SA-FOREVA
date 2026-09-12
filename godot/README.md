@@ -90,7 +90,14 @@ neither native nor Godot runtime reads that executable.
 P3-A02 is in progress. `sa_core_physical_probe` verifies61 checks:31 force/gravity/
 dynamic-ped pair cases,13 retail collision-step cases and17 friction cases. This
 preserves source minimum/narrowing and friction accumulation/consumption, including
-the unclamped second pair force; coefficients remain caller-supplied, not a surface owner.
+the unclamped second pair force. `sa_core_surfaces_probe /game` verifies429 checks
+for the owned source adhesion/material binding: real179 material rows, generated
+matrix/order/parser cases, atomic reload rejection and the physical friction handoff.
+The existing canonical name table is shared through a metadata-only source build;
+coefficients stay in the external game files. Only adhesion is adopted, not all
+surface flags/effects. Direct/ASan/UBSan, read-only IO, pure link closure and Win32
+lookup syntax checks pass (`artifacts/build-runs/p3-surfaces-*.log`). Core22 TUs;
+the extension remains byte-identical to the latest clean rendered delivery.
 `sa_core_contact_probe /game` verifies315 upstream-model sphere/line
 contact and broadphase checks, including122 real COL triangles and four authored
 face groups using the existing reader.

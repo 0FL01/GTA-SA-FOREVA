@@ -116,6 +116,8 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceContact.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedCollision.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedModelContact.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceSurfaces.cpp"
+    "${NATIVE_SOURCE_DIR}/game_sa/SurfaceInfos_c.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCollisionAssets.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceGround.cpp"
@@ -123,6 +125,9 @@ set(SA_CORE_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/os_file_posix.cpp"
 )
 add_library(sa_core STATIC ${SA_CORE_SOURCES})
+# Compile only the existing canonical name lookup, without DLL globals/hooks.
+set_source_files_properties("${NATIVE_SOURCE_DIR}/game_sa/SurfaceInfos_c.cpp"
+    PROPERTIES COMPILE_DEFINITIONS GTA_SA_CORE_SURFACE_NAMES)
 target_include_directories(sa_core PUBLIC
     "${CMAKE_CURRENT_LIST_DIR}"
     "${NATIVE_SOURCE_DIR}"
@@ -161,6 +166,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceGround.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldGround.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceSurfaces.cpp"
         PROPERTIES COMPILE_OPTIONS "-fexceptions;-fno-fast-math;-ffp-contract=off"
     )
 endif()
@@ -195,6 +201,8 @@ add_executable(sa_core_ped_collision_probe "${NATIVE_SOURCE_DIR}/app/platform/li
 target_link_libraries(sa_core_ped_collision_probe PRIVATE sa_core)
 add_executable(sa_core_ped_model_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedModelContactProbe.cpp")
 target_link_libraries(sa_core_ped_model_probe PRIVATE sa_core)
+add_executable(sa_core_surfaces_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceSurfacesProbe.cpp")
+target_link_libraries(sa_core_surfaces_probe PRIVATE sa_core)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_frame_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_session_probe PRIVATE -Wall -Wextra -Wpedantic)
@@ -208,6 +216,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_contact_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_ped_collision_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_ped_model_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+    target_compile_options(sa_core_surfaces_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
 endif()
 
 # P2-A02 owned source-clock probe: links ONLY sa_core, never the extension.

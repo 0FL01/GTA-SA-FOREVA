@@ -4,6 +4,12 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-08 — 2026-09-12, DIRECT; source material-bound friction
+
+- Native `30bb9b7a` reuses the canonical material-name implementation through a metadata-only compile mode and adds owned read-only surface/adhesion loading. Retail0x573F40 confirms ordered lower-triangle mirroring, ignored row labels and leading-minus zero; getter0x5772F0 uses B/A group order. Unknown group retention and default-name alias remain source-compatible; malformed/unsafe loads reject atomically. No game coefficients/assets are committed.
+- `p3-surfaces-probe.log` and `p3-surfaces-sanitized.log`429 checks pass, including real179 material coverage and friction handoff. Loader/name/physical sources instrumented; POSIX archive adapter not fully instrumented. Coherent build, physical61/model26/contact315/frame104, native build/smoke, read-only/no-EXE trace, pure link closure and Win32 lookup syntax pass. The latter is not a full MSVC DLL build. During review the permissive leading-plus helper was corrected to reject double signs; dedicated float/int atomic-rejection cases pass in the final run.
+- Core22 TUs, extension byte-identical `d35fe301e59cd40a367ab74eea3bb60ca6f36cf6ef9ca3c28827393b89de0f48`; previous fresh packaged Vulkan/native33/0 evidence remains valid. This is adhesion binding, not surface-effect adoption or a full collision driver. P3-A02 still needs source standing/support, sector ownership, rollback/driver and loaded-world route;17/68 verified unchanged.
+
 ### GODOT-P3-07 — 2026-09-12, DIRECT; source ped friction accumulation
 
 - Native `34a1a6a5` adds separate friction velocity, source single-body XY-only accumulation, pair magnitude comparison/unclamped second force and translation add/reset. Force gates are not incorrectly shared between the distinct branches; no new RNG or clock owner.
