@@ -4,6 +4,11 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-07 — 2026-09-12, DIRECT; source ped friction accumulation
+
+- Native `34a1a6a5` adds separate friction velocity, source single-body XY-only accumulation, pair magnitude comparison/unclamped second force and translation add/reset. Force gates are not incorrectly shared between the distinct branches; no new RNG or clock owner.
+- `p3-ped-friction-probe.log`/`p3-ped-friction-sanitized.log`61 physical checks pass (31 prior force/contact +13 steps +17 friction), model26/contact315 and coherent build pass. Extension remains `d35fe301e59cd40a367ab74eea3bb60ca6f36cf6ef9ca3c28827393b89de0f48`; prior fresh packaged Vulkan/native33/0 evidence remains applicable. Material coefficients are caller-supplied; full driver/support/world route is still open,17/68 verified unchanged.
+
 ### GODOT-P3-06 — 2026-09-12, DIRECT; retail ped collision-step planner
 
 - Follow-up native `e7d7af08`: preparation directive corrected from HasContacted to CollisionProcessed (retail0x5FE3DE/Entity bit0x2, not0x8). Preparation16/model26 and query/preparation ASan/UBSan pass; binary identity retained. This prevents a future driver from incorrectly bypassing friction; no active runtime consumed the misnamed field.
