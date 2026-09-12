@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution resumed; DIRECT at user request, no subagents.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records P3-A06's verified source vehicle lifecycle.22/68 verified atoms (32.4% by count) is not game readiness. P3-A07 action/HUD/basic-SFX composition is in progress; full-port scope remains active.
+**Execution resumed; DIRECT at user request, no subagents.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records verified P3 closure.23/68 verified atoms (33.8% by count) is not game readiness. P4-A01 shipped startup corpus/schema classification is in progress; full-port scope remains active.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -11,8 +11,8 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P0 | implemented; target reflight open | Finite UV/provenance/retained-world CPU and rendered clean-package gates pass; external Fedora reflight is not claimed |
 | P1 | A01–A07 verified | Qualified identities/catalog/chain, paired render/COL, sole-owner async parser, budgeted publication/retirement and catalog-backed exterior/interior residency verified |
 | P2 | A01–A06 verified | Owned core boundaries plus labelled CJ/car studio approximation;27-row CPU/Godot trace, interpolation/teardown, clean Vulkan and native33/0 verified, NOT source gameplay |
-| P3 | A01–A06 verified; A07 in_progress | Real worker model400 completion now crosses normal-input enter/drive/exit, pool destroy and generation eviction; current gate is authoritative action/HUD/basic-SFX events |
-| P4 | pending | Genuine SCM boot, first mission and portable save loop |
+| P3 | A01–A07 verified | Real source Pad/model400/COL route crosses enter/drive/exit/destroy/evict and emits authoritative initial HUD, action journal and exact NEW-door PCM identities |
+| P4 | A01 in_progress | Classify shipped startup corpus/schema first; then genuine SCM boot, first mission and portable save loop |
 | P5 | pending | Whole-world entities and all source vehicle families |
 | P6 | pending | Population/AI/combat/police/recovery/interactions |
 | P7 | pending, joins P3/P4 | Complete visual/audio/UI/input/video families |

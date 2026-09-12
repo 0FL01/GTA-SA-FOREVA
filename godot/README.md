@@ -81,21 +81,25 @@ general query preserves two-sided sphere/box/triangle/line provenance and source
 discovery, dynamic vehicle/object response, damage/effects, all vehicle families
 or Godot driving. Evidence: `artifacts/build-runs/p3-a05-final-*`.
 
-### Source vehicle lifecycle (P3-A06)
+### Source vehicle lifecycle and feedback (P3-A06/A07)
 
 ```sh
 docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_source_vehicle_lifecycle_probe /game
 ```
 
-Require `source-vehicle-lifecycle-ok checks=76`. The fixture requests actual
+Require `source-vehicle-lifecycle-ok checks=115` and
+`source-slice-feedback-ok actions=14 audio=4`. The fixture requests actual
 model400 from the existing sole parser worker, then feeds Mode0 Triangle/Cross/
 Square/left-X through phased source camera/task handoffs, Automobile control,
-source COL, vehicle-pool updates and destruction. Exit consumes an explicit
+real3991/122-face source COL, vehicle-pool updates and destruction. Exit consumes an explicit
 task-resolved nearby `SetPedOut` position, never a Godot transform. World eviction
 is blocked until the pool/resource owner is released; generation11 migration and
-ref1-to-ref2 stale-reference rejection are verified. This is the bounded lifecycle
-gate, not full door animation, vehicle discovery, general world/vehicle support or
-a Godot gameplay scene. Evidence: `artifacts/build-runs/p3-a06-final-*`.
+ref1-to-ref2 stale-reference rejection are verified. The lifecycle observer publishes
+source-initial HUD and ordered action values, and task-reported Landstal door crossings
+retain exact PCM for events80/86, bank138/slot19, sounds40/33. This is the bounded
+P3 gate, not full door animation, mutable HUD, mixer/spatialization, vehicle discovery,
+general world/vehicle support or a Godot gameplay scene. Evidence:
+`artifacts/build-runs/p3-a07-final-*`.
 
 Current extension SHA256 after this fresh closure build is
 `6d00c0bef914a5d805c0ab6189b3036f3ea13e1342a17715a02a3f08d8f0c1ca`.

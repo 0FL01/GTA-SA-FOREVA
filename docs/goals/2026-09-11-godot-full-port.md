@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE, resumed 2026-09-12. Latest user instruction selects DIRECT execution: parent performs RECON, implementation and verification without subagents. P2-A01–A06 and P3-A01–A06 are verified; P3-A07 action/HUD/basic-SFX composition is next. No compress unless context becomes critical, per latest user instruction.
+Execution: ACTIVE, resumed 2026-09-12. Latest user instruction selects DIRECT execution: parent performs RECON, implementation and verification without subagents. P2 and P3 are verified; P4-A01 shipped corpus/schema classification is next. No compress unless context becomes critical, per latest user instruction.
 Activated: 2026-09-11
 Last updated: 2026-09-12
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -79,7 +79,7 @@ P0 implementation and available server gates are verified; target reflight stays
 | P2-A05 | verified | Added immutable owned snapshots and ordered post-commit clock/fade/output observations over the sole existing RunPass; no Godot/RW pointers. | 104-check frame fixture, ASan/UBSan and 5451-check existing session regression pass; Pending/quota, pause, exact final WAIT, mission order, failure retention/reload epochs, const consumer and real Unsupported frontier. |
 | P2-A06 | verified | Rehosted existing native CJ/car presentation as a labelled studio approximation; no replacement source gameplay authority. | Full27-row headless/Godot trace with concurrent region parsing, interpolation/mutation isolation, retained-buffer replay and scene/resource teardown; clean Vulkan actor3772-pixel +region/async gates, wrapper ASan/UBSan and native33/0 pass. |
 
-### P3 - First real playable vertical slice (`in_progress`)
+### P3 - First real playable vertical slice (`verified`)
 
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
@@ -88,14 +88,14 @@ P0 implementation and available server gates are verified; target reflight stays
 | P3-A03 | verified | Port gameplay camera ownership and transitions for the slice. | Spawn/on-foot/vehicle camera transition trace has no Godot-node authority feedback. |
 | P3-A04 | verified | Construct a common Automobile from real model and handling identities with occupants. | One common source model constructs with exact handling/model/occupant identities, not `400/476` fallback. |
 | P3-A05 | verified | Port common Automobile control and applicable implemented `CPhysical`/Automobile algorithms. | 107-check exact-model fixture accelerates, brakes, steers, drives wheel state and resolves ordered real-Landstal-COL contacts against qualified isolated floor/wall targets; general two-sided model query11, ASan/UBSan, native33/0 and clean package regressions pass. |
-| P3-A06 | verified | Complete spawn -> enter -> drive -> exit -> destroy lifetime across pools and streaming eviction. | 76-check Mode0 route consumes real worker-generation model400 CPU completion, phases task/camera handoffs, drives through retained source COL, removes pool/resource owners before generation11 eviction, migrates the ped and rejects the stale7-bit ref; pool/worker/native/package regressions pass. |
-| P3-A07 | in_progress | Connect action input, required HUD state and basic SFX to the real slice. | One normal-input route produces authoritative HUD/action/audio events; posed CJ or CPU Landstal alone cannot pass. |
+| P3-A06 | verified | Complete spawn -> enter -> drive -> exit -> destroy lifetime across pools and streaming eviction. | 115-check Mode0 route consumes real worker-generation model400 CPU completion, phases task/camera/door handoffs, drives against retained real3991 source COL, removes pool/resource owners before generation11 eviction, migrates the ped and rejects the stale7-bit ref; pool/worker/native/package regressions pass. |
+| P3-A07 | verified | Connect action input, required HUD state and basic SFX to the real slice. | The real A06 route consumes `NativeSourcePad`, publishes14 immutable action/HUD observations and four exact model400 NEW-door PCM events (`80/86`, bank138/slot19, sounds40/33); direct+ASan/UBSan, real audio, native33/0 and clean package gates pass. |
 
-### P4 - True SCM boot, first mission and persistence loop (`pending`)
+### P4 - True SCM boot, first mission and persistence loop (`in_progress`)
 
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
-| P4-A01 | pending | Build the shipped corpus/schema manifest with complete required operand and thread forms, preserving strict main53/mission1234/0814 and CPU539/0570 history. | Corpus gate classifies every encountered startup form without unknown NOP substitution. |
+| P4-A01 | in_progress | Build the shipped corpus/schema manifest with complete required operand and thread forms, preserving strict main53/mission1234/0814 and CPU539/0570 history. | Corpus gate classifies every encountered startup form without unknown NOP substitution. |
 | P4-A02 | pending | Port wait, stack, mission and streamed/brain scheduling needed by startup. | Deterministic scheduler fixture reaches the same wait/resume/thread ordering twice. |
 | P4-A03 | pending | Give asynchronous script services stable prepare/pending/commit/cancel semantics. | Cancel/retry fixture commits exactly once and never exposes fake readiness. |
 | P4-A04 | pending | Define owner serialization contracts and an early versioned portable save envelope outside original settings/saves. | Restarted-process envelope round trip preserves one owned graph and rejects truncation/version mismatch. |
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-12 — P3-A06 source vehicle lifecycle verified
+### 2026-09-12 — P3-A07 source slice feedback and P3 stage gate verified
+
+- **Versions/result:** native `519e68e1` committed/pushed; root companion is the commit containing this checkpoint, based on `1061cc4`. `NativeSourceSliceFeedback` observes only committed A06 lifecycle publications. The decisive route now feeds real `NativeSourcePad` samples, a genuine parser-worker model400 Landstal completion and retained real3991 `gsfreeway7_lan`/122-face COL. Its14 lifecycle/action events cover spawn, Triangle enter, task-reported door crossings, driver attach, Cross/left-X accelerate/steer, Square brake, Triangle exit, detach, destroy and world eviction. It publishes source-initial CPed/CPlayerInfo/CPlayerPedData/CWanted HUD values (health100/max100, armour0/max100, money/display0, wanted0, unarmed0) and current source vehicle phase/speed with no Godot-node feedback.
+- **Audio ownership:** model400's actual audio setting is `DoorType::NEW`. Task-reported `CAutomobile::OpenDoor` crossings map through `CAEVehicleAudioEntity` to events80/86, GENRL vehicle bank138/slot19 and exact sounds40/33. New `SfxDecode_Sound` reads those exact global bank/sound identities from the owned install and retains PCM values; open is11220B/20000Hz/FNV12126532606915493261, close6120B/20000Hz/FNV17516698511130988286. There is no neighbouring-sample fallback, invented event-at-button-time or mixer/playback/full-audio-family claim.
+- **Evidence/closure:** lifecycle fixture115 checks plus full new-path ASan+UBSan/leak pass. Automobile111, model-query11, physical65, contact315, ped-world84, tasks294, camera72, input497, frame104 and exact actor27 trace pass. Strace shows all `/game` opens read-only and no EXE. Rebuilt native smoke, real OpenAL SFX smoke and sweep33/0 pass. Fresh asset-free package plus headless camera and Wayland/software-Vulkan actor/region-chain/region-async pass with PID1 `docker-init` and zombies0. Extension/package remains `6d00c0bef914a5d805c0ab6189b3036f3ea13e1342a17715a02a3f08d8f0c1ca`. Evidence `artifacts/build-runs/p3-a07-final-*`.
+- **Stage boundary/next:** P3's approved bounded gate is now closed: real normal input crosses a loaded source-COL target, task/camera/contact and dynamic-pair fixtures are retained, exact model/handling identity and pool/stream eviction remain coherent, and HUD/action/basic SFX are outputs of the real lifecycle rather than posed CJ/CPU Landstal alone. This is23/68=33.8% by equal atom count, not full game/workload readiness. Complete door/leave task bodies, live Godot gameplay scene, mutable damage/money/wanted HUD, mixer/spatialization and broad world/mechanics/presentation remain later P4–P9 work. P4-A01 is `in_progress`: build the shipped startup corpus/schema manifest without unknown-NOP substitution while preserving strict existing frontiers.
+
+### Prior — P3-A06 source vehicle lifecycle verified
 
 - **Versions/result:** native `b2cc5cc9` committed/pushed; root companion is the commit containing this checkpoint, based on `32a8bd7`. `NativeSourceVehicleLifecycle` composes the existing Pad, source camera, bounded ped world, exact Automobile and source-index vehicle pool into one immutable normal-input lifecycle. A genuine sole-parser-worker completion for actual model400 `landstal` is generation-matched to the current immutable source-COL world. Mode0 Triangle starts non-instant EnterCar701/LeaveCar704 phases; camera transition must complete before explicit source task handoffs attach/detach the driver. Cross/Square/left-X drive through the retained A05 source owners. Exit requires the task-resolved finite nearby SetPedOut position, never an invented door result or Godot transform.
 - **Lifetime/eviction:** spawn allocates source pool ref1; driver/status/matrix updates remain coherent through entry/drive/exit. Destroy first publishes `InWorld=false`, then releases the pool record and its one model-COL binding. Pool events retain value provenance, not hidden shared asset ownership. Generation11 eviction is rejected while the vehicle is live; after cleanup it migrates the collision-enabled player between bounded ped-world owners and drops the current vehicle packet. A second spawn gets ref2 and ref1 remains stale. Held immutable lifecycle snapshots intentionally preserve their historical CPU owners without being current authority.

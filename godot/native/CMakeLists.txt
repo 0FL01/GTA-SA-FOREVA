@@ -311,6 +311,8 @@ endif()
 add_executable(sa_source_vehicle_lifecycle_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceVehicleLifecycleProbe.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceVehicleLifecycle.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceSliceFeedback.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/SfxDecode.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceAutomobile.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeGeneratedVehicleAssets.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeVehicleAssetQueue.cpp"

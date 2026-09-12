@@ -4,6 +4,13 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-14 — 2026-09-12, DIRECT; source HUD/action/exact door PCM and P3 closure
+
+- Native `519e68e1` adds a committed-lifecycle observer and exact SFX bank/sound decoder. The real A06 route now uses `NativeSourcePad`, model400 worker packet and real3991/122-face source COL, producing14 ordered action observations and source-initial HUD with no Godot/presentation feedback.
+- Actual Landstal `DoorType::NEW` crossings publish events80/86, bank138/slot19, sounds40/33 and retained owned PCM: open11220B/20000Hz/FNV12126532606915493261; close6120B/20000Hz/FNV17516698511130988286. Events originate at task-reported door crossings, not button guesses; no fallback sample or playback/full-mixer claim.
+- Lifecycle115 and full-path ASan+UBSan/leak pass; Automobile111, model11, physical65, contact315, ped-world84, tasks294, camera72, input497, frame104, actor trace, read-only/no-EXE, native smoke/real-audio/sweep33/0 and clean package camera/Wayland Vulkan routes pass. Extension/package remains `6d00c0bef914a5d805c0ab6189b3036f3ea13e1342a17715a02a3f08d8f0c1ca`; docker-init/zombies0. Evidence `p3-a07-final-*`.
+- P3-A07 and the bounded P3 stage gate are verified:23/68=33.8% equal atoms, not readiness. P4-A01 startup corpus/schema classification is next; full gameplay scene, mutable HUD/audio mixer, broad mechanics/world/presentation and target GPU remain open.
+
 ### GODOT-P3-13 — 2026-09-12, DIRECT; source vehicle lifecycle and eviction
 
 - Native `b2cc5cc9` owns the checkpoint implementation; root companion contains this journal/CMake update.
