@@ -280,6 +280,52 @@ reported; no GPU-only timing is inferred.
 
 ## Known differences, not hidden fixes
 
+### Catalog residency route (P1-A07)
+
+```bash
+./play-godot.sh -- --game-dir "/path/to/owned/GTA San Andreas" \
+  --catalog-route --seconds 80 --capture-dir "$PWD/catalog-captures"
+```
+
+This explicit mode defaults to radius140 when `--radius` is not supplied. It
+loads every selected exterior placement plus its authored-parent closure, or the
+entire selected positive area. It does **not** truncate the final set to256.
+Hidden authored targets and visible instances are disjoint; malformed, missing,
+skinned/animated or unresolved selected content rejects the whole candidate
+instead of silently disappearing. Existing capped diagnostic APIs remain unchanged.
+
+The held-waypoint route visits Grove/roads and all36 records of interior16,
+then returns outside. Each stop advances only after its request commits and
+retirement settles; cancellation/error retries the same stop. `R` pauses/resumes
+the route. `route.catalog_commits/rejects` and per-frame `stats.selection` record
+actual progress and area residency, not just accepted requests.
+The first six completed stops receive `catalog-*-area-*.png` captures and matching
+manifests after settling. The older fixed-Grove component screenshots run only
+under the ordinary `--route`; they must not cancel catalog/interior transitions.
+
+This is resource residency, **not ENEX gameplay or source runtime LOD/time
+visibility**. Authored targets are retained hidden as a labelled diagnostic policy;
+time-object visibility remains unknown. Ordinary free-camera mode retains the
+legacy cap. Shared worker, epoch/cancellation, paired-chain data and GPU quotas
+remain in force; individual calls still have no millisecond deadline guarantee.
+
+Direct gate (inside the configured development environment):
+
+```bash
+build/godot-deps/godot-4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64 \
+  --headless --path godot --script res://tests/region_catalog.gd -- \
+  --game-dir /game --catalog-route --capture-dir /workspace/artifacts/godot/catalog-test
+```
+
+Require `region-catalog-ok` and no Godot errors. Real fixture counts are
+Grove R140:274+47=321 and269+48=317; Grove R200:285+45=330;
+roads R190:279+47=326 (five time objects, paired COL122); interior16:36+0.
+The first number is genuinely visible>256, not a resident total that includes
+hidden LOD targets. The test also checks repeated same-world residency, rejected
+selected animation, legacy cap compatibility and committed-versus-cancelled route
+progress. Repeat from a clean explicit Wayland/Vulkan package for rendered proof;
+software results do not certify target GPU performance or original parity.
+
 ### TXD-qualified identity gate (P1-A01)
 
 Streamed texture resolution now searches only the complete authored child-to-parent

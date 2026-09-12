@@ -603,6 +603,94 @@ bool ValidateEffectiveCol(const NativeCollisionModel& col, uint32_t expectedFace
     return true;
 }
 
+// --- P1-A07 catalog residency accounting (bridge-owned).
+// Selection itself is the authoritative NativeLodCatalog::SelectResidency
+// (called on the worker); this TU holds no selector copy. Reconcile verifies
+// expected (Visible + HiddenTargets) vs Rendered 1:1 before plan/GPU; failure
+// sets catalog_accounting_mismatch with a human source-identity message
+// (code by stage, never by parsing strings).
+std::string CatalogIdentityMessage(const NativePlacementIdentity& identity) {
+    std::string message = "model '";
+    message += identity.Model;
+    message += "' id ";
+    message += std::to_string(identity.ModelId);
+    message += " ipl '";
+    message += identity.Ipl;
+    message += "' record ";
+    message += std::to_string(identity.Record);
+    message += identity.Binary ? " binary" : " text";
+    return message;
+}
+
+// Reconciliation 1:1 before plan/GPU: Rendered must match expected
+// (Visible + HiddenTargets) with no duplicate/missing/extra identities.
+// Runs ON the worker; failure sets catalog_accounting_mismatch with a human
+// source-identity message (code by stage, never by parsing strings).
+bool ReconcileCatalogExpected(const NativeCatalogResidency& expected,
+                              const std::vector<NativePlacementIdentity>& rendered,
+                              std::string& error) {
+    const size_t total = expected.Visible.size() + expected.HiddenTargets.size();
+    if (rendered.size() != total) {
+        error = "catalog accounting mismatch: rendered " + std::to_string(rendered.size()) +
+            " != expected " + std::to_string(total) + " (visible " +
+            std::to_string(expected.Visible.size()) + " hidden " +
+            std::to_string(expected.HiddenTargets.size()) + ")";
+        return false;
+    }
+    for (size_t i = 0; i < rendered.size(); ++i) {
+        for (size_t j = 0; j < i; ++j) {
+            if (rendered[i] == rendered[j]) {
+                error = "catalog accounting mismatch: duplicate rendered " +
+                    CatalogIdentityMessage(rendered[i]);
+                return false;
+            }
+        }
+    }
+    const auto inExpected = [&](const NativePlacementIdentity& id) {
+        for (const auto& v : expected.Visible) {
+            if (v == id) {
+                return true;
+            }
+        }
+        for (const auto& h : expected.HiddenTargets) {
+            if (h == id) {
+                return true;
+            }
+        }
+        return false;
+    };
+    for (const auto& id : rendered) {
+        if (!inExpected(id)) {
+            error = "catalog accounting mismatch: extra rendered " +
+                CatalogIdentityMessage(id);
+            return false;
+        }
+    }
+    const auto inRendered = [&](const NativePlacementIdentity& id) {
+        for (const auto& r : rendered) {
+            if (r == id) {
+                return true;
+            }
+        }
+        return false;
+    };
+    for (const auto& v : expected.Visible) {
+        if (!inRendered(v)) {
+            error = "catalog accounting mismatch: missing visible " +
+                CatalogIdentityMessage(v);
+            return false;
+        }
+    }
+    for (const auto& h : expected.HiddenTargets) {
+        if (!inRendered(h)) {
+            error = "catalog accounting mismatch: missing hidden " +
+                CatalogIdentityMessage(h);
+            return false;
+        }
+    }
+    return true;
+}
+
 } // namespace
 
 // P1-A06 bounded ownership: exactly one current conversion plus ONE retiring
@@ -792,6 +880,17 @@ bool SALegacyBridge::InitConversionLocked(std::unique_ptr<RawRegionPacket> packe
             m_Worker->Retire(std::move(doomed));
         }
     };
+    if (!packet->ErrorCode.empty()) {
+        // P1-A07 typed catalog failure (stage-determined code, never parsed
+        // from human strings): select/load/reconcile. Human Error carries the
+        // source identity message.
+        error = packet->Error.empty() ? String::utf8(packet->ErrorCode.c_str())
+                                      : ErrorString(packet->Error.c_str());
+        errorCode = String::utf8(packet->ErrorCode.c_str());
+        errorContext = Dictionary();
+        retireRaw(std::move(packet));
+        return false;
+    }
     if (!packet->Error.empty()) {
         error = ErrorString(packet->Error.c_str());
         retireRaw(std::move(packet));
@@ -1217,10 +1316,33 @@ SALegacyBridge::AdvanceOutcome SALegacyBridge::AdvanceConversionLocked(int64_t q
         }
         TypedArray<Dictionary> finalMeshes;
         if (pairOk) {
+            // P1-A07 lod_target_hidden from owned HiddenTargets (lab DIAGNOSTIC
+            // policy, NOT source runtime LOD). Plan mesh i maps via
+            // sourceMeshIndex to scene/Rendered identity; Window packets carry
+            // empty HiddenTargets so every flag is false there. A04 source
+            // 4043 keeps lod_chain_alternate true via actual Rendered IDs with
+            // no duplicate parent (selection dedupes, reconciliation enforces).
+            const auto isHiddenTarget = [&](size_t planIdx) {
+                if (!conv.raw || planIdx >= plan.meshes.size()) {
+                    return false;
+                }
+                const size_t src = plan.meshes[planIdx].sourceMeshIndex;
+                if (src >= rendered.size()) {
+                    return false;
+                }
+                const auto& id = rendered[src];
+                for (const auto& hidden : conv.raw->HiddenTargets) {
+                    if (hidden == id) {
+                        return true;
+                    }
+                }
+                return false;
+            };
             for (size_t i = 0; i < conv.meshDicts.size(); ++i) {
                 Dictionary entry = conv.meshDicts[i];
                 entry["lod_chain_alternate"] =
                     lodSelected && static_cast<int>(i) == parentMeshIndex;
+                entry["lod_target_hidden"] = isHiddenTarget(i);
                 conv.meshDicts[i] = entry;
                 finalMeshes.push_back(entry);
             }
@@ -1288,6 +1410,29 @@ Dictionary SALegacyBridge::BuildReadyPayloadLocked() {
     stats["conversion_ms_total"] = msTotal;
     stats["conversion_ms_max_item"] = msMax;
     stats["conversion_frames"] = frames;
+    // P1-A07 Stats['selection'] for catalog success only. Legacy Window
+    // packets leave the field absent (old tests unchanged). Catalog mode is
+    // catalog_disc (area0, Open radius) or catalog_area (whole positive area);
+    // ROI selection uses radius only for area0. Visibility authorities stay
+    // unknown-pending-P5-A02 (lab labels, no new LOD/physics claim).
+    if (raw.HasCatalog) {
+        Dictionary selection;
+        selection["mode"] = SourceString(raw.Catalog.Mode);
+        selection["area_id"] = static_cast<int64_t>(raw.Catalog.AreaId);
+        selection["radius"] = static_cast<double>(raw.Catalog.Radius);
+        selection["population"] = static_cast<int64_t>(raw.Catalog.Population);
+        selection["expected_visible"] =
+            static_cast<int64_t>(raw.Catalog.ExpectedVisible);
+        selection["expected_hidden"] =
+            static_cast<int64_t>(raw.Catalog.ExpectedHidden);
+        selection["resident"] = static_cast<int64_t>(raw.Catalog.Resident);
+        selection["excluded_outside"] =
+            static_cast<int64_t>(raw.Catalog.ExcludedOutside);
+        selection["time_models"] = static_cast<int64_t>(raw.Catalog.TimeModels);
+        selection["lod_visibility_authority"] = "unknown-pending-P5-A02";
+        selection["time_visibility_authority"] = "unknown-pending-P5-A02";
+        stats["selection"] = selection;
+    }
     Dictionary result = Result(true);
     result["meshes"] = meshes;
     result["stats"] = stats;
@@ -1306,6 +1451,10 @@ void SALegacyBridge::_bind_methods() {
                          &SALegacyBridge::OpenGame, DEFVAL(64));
     ClassDB::bind_method(D_METHOD("load_region", "SA_position"), &SALegacyBridge::LoadRegion);
     ClassDB::bind_method(D_METHOD("submit_region", "SA_position"), &SALegacyBridge::SubmitRegion);
+    ClassDB::bind_method(D_METHOD("submit_catalog_region", "SA_position", "area_id"),
+                         &SALegacyBridge::SubmitCatalogRegion, DEFVAL(0));
+    ClassDB::bind_method(D_METHOD("load_catalog_region", "SA_position", "area_id"),
+                         &SALegacyBridge::LoadCatalogRegion, DEFVAL(0));
     ClassDB::bind_method(D_METHOD("poll_region"), &SALegacyBridge::PollRegion);
     ClassDB::bind_method(D_METHOD("cancel_region", "request_id"), &SALegacyBridge::CancelRegion);
     ClassDB::bind_method(D_METHOD("environment", "weather", "hour"), &SALegacyBridge::Environment);
@@ -1603,16 +1752,76 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
     }
     const uint64_t proposedEpoch = m_SessionEpoch + 1;
 
-    // Sole-owner parse: pure StreamPager_Update + Rendered + Frame + Counters
-    // plus BuildRegionPlan at parse end (worker parse+plan timing in ParseMs).
-    // Captures no this/Godot state; no Godot API on the worker.
-    ParseFn parse = [](RawRegionPacket& packet) {
-        const std::shared_ptr<const NativePlacementOverrides> noOverrides;
+    // Sole-owner parse: Window uses pure StreamPager_Update + Rendered + Frame
+    // + Counters plus BuildRegionPlan at parse end (worker parse+plan timing
+    // in ParseMs). Catalog lanes call the authoritative
+    // NativeLodCatalog::SelectResidency ON the worker, then
+    // StreamPager_UpdateSelected, then 1:1 expected-vs-Rendered reconcile,
+    // then the same BuildRegionPlan; no new catalog/loader, no bridge selector
+    // copy. Captures the shared const catalog + Open radius by value (no
+    // this/Godot state; no Godot API on the worker). Positive areas ignore
+    // radius (whole area); area0 discs use the Open radius. Select failure ->
+    // catalog_selection_error, selected load failure -> selected_model_failed,
+    // mismatch -> catalog_accounting_mismatch (code by stage, human
+    // source-identity message, never parsed strings). Other P0 typed plan
+    // failures preserved exact via RegionPlanFailure.
+    ParseFn parse = [catalog, radius](RawRegionPacket& packet) {
+        if (packet.Request.Selection == RegionSelection::Window) {
+            const std::shared_ptr<const NativePlacementOverrides> noOverrides;
+            char err[256]{};
+            if (!StreamPager_Update(packet.Request.X, packet.Request.Y, packet.Request.Z,
+                                    packet.Scene, packet.Frame, err, sizeof(err),
+                                    noOverrides, &packet.Rendered)) {
+                packet.Error.assign(err[0] != '\0' ? err : "unknown pager update failure");
+                return;
+            }
+            int loaded = 0;
+            int evicted = 0;
+            int peakModels = 0;
+            int peakTris = 0;
+            StreamPager_Counters(loaded, evicted, peakModels, peakTris);
+            packet.Counters[0] = loaded;
+            packet.Counters[1] = evicted;
+            packet.Counters[2] = peakModels;
+            packet.Counters[3] = peakTris;
+            // Pure worker planning reuses exact validation/alpha/group ordering
+            // and prepacks surface data; main only copies buffers. Fake unit
+            // parsers need not invent a plan except plan tests.
+            packet.PlanReady = true;
+            packet.PlanOk = BuildRegionPlan(packet.Scene, packet.Plan, packet.PlanFailure);
+            return;
+        }
+        const int areaId = packet.Request.AreaId;
+        const bool isDisc =
+            (packet.Request.Selection == RegionSelection::CatalogDisc);
+        if ((isDisc && areaId != 0) ||
+            (!isDisc && packet.Request.Selection != RegionSelection::CatalogArea) ||
+            (!isDisc && areaId <= 0)) {
+            packet.ErrorCode = kCatalogSelectionError;
+            packet.Error = "catalog selection request inconsistent";
+            return;
+        }
+        if (!catalog) {
+            packet.ErrorCode = kCatalogSelectionError;
+            packet.Error = "catalog residency selection unavailable (no catalog)";
+            return;
+        }
+        NativeCatalogResidency residency;
+        std::string selectError;
+        if (!catalog->SelectResidency(packet.Request.X, packet.Request.Y, radius,
+                                      areaId, residency, selectError)) {
+            packet.ErrorCode = kCatalogSelectionError;
+            packet.Error =
+                selectError.empty() ? "catalog residency selection failed" : selectError;
+            return;
+        }
         char err[256]{};
-        if (!StreamPager_Update(packet.Request.X, packet.Request.Y, packet.Request.Z,
-                                packet.Scene, packet.Frame, err, sizeof(err),
-                                noOverrides, &packet.Rendered)) {
-            packet.Error.assign(err[0] != '\0' ? err : "unknown pager update failure");
+        std::vector<NativePlacementIdentity> rendered;
+        if (!StreamPager_UpdateSelected(residency.Visible, residency.HiddenTargets,
+                                        packet.Scene, packet.Frame, err, sizeof(err),
+                                        &rendered)) {
+            packet.ErrorCode = kSelectedModelFailed;
+            packet.Error.assign(err[0] != '\0' ? err : "catalog residency load failed");
             return;
         }
         int loaded = 0;
@@ -1624,9 +1833,25 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
         packet.Counters[1] = evicted;
         packet.Counters[2] = peakModels;
         packet.Counters[3] = peakTris;
-        // Pure worker planning reuses exact validation/alpha/group ordering
-        // and prepacks surface data; main only copies buffers. Fake unit
-        // parsers need not invent a plan except plan tests.
+        std::string reconcileError;
+        if (!ReconcileCatalogExpected(residency, rendered, reconcileError)) {
+            packet.ErrorCode = kCatalogAccountingMismatch;
+            packet.Error = reconcileError.empty() ? "catalog accounting mismatch"
+                                                  : reconcileError;
+            return;
+        }
+        packet.Rendered = rendered;
+        packet.HiddenTargets = residency.HiddenTargets;
+        packet.HasCatalog = true;
+        packet.Catalog.Mode = isDisc ? "catalog_disc" : "catalog_area";
+        packet.Catalog.AreaId = areaId;
+        packet.Catalog.Radius = radius;
+        packet.Catalog.Population = residency.Population;
+        packet.Catalog.ExpectedVisible = residency.Visible.size();
+        packet.Catalog.ExpectedHidden = residency.HiddenTargets.size();
+        packet.Catalog.Resident = rendered.size();
+        packet.Catalog.ExcludedOutside = residency.ExcludedOutside;
+        packet.Catalog.TimeModels = residency.TimeModels;
         packet.PlanReady = true;
         packet.PlanOk = BuildRegionPlan(packet.Scene, packet.Plan, packet.PlanFailure);
     };
@@ -1652,6 +1877,7 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
     m_SessionEpoch = proposedEpoch;
     m_Worker = std::move(worker);
     m_BudgetItems = budgetItems;
+    m_OpenRadius = radius;
     m_ExposedActive = false;
     m_ExposedRequestId = 0;
     m_ExposedEpoch = 0;
@@ -1670,6 +1896,7 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
     result["ide_files"] = info.ideFiles;
     result["ipl_files"] = info.iplFiles;
     result["ipl_total"] = info.iplTotal;
+    result["catalog_population"] = static_cast<int64_t>(m_Catalog->Nodes().size());
     result["ipl_kept"] = info.iplKept;
     result["binary_ipl_files"] = info.binaryIplFiles;
     result["binary_instances"] = info.binaryInstances;
@@ -1692,12 +1919,41 @@ bool ValidRegionCoords(const Vector3& pos) {
         std::abs(pos.z) <= kCoordLimit;
 }
 
+// P1-A07 main-thread area validation (O1, no catalog scans). Range only;
+// in-range empty selections may still fail on the worker.
+bool ValidRegionArea(int areaId) {
+    return areaId >= kRegionAreaMin && areaId <= kRegionAreaMax;
+}
+
+bool SelectionAreaConsistent(RegionSelection selection, int areaId) {
+    switch (selection) {
+    case RegionSelection::Window:
+    case RegionSelection::CatalogDisc:
+        return areaId == 0;
+    case RegionSelection::CatalogArea:
+        return areaId > 0 && ValidRegionArea(areaId);
+    default:
+        return false;
+    }
+}
+
 } // namespace
 
-Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
+// P1-A07 shared sync state machine (Window + catalog; single implementation,
+// no duplicated hundreds-of-lines protocol). Window behavior incl cap is
+// unchanged; catalog lanes ride Selection/AreaId on the same worker/CV,
+// stepper, revision, and retiring protocol.
+Dictionary SALegacyBridge::LoadRegionInternal(const Vector3& saPosition,
+                                              RegionSelection selection, int areaId) {
+    const bool isCatalog = (selection != RegionSelection::Window);
+    const char* threadError = isCatalog ? "load_catalog_region must run on Godot's main thread"
+                                        : "load_region must run on Godot's main thread";
+    const char* pagerError =
+        isCatalog ? "load_catalog_region requires an open pager owned by this bridge"
+                  : "load_region requires an open pager owned by this bridge";
     if (!IsMainThread()) {
         std::lock_guard lock(s_PagerMutex);
-        Dictionary result = Result(false, "load_region must run on Godot's main thread");
+        Dictionary result = Result(false, threadError);
         result["publication_revision"] = m_PublicationRevision;
         return result;
     }
@@ -1716,8 +1972,11 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
     if (!ValidRegionCoords(saPosition)) {
         return failureResult("SA_position must be finite and within the supported coordinate range");
     }
+    if (!ValidRegionArea(areaId) || !SelectionAreaConsistent(selection, areaId)) {
+        return failureResult("area_id must be in [0,255] and consistent with the region selection");
+    }
     if (!m_Ready || s_PagerOwner != this || !m_Worker) {
-        return failureResult("load_region requires an open pager owned by this bridge");
+        return failureResult(pagerError);
     }
     // Sync and async never share the worker: an unpolled async request (even
     // a cancel ack) rejects sync with revision unchanged.
@@ -1738,7 +1997,8 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
     }
     const uint64_t requestId = m_NextRequestId + 1;
     const uint64_t epoch = m_SessionEpoch;
-    const RegionRequest req{saPosition.x, saPosition.y, saPosition.z, requestId, epoch};
+    const RegionRequest req{saPosition.x, saPosition.y, saPosition.z, requestId, epoch,
+                            selection, areaId};
     if (!m_Worker->Submit(req)) {
         // ID consumed (never reused). No exposed update, revision unchanged.
         m_NextRequestId = requestId;
@@ -1824,10 +2084,29 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
     }
 }
 
-Dictionary SALegacyBridge::SubmitRegion(const Vector3& saPosition) {
+Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
+    return LoadRegionInternal(saPosition, RegionSelection::Window, 0);
+}
+
+Dictionary SALegacyBridge::LoadCatalogRegion(const Vector3& saPosition, int areaId) {
+    const RegionSelection selection =
+        (areaId == 0) ? RegionSelection::CatalogDisc : RegionSelection::CatalogArea;
+    return LoadRegionInternal(saPosition, selection, areaId);
+}
+
+// P1-A07 shared async state machine (Window + catalog; single implementation).
+Dictionary SALegacyBridge::SubmitRegionInternal(const Vector3& saPosition,
+                                                RegionSelection selection, int areaId) {
+    const bool isCatalog = (selection != RegionSelection::Window);
+    const char* threadError = isCatalog
+        ? "submit_catalog_region must run on Godot's main thread"
+        : "submit_region must run on Godot's main thread";
+    const char* pagerError = isCatalog
+        ? "submit_catalog_region requires an open pager owned by this bridge"
+        : "submit_region requires an open pager owned by this bridge";
     if (!IsMainThread()) {
         std::lock_guard lock(s_PagerMutex);
-        Dictionary result = Result(false, "submit_region must run on Godot's main thread");
+        Dictionary result = Result(false, threadError);
         result["request_id"] = int64_t{0};
         result["session_epoch"] = static_cast<int64_t>(m_SessionEpoch);
         result["discarded_stale"] = m_DiscardedStale;
@@ -1846,8 +2125,11 @@ Dictionary SALegacyBridge::SubmitRegion(const Vector3& saPosition) {
     if (!ValidRegionCoords(saPosition)) {
         return failure("SA_position must be finite and within the supported coordinate range");
     }
+    if (!ValidRegionArea(areaId) || !SelectionAreaConsistent(selection, areaId)) {
+        return failure("area_id must be in [0,255] and consistent with the region selection");
+    }
     if (!m_Ready || s_PagerOwner != this || !m_Worker) {
-        return failure("submit_region requires an open pager owned by this bridge");
+        return failure(pagerError);
     }
     if (m_NextRequestId >= kMaxGodotIntU64) {
         return failure("request sequence exhausted");
@@ -1857,7 +2139,8 @@ Dictionary SALegacyBridge::SubmitRegion(const Vector3& saPosition) {
     }
     const uint64_t requestId = m_NextRequestId + 1;
     const uint64_t epoch = m_SessionEpoch;
-    const RegionRequest req{saPosition.x, saPosition.y, saPosition.z, requestId, epoch};
+    const RegionRequest req{saPosition.x, saPosition.y, saPosition.z, requestId, epoch,
+                            selection, areaId};
     if (!m_Worker->Submit(req)) {
         // Consume the ID (never reuse), keep the old exposed request intact.
         m_NextRequestId = requestId;
@@ -1882,6 +2165,16 @@ Dictionary SALegacyBridge::SubmitRegion(const Vector3& saPosition) {
     result["discarded_stale"] = m_DiscardedStale;
     result["publication_revision"] = m_PublicationRevision;
     return result;
+}
+
+Dictionary SALegacyBridge::SubmitRegion(const Vector3& saPosition) {
+    return SubmitRegionInternal(saPosition, RegionSelection::Window, 0);
+}
+
+Dictionary SALegacyBridge::SubmitCatalogRegion(const Vector3& saPosition, int areaId) {
+    const RegionSelection selection =
+        (areaId == 0) ? RegionSelection::CatalogDisc : RegionSelection::CatalogArea;
+    return SubmitRegionInternal(saPosition, selection, areaId);
 }
 
 Dictionary SALegacyBridge::PollRegion() {
@@ -2403,6 +2696,7 @@ void SALegacyBridge::CloseGame() {
             } else {
                 m_GameDir.clear();
                 m_Catalog.reset();
+                m_OpenRadius = 0.0f;
                 m_Decision = NativeLodChainDecision{};
                 m_ChildPlacement = NativeCollisionPlacement{};
                 m_ParentPlacement = NativeCollisionPlacement{};
@@ -2463,6 +2757,7 @@ void SALegacyBridge::CloseGame() {
         m_EffectiveCol.reset();
         m_EffectiveColLibrary.clear();
         m_HasLodPair = false;
+        m_OpenRadius = 0.0f;
     }
 }
 

@@ -73,6 +73,29 @@ bool RegionWorker::Submit(const RegionRequest &request) {
     if (!std::isfinite(request.X) || !std::isfinite(request.Y) || !std::isfinite(request.Z)) {
         return false;
     }
+    // P1-A07 selection validation alongside existing checks. Window and
+    // CatalogDisc require area 0; CatalogArea requires a positive in-range
+    // area; unknown enum values and out-of-range areas reject. In-range but
+    // empty selections are NOT rejected here (worker parse reports selection
+    // error without main-thread catalog scans).
+    switch (request.Selection) {
+    case RegionSelection::Window:
+    case RegionSelection::CatalogDisc:
+        if (request.AreaId != 0) {
+            return false;
+        }
+        break;
+    case RegionSelection::CatalogArea:
+        if (request.AreaId < 1 || request.AreaId > kRegionAreaMax) {
+            return false;
+        }
+        break;
+    default:
+        return false;
+    }
+    if (request.AreaId < kRegionAreaMin || request.AreaId > kRegionAreaMax) {
+        return false;
+    }
     m_LatestId = request.RequestId;
     m_LatestCancelled = false;
     m_LatestTaken = false;

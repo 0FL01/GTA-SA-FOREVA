@@ -73,6 +73,19 @@ RegionRequest MakeRequest(float x, float y, float z, uint64_t id, uint64_t epoch
     return request;
 }
 
+RegionRequest MakeCatalogRequest(float x, float y, float z, uint64_t id, uint64_t epoch,
+                                 RegionSelection selection, int areaId) {
+    RegionRequest request{};
+    request.X = x;
+    request.Y = y;
+    request.Z = z;
+    request.RequestId = id;
+    request.SessionEpoch = epoch;
+    request.Selection = selection;
+    request.AreaId = areaId;
+    return request;
+}
+
 bool WaitGateEntered(const std::shared_ptr<Gate> &gate) {
     std::unique_lock<std::mutex> lock(gate->mutex);
     return gate->cv.wait_for(lock, kTimeout, [&] { return gate->entered; });
@@ -557,6 +570,115 @@ bool TestQueuedCancelAndValidation(std::thread::id mainTid) {
     return ok;
 }
 
+// P1-A07 catalog selection validation (worker Submit only; no game data).
+// Old 5-field aggregate initializers keep compiling (defaults Window/0).
+// Window/CatalogDisc require area 0, CatalogArea requires 1..255, unknown
+// enum values and out-of-range areas reject alongside existing checks.
+bool TestCatalogSelectionValidation() {
+    bool ok = true;
+    const auto fail = [&](const char *message) {
+        std::printf("catalog-select: %s\n", message);
+        ok = false;
+    };
+    ParseFn parse = [](RawRegionPacket &packet) {
+        packet.Frame.instances = static_cast<int>(packet.Request.RequestId);
+    };
+    std::string error;
+    auto worker = RegionWorker::Create(parse, 106, error);
+    if (!worker) {
+        std::printf("catalog-select: create failed: %s\n", error.c_str());
+        return false;
+    }
+    // Old 5-field form still defaults to Window/0.
+    {
+        RegionRequest legacy = MakeRequest(1.0f, 2.0f, 3.0f, 1, 106);
+        if (legacy.Selection != RegionSelection::Window || legacy.AreaId != 0) {
+            fail("legacy defaults not Window/0");
+        }
+        if (!worker->Submit(legacy)) {
+            fail("legacy Window/0 rejected");
+        } else {
+            std::unique_ptr<RawRegionPacket> out;
+            if (worker->Wait(1, out) != RegionWait::Ready || !out) {
+                fail("legacy Window/0 not ready");
+            } else {
+                if (out->HasCatalog || !out->HiddenTargets.empty() ||
+                    !out->ErrorCode.empty()) {
+                    fail("legacy packet carries catalog state");
+                }
+                worker->Retire(std::move(out));
+            }
+        }
+    }
+    // CatalogDisc + area 0 accepted; CatalogArea + positive accepted.
+    if (!worker->Submit(MakeCatalogRequest(0.0f, 0.0f, 0.0f, 2, 106,
+                                           RegionSelection::CatalogDisc, 0))) {
+        fail("CatalogDisc/0 rejected");
+    } else {
+        std::unique_ptr<RawRegionPacket> out;
+        if (worker->Wait(2, out) != RegionWait::Ready || !out) {
+            fail("CatalogDisc/0 not ready");
+        } else {
+            if (out->Request.Selection != RegionSelection::CatalogDisc ||
+                out->Request.AreaId != 0) {
+                fail("CatalogDisc packet identity mismatch");
+            }
+            worker->Retire(std::move(out));
+        }
+    }
+    if (!worker->Submit(MakeCatalogRequest(0.0f, 0.0f, 0.0f, 3, 106,
+                                           RegionSelection::CatalogArea, 16))) {
+        fail("CatalogArea/16 rejected");
+    } else {
+        std::unique_ptr<RawRegionPacket> out;
+        if (worker->Wait(3, out) != RegionWait::Ready || !out) {
+            fail("CatalogArea/16 not ready");
+        } else {
+            worker->Retire(std::move(out));
+        }
+    }
+    // Negatives: unknown enum, inconsistent and out-of-range areas.
+    {
+        RegionRequest bad = MakeCatalogRequest(0.0f, 0.0f, 0.0f, 4, 106,
+                                               RegionSelection::Window, 1);
+        if (worker->Submit(bad)) {
+            fail("Window/1 accepted (must require 0)");
+        }
+        bad = MakeCatalogRequest(0.0f, 0.0f, 0.0f, 4, 106,
+                                 RegionSelection::CatalogDisc, 5);
+        if (worker->Submit(bad)) {
+            fail("CatalogDisc/5 accepted (must require 0)");
+        }
+        bad = MakeCatalogRequest(0.0f, 0.0f, 0.0f, 4, 106,
+                                 RegionSelection::CatalogArea, 0);
+        if (worker->Submit(bad)) {
+            fail("CatalogArea/0 accepted (must require positive)");
+        }
+        bad = MakeCatalogRequest(0.0f, 0.0f, 0.0f, 4, 106,
+                                 RegionSelection::CatalogArea, -1);
+        if (worker->Submit(bad)) {
+            fail("negative area accepted");
+        }
+        bad = MakeCatalogRequest(0.0f, 0.0f, 0.0f, 4, 106,
+                                 RegionSelection::CatalogArea, 256);
+        if (worker->Submit(bad)) {
+            fail("area 256 accepted (must be 0..255)");
+        }
+        bad = MakeCatalogRequest(0.0f, 0.0f, 0.0f, 4, 106,
+                                 static_cast<RegionSelection>(99), 0);
+        if (worker->Submit(bad)) {
+            fail("unknown selection enum accepted");
+        }
+        // Nonincreasing still rejects alongside new checks.
+        if (worker->Submit(MakeCatalogRequest(0.0f, 0.0f, 0.0f, 3, 106,
+                                              RegionSelection::CatalogArea, 16))) {
+            fail("nonincreasing catalog id accepted");
+        }
+    }
+    worker->Stop();
+    return ok;
+}
+
 bool TestSingleThread(std::thread::id mainTid) {
     auto log = std::make_shared<ParseLog>();
     log->mainTid = mainTid;
@@ -947,6 +1069,9 @@ int main() {
         ok = false;
     }
     if (!TestSingleThread(mainTid)) {
+        ok = false;
+    }
+    if (!TestCatalogSelectionValidation()) {
         ok = false;
     }
     if (!TestPlanPrepackBasisDayNight()) {

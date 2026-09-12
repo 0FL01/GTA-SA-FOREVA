@@ -26,6 +26,12 @@ public:
     Dictionary OpenGame(const String& gameDir, float radius, int32_t cap, int64_t budgetItems = 64);
     Dictionary LoadRegion(const Vector3& saPosition);
     Dictionary SubmitRegion(const Vector3& saPosition);
+    // P1-A07 opt-in catalog residency lane (area_id 0 = area0 XY disc with the
+    // Open radius, positive = whole area). Existing Window signatures/behavior
+    // incl cap are unchanged. Main validates coords/area range; in-range empty
+    // selections may fail on the worker (no main-thread catalog scans).
+    Dictionary LoadCatalogRegion(const Vector3& saPosition, int areaId = 0);
+    Dictionary SubmitCatalogRegion(const Vector3& saPosition, int areaId = 0);
     Dictionary PollRegion();
     Dictionary CancelRegion(int64_t requestId);
     Dictionary Environment(const String& weather, int32_t hour);
@@ -67,6 +73,13 @@ private:
     // completed conversion, increments revision, retires raw on the worker,
     // and clears m_Conversion. Only call when Advance returned Ready.
     Dictionary BuildReadyPayloadLocked();
+    // P1-A07 shared submit/load state machines (single implementation for
+    // Window + catalog lanes; no duplicated hundreds-of-lines protocol).
+    // Selection/AreaId ride the RegionRequest; Window uses AreaId 0.
+    Dictionary SubmitRegionInternal(const Vector3& saPosition, RegionSelection selection,
+                                    int areaId);
+    Dictionary LoadRegionInternal(const Vector3& saPosition, RegionSelection selection,
+                                  int areaId);
 
     std::string m_GameDir;
     bool m_Ready = false;
@@ -76,6 +89,10 @@ private:
     // No gameplay physics, no general LOD. Retained across LoadRegion
     // calls; cleared on CloseGame without resetting m_PublicationRevision.
     std::shared_ptr<const NativeLodCatalog> m_Catalog;
+    // P1-A07 Open radius captured for catalog-disc selection (area0 XY disc).
+    // Set on successful Open, cleared on Close. ParseFn captures it by value
+    // alongside the shared catalog; positive areas ignore it (whole area).
+    float m_OpenRadius = 0.0f;
     NativeLodChainDecision m_Decision;
     NativeCollisionPlacement m_ChildPlacement;
     NativeCollisionPlacement m_ParentPlacement;

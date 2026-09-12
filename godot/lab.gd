@@ -37,6 +37,24 @@ const CAPTURE_SCENARIOS := [
 	{"id": "09_pc_colour_filter", "state": 0, "enable": "post"},
 ]
 
+# P1-A07 catalog residency: explicit opt-in mode beside unchanged capped
+# diagnostic APIs. Area 0 selects ALL within XY radius plus authored parent
+# closure; positive area selects the entire interior area. Every expected
+# resource must load or the whole candidate errors (no omission Ready).
+# Authored targets held hidden are DIAGNOSTIC policy (lod_target_hidden),
+# not source runtime LOD. Time/LOD visibility stays unknown until P5-A02.
+const CATALOG_ROUTE_STOPS := [
+	{"center": Vector3(2495.0, -1685.0, 22.0), "eye": Vector3(2495.0, -1685.0, 22.0), "target": Vector3(2490.0, -1665.0, 14.0), "area": 0, "label": "grove-0"},
+	{"center": Vector3(2498.0, -1618.0, 20.0), "eye": Vector3(2498.0, -1618.0, 20.0), "target": Vector3(2510.0, -1655.0, 13.0), "area": 0, "label": "grove-1"},
+	{"center": Vector3(2650.0, -1677.0, 40.0), "eye": Vector3(2650.0, -1677.0, 40.0), "target": Vector3(2500.0, -1680.0, 13.0), "area": 0, "label": "grove-2"},
+	{"center": Vector3(1532.054688, -1662.289063, 12.460938), "eye": Vector3(1537.054688, -1657.289063, 32.460938), "target": Vector3(1532.054688, -1662.289063, 12.460938), "area": 0, "label": "roads"},
+	{"center": Vector3(-204.44, -26.454, 1001.3), "eye": Vector3(-204.44, -26.454, 1002.8), "target": Vector3(-202.44, -28.454, 1002.3), "area": 16, "label": "interior16-tattoo"},
+	{"center": Vector3(2495.0, -1685.0, 22.0), "eye": Vector3(2495.0, -1685.0, 22.0), "target": Vector3(2490.0, -1665.0, 14.0), "area": 0, "label": "grove-return"},
+]
+const CATALOG_ROUTE_DWELL_SECONDS := 2.0
+const CATALOG_LOD_AUTHORITY := "unknown-pending-P5-A02"
+const CATALOG_DEFAULT_RADIUS := 140.0
+
 @onready var camera: Camera3D = $Camera3D
 @onready var mesh_root: Node3D = $MeshRoot
 @onready var world_environment: WorldEnvironment = $WorldEnvironment
@@ -117,6 +135,14 @@ var _pending_region_request_id := 0
 var _pending_region_session_epoch := 0
 var _pending_region_center_sa := Vector3.ZERO
 var _pending_region_discarded_stale := 0
+# P1-A07 catalog request identity: area/mode are part of dedup and active
+# payload. Never confuse pending target area with committed area.
+var _pending_region_area_id := 0
+var _pending_region_is_catalog := false
+var _loaded_area_id := 0
+var _loaded_is_catalog := false
+var _failed_region_area_id := 0
+var _failed_region_is_catalog := false
 var _last_region_raw_parse_ms := 0.0
 var _last_region_request_id := 0
 var _last_region_session_epoch := 0
@@ -131,11 +157,22 @@ var _f6_ignored_while_pending := 0
 # calls (single texture upload, single surface add, root visibility flips)
 # are measured atomic units and may honestly overshoot the quota.
 var _budget_items := 64
+var _catalog_route_enabled := false
+var _radius_user_supplied := false
+var _catalog_route_index := 0
+var _catalog_route_waiting := false
+var _catalog_route_request_id := 0
+var _catalog_route_base_revision := 0
+var _catalog_route_commits := 0
+var _catalog_route_rejects := 0
+var _catalog_route_last_advance_elapsed := -1000.0
 var _region_root_a: Node3D
 var _region_root_b: Node3D
 var _region_active_is_a := true
 var _lab_staging_active := false
 var _lab_candidate_center_sa := Vector3.ZERO
+var _lab_candidate_area_id := 0
+var _lab_candidate_is_catalog := false
 var _lab_candidate_revision := 0
 var _lab_candidate_request_id := 0
 var _lab_candidate_session_epoch := 0
@@ -175,6 +212,8 @@ var _active_mesh_holds: Array = []
 var _active_texture_holds: Array = []
 var _lab_deferred_ready: Dictionary = {}
 var _lab_deferred_center_sa := Vector3.ZERO
+var _lab_deferred_area_id := 0
+var _lab_deferred_is_catalog := false
 var _lab_deferred_started_usec := 0
 var _lab_candidate_started_usec := 0
 var _lab_candidate_staging_ms_total := 0.0
@@ -221,6 +260,13 @@ func _ready() -> void:
 		if not _bridge.has_method(method):
 			_fatal("SALegacyBridge is missing method %s" % method, 3)
 			return
+	# P1-A07: catalog residency methods required only when the opt-in mode is
+	# active. Legacy bridges without them still run legacy diagnostics.
+	if _catalog_route_enabled:
+		for method in ["load_catalog_region", "submit_catalog_region"]:
+			if not _bridge.has_method(method):
+				_fatal("SALegacyBridge is missing method %s (catalog route requires sibling bridge)" % method, 3)
+				return
 
 	var open_started := Time.get_ticks_usec()
 	# P1-A06: pass logical budget quota at Open (1..4096). Old 3-arg bridges
@@ -254,8 +300,17 @@ func _ready() -> void:
 	_environment_cache_stall_ms = float(Time.get_ticks_usec() - environment_started) / 1000.0
 	if not environments_cached:
 		return
-	if not _load_region(FIXED_TARGET_SA):
-		return
+	# P1-A07: initial/fixed sync uses catalog load only when the opt-in mode is
+	# active; standard legacy diagnostic otherwise unchanged.
+	if _catalog_route_enabled:
+		var first_stop: Dictionary = CATALOG_ROUTE_STOPS[0]
+		if not _load_catalog_region(first_stop.center, int(first_stop.area)):
+			return
+		_catalog_route_index = 1 % CATALOG_ROUTE_STOPS.size()
+		_catalog_route_last_advance_elapsed = _elapsed
+	else:
+		if not _load_region(FIXED_TARGET_SA):
+			return
 	_apply_environment(_environment_cache[0], 0)
 	_can_capture_images = DisplayServer.get_name().to_lower() != "headless"
 	if FileAccess.file_exists("res://bin/libsa_legacy.so"):
@@ -275,7 +330,12 @@ func _process(delta: float) -> void:
 	_elapsed += delta
 
 	if not _capture_hold:
-		if _route_enabled:
+		if _catalog_route_enabled and _route_enabled:
+			# P1-A07 held-waypoint demo: scripted stops advance ONLY after the
+			# current commit+retire fully settles plus dwell. Continuous moving
+			# route had 0 ready on llvmpipe; this is not a performance claim.
+			_update_catalog_route(delta)
+		elif _route_enabled:
 			_update_route(delta)
 		else:
 			_update_free_camera(delta)
@@ -287,10 +347,20 @@ func _process(delta: float) -> void:
 	_poll_pending_region()
 	_pump_region_budget()
 	if not _capture_hold:
-		_maybe_reload_region()
+		# P1-A07: scripted catalog route owns its submissions; free-camera
+		# reload stays legacy-only so it cannot issue a second mode.
+		if not _catalog_route_enabled:
+			_maybe_reload_region()
 	_record_frame(wall_delta)
 
-	if _route_enabled and not _capture_pending and _capture_index < CAPTURE_SCENARIOS.size():
+	if _catalog_route_enabled and _route_enabled and not _capture_pending:
+		# Capture only a completed, settled catalog stop. The legacy fixed-Grove
+		# scenarios would cancel in-flight area transitions and replace their world.
+		if _catalog_route_commits > _capture_index and _catalog_route_commits <= CATALOG_ROUTE_STOPS.size() and not _catalog_route_waiting and not _has_pending_region() and not _region_budget_busy():
+			_capture_index = _catalog_route_commits
+			_capture_pending = true
+			call_deferred("_capture_manual", "catalog-%02d-area-%d" % [_capture_index, _loaded_area_id])
+	elif _route_enabled and not _capture_pending and _capture_index < CAPTURE_SCENARIOS.size():
 		if _elapsed >= float(_capture_index + 1):
 			_capture_pending = true
 			call_deferred("_capture_scenario", _capture_index)
@@ -308,7 +378,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_mouse_look = event.pressed
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if _mouse_look else Input.MOUSE_MODE_VISIBLE
 		get_viewport().set_input_as_handled()
-	elif event is InputEventMouseMotion and _mouse_look and not _route_enabled:
+	elif event is InputEventMouseMotion and _mouse_look and not _route_enabled and not _catalog_route_enabled:
 		_yaw -= event.relative.x * MOUSE_SENSITIVITY
 		_pitch = clamp(_pitch - event.relative.y * MOUSE_SENSITIVITY, -1.5, 1.5)
 		camera.rotation = Vector3(_pitch, _yaw, 0.0)
@@ -341,6 +411,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				# generation drains is ignored and documented in the overlay
 				# (existing counter); the pending request keeps the old world.
 				# Camera intent is naturally retried on later frames.
+				# P1-A07: retry preserves the failed mode/area; never confuse
+				# pending target area with committed area.
 				if _region_candidate_unavailable and not _capture_hold:
 					if _pending_region_active or _region_budget_busy():
 						_f6_ignored_while_pending += 1
@@ -348,7 +420,10 @@ func _unhandled_input(event: InputEvent) -> void:
 						pass
 					else:
 						_region_retry_suppressed = false
-						_submit_region_async(_failed_region_center_sa)
+						if _failed_region_is_catalog:
+							_submit_catalog_region(_failed_region_center_sa, _failed_region_area_id)
+						else:
+							_submit_region_async(_failed_region_center_sa)
 					_update_overlay()
 			KEY_F12:
 				if not _capture_pending:
@@ -382,6 +457,11 @@ func _parse_cli() -> bool:
 		var arg: String = args[i]
 		match arg:
 			"--route":
+				_route_enabled = true
+			"--catalog-route":
+				# P1-A07 explicit opt-in catalog residency. Normal legacy
+				# route/cap behavior unchanged when absent.
+				_catalog_route_enabled = true
 				_route_enabled = true
 			"--game-dir", "--seconds", "--capture-dir", "--radius", "--cap":
 				if i + 1 >= args.size():
@@ -418,6 +498,7 @@ func _parse_cli() -> bool:
 							_fatal("--radius must be a positive finite number", 2)
 							return false
 						_radius = parsed_radius
+						_radius_user_supplied = true
 					"--cap":
 						if not value.is_valid_int() or value.to_int() <= 0:
 							_fatal("--cap must be a positive integer", 2)
@@ -440,6 +521,10 @@ func _parse_cli() -> bool:
 	if _capture_dir == _game_dir or _capture_dir.begins_with(game_directory_prefix):
 		_fatal("--capture-dir must not be the read-only game directory or one of its children", 2)
 		return false
+	# P1-A07: default catalog radius 130 ONLY when the user did not supply
+	# --radius. Explicit --radius always wins; legacy default 350 unchanged.
+	if _catalog_route_enabled and not _radius_user_supplied:
+		_radius = CATALOG_DEFAULT_RADIUS
 	return true
 
 
@@ -776,9 +861,14 @@ func _lab_stage_one_item() -> void:
 	if _lab_candidate_current_instance == null or not is_instance_valid(_lab_candidate_current_instance):
 		var instance := MeshInstance3D.new()
 		instance.mesh = mesh
-		if _lab_candidate_next_mesh == _lab_candidate_pair_parent:
+		# P1-A04 paired alternate stays hidden; P1-A07 authored catalog targets
+		# held hidden are DIAGNOSTIC policy (lod_target_hidden), not source LOD.
+		var is_pair_parent := _lab_candidate_next_mesh == _lab_candidate_pair_parent
+		var is_catalog_hidden := bool(mesh_info.get("lod_target_hidden", false))
+		if is_pair_parent or is_catalog_hidden:
 			instance.visible = false
-		instance.set_meta("lod_chain_alternate", _lab_candidate_next_mesh == _lab_candidate_pair_parent)
+		instance.set_meta("lod_chain_alternate", is_pair_parent)
+		instance.set_meta("lod_target_hidden", is_catalog_hidden)
 		instance.set_meta("source_model_id", int(mesh_info.get("source_model_id", -1)))
 		instance.set_meta("source_model", str(mesh_info.get("source_model", "")))
 		staging_root.add_child(instance)
@@ -857,6 +947,10 @@ func _lab_commit_staged_candidate() -> void:
 	_resident_meshes = _lab_candidate_staged_instances.size()
 	_resident_surfaces = _lab_candidate_staged_materials.size()
 	_loaded_center_sa = _lab_candidate_center_sa
+	# P1-A07: committed area/mode parts of the active payload; pending target
+	# area never overwrites this except via staged commit.
+	_loaded_area_id = _lab_candidate_area_id
+	_loaded_is_catalog = _lab_candidate_is_catalog
 	_has_published_region = true
 	_publication_revision = _lab_candidate_revision
 	_region_candidate_unavailable = false
@@ -884,6 +978,8 @@ func _lab_commit_staged_candidate() -> void:
 	_pending_region_active = false
 	_pending_region_request_id = 0
 	_pending_region_session_epoch = 0
+	_pending_region_area_id = 0
+	_pending_region_is_catalog = false
 	_lab_staging_active = false
 	_lab_candidate_meshes = []
 	_lab_candidate_stats = {}
@@ -895,6 +991,8 @@ func _lab_commit_staged_candidate() -> void:
 	_lab_candidate_current_instance = null
 	_lab_candidate_next_mesh = 0
 	_lab_candidate_next_surface = 0
+	_lab_candidate_area_id = 0
+	_lab_candidate_is_catalog = false
 	_last_region_commit_ms = float(Time.get_ticks_usec() - commit_started) / 1000.0
 	_last_region_staging_ms_total = _lab_candidate_staging_ms_total
 	if _lab_candidate_started_usec != 0:
@@ -986,6 +1084,8 @@ func _discard_staging_to_retiring(reason: String) -> void:
 	_lab_candidate_current_instance = null
 	_lab_candidate_next_mesh = 0
 	_lab_candidate_next_surface = 0
+	_lab_candidate_area_id = 0
+	_lab_candidate_is_catalog = false
 	_lab_candidate_staging_ms_total = 0.0
 	_lab_candidate_sync_prefix_ms = 0.0
 	_lab_candidate_started_usec = 0
@@ -1023,7 +1123,7 @@ func _load_region(center_sa: Vector3) -> bool:
 		_fatal("load_region returned a non-Dictionary result", 4)
 		return false
 	_update_bridge_progress_diagnostics(result)
-	if not _validate_and_begin_staging(result, center_sa, started):
+	if not _validate_and_begin_staging(result, center_sa, started, false, 0):
 		# Validation/rejection already handled; sync failures retain old.
 		# _validate returns false for both reject (ok=false, retains old) and
 		# fatal malformed (terminal). Distinguish via shutdown flag? Reject
@@ -1038,6 +1138,47 @@ func _load_region(center_sa: Vector3) -> bool:
 	_flush_region_budget_unbudgeted()
 	# Flush also drains the retiring generation created by this sync commit
 	# so fixed captures hold a settled world (old freed now, not budgeted).
+	_flush_region_budget_unbudgeted()
+	if _lab_staging_active:
+		return false
+	return _has_published_region and _publication_revision > 0
+
+
+func _load_catalog_region(center_sa: Vector3, area_id: int) -> bool:
+	# P1-A07 synchronous catalog diagnostic: same explicit unbudgeted flush as
+	# legacy, but via load_catalog_region. Only used when the opt-in mode is
+	# active (initial/fixed sync); legacy path unchanged otherwise.
+	if _loading or _shutdown_started:
+		return false
+	if _bridge == null or not _bridge_open or not _bridge.has_method("load_catalog_region"):
+		_fatal("SALegacyBridge is missing method load_catalog_region", 3)
+		return false
+	_ensure_region_roots()
+	if _has_pending_region() or _region_budget_busy():
+		_drain_pending_for_sync("sync-preempt")
+		if _shutdown_started:
+			return false
+		if _has_pending_region() or _lab_staging_active:
+			return false
+		if _lab_retire_active:
+			_flush_region_budget_unbudgeted()
+			if _lab_retire_active:
+				return false
+	_loading = true
+	var started := Time.get_ticks_usec()
+	var result: Variant = _bridge.call("load_catalog_region", center_sa, area_id)
+	_last_bridge_load_call_ms = float(Time.get_ticks_usec() - started) / 1000.0
+	_load_count += 1
+	_loading = false
+	if not result is Dictionary:
+		_fatal("load_catalog_region returned a non-Dictionary result", 4)
+		return false
+	_update_bridge_progress_diagnostics(result)
+	if not _validate_and_begin_staging(result, center_sa, started, true, area_id):
+		return false
+	if _lab_staging_active:
+		_lab_candidate_sync_prefix_ms = _last_bridge_load_call_ms
+	_flush_region_budget_unbudgeted()
 	_flush_region_budget_unbudgeted()
 	if _lab_staging_active:
 		return false
@@ -1074,10 +1215,14 @@ func _submit_region_async(center_sa: Vector3) -> Dictionary:
 	if _lab_retire_active or not _lab_deferred_ready.is_empty() or _last_bridge_retire_pending > 0:
 		return {"ok": false, "error": "retiring_busy", "request_id": 0, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
 	if _pending_region_active:
-		if _planar_region_distance(center_sa, _pending_region_center_sa) < 1.0:
-			return {"ok": false, "error": "duplicate_pending", "request_id": _pending_region_request_id, "session_epoch": _pending_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
-		if _planar_region_distance(center_sa, _pending_region_center_sa) < _region_reload_threshold():
-			return {"ok": false, "error": "duplicate_pending", "request_id": _pending_region_request_id, "session_epoch": _pending_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+		# P1-A07: area/mode are part of dedup. Legacy dedup only applies when
+		# the pending request is also legacy; a catalog pending with the same
+		# XY is a different mode and must supersede, not dedup.
+		if not _pending_region_is_catalog:
+			if _planar_region_distance(center_sa, _pending_region_center_sa) < 1.0:
+				return {"ok": false, "error": "duplicate_pending", "request_id": _pending_region_request_id, "session_epoch": _pending_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+			if _planar_region_distance(center_sa, _pending_region_center_sa) < _region_reload_threshold():
+				return {"ok": false, "error": "duplicate_pending", "request_id": _pending_region_request_id, "session_epoch": _pending_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
 		if _lab_staging_active:
 			# Supersede during lab staging retains old active, moves partial
 			# candidate to the one retiring root. Prepared bridge counter may
@@ -1089,6 +1234,8 @@ func _submit_region_async(center_sa: Vector3) -> Dictionary:
 			_pending_region_active = false
 			_pending_region_request_id = 0
 			_pending_region_session_epoch = 0
+			_pending_region_area_id = 0
+			_pending_region_is_catalog = false
 			_async_cancel_count += 1
 			_update_overlay()
 			return {"ok": false, "error": "retiring_busy", "request_id": 0, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
@@ -1107,6 +1254,62 @@ func _submit_region_async(center_sa: Vector3) -> Dictionary:
 	_pending_region_request_id = int(rid)
 	_pending_region_session_epoch = int(epoch)
 	_pending_region_center_sa = center_sa
+	_pending_region_area_id = 0
+	_pending_region_is_catalog = false
+	_pending_region_discarded_stale = int(submitted.get("discarded_stale", 0))
+	_async_submit_count += 1
+	_update_overlay()
+	return submitted
+
+
+func _submit_catalog_region(center_sa: Vector3, area_id: int) -> Dictionary:
+	# P1-A07 catalog async submit via the shared worker. Same latest-only,
+	# quota, cancel and budget semantics as legacy; area/mode are part of the
+	# request identity. Legacy load/submit/cap behavior unchanged.
+	if _shutdown_started or not _bridge_open or _bridge == null:
+		return {"ok": false, "error": "bridge not open", "request_id": 0, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+	if not _bridge.has_method("submit_catalog_region"):
+		_fatal("SALegacyBridge is missing method submit_catalog_region", 3)
+		return {"ok": false, "error": "missing submit_catalog_region", "request_id": 0, "session_epoch": 0, "discarded_stale": 0, "publication_revision": _publication_revision}
+	if _loading:
+		return {"ok": false, "error": "sync load in progress", "request_id": 0, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+	_ensure_region_roots()
+	if _lab_retire_active or not _lab_deferred_ready.is_empty() or _last_bridge_retire_pending > 0:
+		return {"ok": false, "error": "retiring_busy", "request_id": 0, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+	if _pending_region_active:
+		# Dedup only when pending is the same catalog area/mode near the same XY.
+		if _pending_region_is_catalog and _pending_region_area_id == area_id:
+			if _planar_region_distance(center_sa, _pending_region_center_sa) < 1.0:
+				return {"ok": false, "error": "duplicate_pending", "request_id": _pending_region_request_id, "session_epoch": _pending_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+			if _planar_region_distance(center_sa, _pending_region_center_sa) < _region_reload_threshold():
+				return {"ok": false, "error": "duplicate_pending", "request_id": _pending_region_request_id, "session_epoch": _pending_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+		if _lab_staging_active:
+			_discard_staging_to_retiring("supersede")
+			_pending_region_active = false
+			_pending_region_request_id = 0
+			_pending_region_session_epoch = 0
+			_pending_region_area_id = 0
+			_pending_region_is_catalog = false
+			_async_cancel_count += 1
+			_update_overlay()
+			return {"ok": false, "error": "retiring_busy", "request_id": 0, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+	var submitted: Variant = _bridge.call("submit_catalog_region", center_sa, area_id)
+	if not submitted is Dictionary:
+		_fatal("submit_catalog_region returned a non-Dictionary result", 4)
+		return {"ok": false, "error": "non-Dictionary submit result", "request_id": 0, "session_epoch": 0, "discarded_stale": 0, "publication_revision": _publication_revision}
+	if not bool(submitted.get("ok", false)):
+		return submitted
+	var rid: Variant = submitted.get("request_id")
+	var epoch: Variant = submitted.get("session_epoch")
+	if not rid is int or not epoch is int or int(rid) <= 0 or int(epoch) <= 0:
+		_fatal("submit_catalog_region returned invalid request identity", 4)
+		return submitted
+	_pending_region_active = true
+	_pending_region_request_id = int(rid)
+	_pending_region_session_epoch = int(epoch)
+	_pending_region_center_sa = center_sa
+	_pending_region_area_id = area_id
+	_pending_region_is_catalog = true
 	_pending_region_discarded_stale = int(submitted.get("discarded_stale", 0))
 	_async_submit_count += 1
 	_update_overlay()
@@ -1137,13 +1340,17 @@ func _poll_pending_region() -> void:
 		var deferred := _lab_deferred_ready
 		var deferred_center := _lab_deferred_center_sa
 		var deferred_started := _lab_deferred_started_usec
+		var deferred_area := _lab_deferred_area_id
+		var deferred_is_catalog := _lab_deferred_is_catalog
 		_lab_deferred_ready = {}
 		_lab_deferred_discard_pending = false
 		_pending_region_active = true
 		_pending_region_request_id = int(deferred.get("request_id", 0))
 		_pending_region_session_epoch = int(deferred.get("session_epoch", 0))
 		_pending_region_center_sa = deferred_center
-		_validate_and_begin_staging(deferred, deferred_center, deferred_started)
+		_pending_region_area_id = deferred_area
+		_pending_region_is_catalog = deferred_is_catalog
+		_validate_and_begin_staging(deferred, deferred_center, deferred_started, deferred_is_catalog, deferred_area)
 		return
 	var convert_started := Time.get_ticks_usec()
 	var polled: Variant = _bridge.call("poll_region")
@@ -1168,6 +1375,8 @@ func _poll_pending_region() -> void:
 				_pending_region_active = false
 				_pending_region_request_id = 0
 				_pending_region_session_epoch = 0
+				_pending_region_area_id = 0
+				_pending_region_is_catalog = false
 				_fatal("async region protocol mismatch: foreign request_id/session_epoch in preparing", 4)
 				return
 		return
@@ -1177,6 +1386,8 @@ func _poll_pending_region() -> void:
 		_pending_region_active = false
 		_pending_region_request_id = 0
 		_pending_region_session_epoch = 0
+		_pending_region_area_id = 0
+		_pending_region_is_catalog = false
 		if _lab_staging_active:
 			_discard_staging_to_retiring("protocol-mismatch")
 		_fatal("async region protocol mismatch: foreign request_id/session_epoch", 4)
@@ -1187,11 +1398,15 @@ func _poll_pending_region() -> void:
 		_pending_region_active = false
 		_pending_region_request_id = 0
 		_pending_region_session_epoch = 0
+		_pending_region_area_id = 0
+		_pending_region_is_catalog = false
 		_async_cancel_count += 1
 		_update_overlay()
 		return
 	if status == "ready":
 		var center := _pending_region_center_sa
+		var ready_area := _pending_region_area_id
+		var ready_is_catalog := _pending_region_is_catalog
 		# If retiring/staging/deferred blocks admission, hold the ready payload
 		# deferred until drain instead of losing the one-shot packet or mixing
 		# generations. Never overwrite an existing deferred (single deferred +
@@ -1201,32 +1416,44 @@ func _poll_pending_region() -> void:
 				_pending_region_active = false
 				_pending_region_request_id = 0
 				_pending_region_session_epoch = 0
+				_pending_region_area_id = 0
+				_pending_region_is_catalog = false
 				return
 			_lab_deferred_ready = (polled as Dictionary).duplicate(true)
 			_lab_deferred_center_sa = center
+			_lab_deferred_area_id = ready_area
+			_lab_deferred_is_catalog = ready_is_catalog
 			_lab_deferred_started_usec = convert_started
 			_lab_deferred_discard_pending = false
 			_pending_region_active = false
 			_pending_region_request_id = 0
 			_pending_region_session_epoch = 0
+			_pending_region_area_id = 0
+			_pending_region_is_catalog = false
 			return
 		# Keep pending true through lab staging; ready count increments only
 		# on staged commit (cancelled staged work never becomes ready).
-		_validate_and_begin_staging(polled, center, convert_started)
+		_validate_and_begin_staging(polled, center, convert_started, ready_is_catalog, ready_area)
 		return
 	if status == "error":
 		var failed_center := _pending_region_center_sa
+		var failed_area := _pending_region_area_id
+		var failed_is_catalog := _pending_region_is_catalog
 		if _lab_staging_active:
 			_discard_staging_to_retiring("error")
 		_pending_region_active = false
 		_pending_region_request_id = 0
 		_pending_region_session_epoch = 0
+		_pending_region_area_id = 0
+		_pending_region_is_catalog = false
 		_async_error_count += 1
-		_reject_region_candidate(failed_center, polled)
+		_reject_region_candidate(failed_center, polled, failed_is_catalog, failed_area)
 		return
 	_pending_region_active = false
 	_pending_region_request_id = 0
 	_pending_region_session_epoch = 0
+	_pending_region_area_id = 0
+	_pending_region_is_catalog = false
 	if _lab_staging_active:
 		_discard_staging_to_retiring("unknown-status")
 	_fatal("poll_region returned unknown status %s" % status, 4)
@@ -1250,11 +1477,15 @@ func _cancel_pending_region() -> Dictionary:
 			_pending_region_active = false
 			_pending_region_request_id = 0
 			_pending_region_session_epoch = 0
+			_pending_region_area_id = 0
+			_pending_region_is_catalog = false
 			_async_cancel_count += 1
 		_lab_deferred_discard_pending = true
 		_pending_region_active = false
 		_pending_region_request_id = 0
 		_pending_region_session_epoch = 0
+		_pending_region_area_id = 0
+		_pending_region_is_catalog = false
 		_async_cancel_count += 1
 		if not _lab_staging_active and not _lab_retire_active:
 			_lab_move_deferred_to_retiring()
@@ -1275,6 +1506,8 @@ func _cancel_pending_region() -> Dictionary:
 			_pending_region_active = false
 			_pending_region_request_id = 0
 			_pending_region_session_epoch = 0
+			_pending_region_area_id = 0
+			_pending_region_is_catalog = false
 			_async_cancel_count += 1
 			_update_overlay()
 	else:
@@ -1285,6 +1518,8 @@ func _cancel_pending_region() -> Dictionary:
 			_pending_region_active = false
 			_pending_region_request_id = 0
 			_pending_region_session_epoch = 0
+			_pending_region_area_id = 0
+			_pending_region_is_catalog = false
 			_async_cancel_count += 1
 			_update_overlay()
 			return {"ok": true, "request_id": rid, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
@@ -1313,11 +1548,15 @@ func _drain_pending_for_sync(reason: String) -> void:
 		_pending_region_active = false
 		_pending_region_request_id = 0
 		_pending_region_session_epoch = 0
+		_pending_region_area_id = 0
+		_pending_region_is_catalog = false
 	if _lab_staging_active:
 		_discard_staging_to_retiring("sync-preempt")
 		_pending_region_active = false
 		_pending_region_request_id = 0
 		_pending_region_session_epoch = 0
+		_pending_region_area_id = 0
+		_pending_region_is_catalog = false
 	# Unbudgeted flush of lab retiring plus bounded C++ retire pump.
 	_flush_region_budget_unbudgeted()
 	if _bridge != null and _bridge_open and _bridge.has_method("poll_region") and not _shutdown_started:
@@ -1340,9 +1579,11 @@ func _drain_pending_for_sync(reason: String) -> void:
 		_pending_region_active = false
 		_pending_region_request_id = 0
 		_pending_region_session_epoch = 0
+		_pending_region_area_id = 0
+		_pending_region_is_catalog = false
 
 
-func _validate_and_begin_staging(result: Dictionary, center_sa: Vector3, started_usec: int) -> bool:
+func _validate_and_begin_staging(result: Dictionary, center_sa: Vector3, started_usec: int, expected_is_catalog: bool = false, expected_area_id: int = 0) -> bool:
 	# Shared validation for sync and async ready payloads (P0/chain/async
 	# typed payload validation/rejection/context/recovery and COL bytes
 	# preserved). Old complete nodes/stats/paired COL stay unchanged until
@@ -1352,13 +1593,17 @@ func _validate_and_begin_staging(result: Dictionary, center_sa: Vector3, started
 	# publishes partial or stale resources. Validation/setup CPU is measured
 	# into the per-candidate staging accumulator; failures discard without
 	# touching published active stats.
+	# P1-A07: expected area/mode distinguish legacy capped diagnostics from
+	# catalog residency. Legacy load/submit/cap1/2/256 behavior unchanged;
+	# catalog counts legitimately exceed cap ONLY when structured selection
+	# reconciles meshes/hidden counts, never as a global bypass.
 	var setup_started := Time.get_ticks_usec()
 	var ok_value: Variant = result.get("ok")
 	if not ok_value is bool:
 		_fatal("load_region returned an invalid ok value", 4)
 		return false
 	if not ok_value:
-		return _reject_region_candidate(center_sa, result)
+		return _reject_region_candidate(center_sa, result, expected_is_catalog, expected_area_id)
 
 	var revision_value: Variant = result.get("publication_revision")
 	if not revision_value is int or int(revision_value) <= _publication_revision:
@@ -1388,6 +1633,18 @@ func _validate_and_begin_staging(result: Dictionary, center_sa: Vector3, started
 			return false
 		if mesh_info.has("lod_chain_alternate") and not mesh_info.get("lod_chain_alternate") is bool:
 			_fatal("load_region lod_chain_alternate is not boolean", 4)
+			return false
+		# P1-A07: authored catalog targets carry lod_target_hidden bool.
+		# Legacy capped payloads must never claim it true; catalog payloads
+		# must carry it for every mesh (DIAGNOSTIC policy, not source LOD).
+		if mesh_info.has("lod_target_hidden") and not mesh_info.get("lod_target_hidden") is bool:
+			_fatal("load_region lod_target_hidden is not boolean", 4)
+			return false
+		if not expected_is_catalog and bool(mesh_info.get("lod_target_hidden", false)):
+			_fatal("load_region legacy payload must not carry lod_target_hidden=true", 4)
+			return false
+		if expected_is_catalog and not mesh_info.has("lod_target_hidden"):
+			_fatal("load_region catalog payload is missing lod_target_hidden", 4)
 			return false
 		var mesh_value: Variant = mesh_info.get("mesh")
 		if not mesh_value is ArrayMesh or mesh_value.get_surface_count() == 0:
@@ -1428,6 +1685,21 @@ func _validate_and_begin_staging(result: Dictionary, center_sa: Vector3, started
 			if surface_info.texture is Texture2D:
 				all_texture_holds.append(surface_info.texture)
 
+	# P1-A07 structured selection: catalog mesh counts legitimately exceed cap
+	# ONLY when selection reconciles one-to-one; never a global bypass.
+	# Legacy capped diagnostics keep the cap and carry no selection.
+	var stats_dict: Dictionary = result.stats
+	if expected_is_catalog:
+		if not _validate_catalog_selection(stats_dict, meshes, expected_area_id):
+			return false
+	else:
+		if stats_dict.has("selection"):
+			_fatal("load_region legacy payload must not carry selection", 4)
+			return false
+		if meshes.size() > _cap:
+			_fatal("load_region legacy payload exceeds cap without catalog selection", 4)
+			return false
+
 	var collision_out := _prepare_region_collision(result, meshes, int(revision_value))
 	if not bool(collision_out.get("ok", false)):
 		return false
@@ -1453,6 +1725,8 @@ func _validate_and_begin_staging(result: Dictionary, center_sa: Vector3, started
 		child.free()
 	_lab_staging_active = true
 	_lab_candidate_center_sa = center_sa
+	_lab_candidate_area_id = expected_area_id
+	_lab_candidate_is_catalog = expected_is_catalog
 	_lab_candidate_revision = int(revision_value)
 	var top_rid_begin: Variant = result.get("request_id", candidate_stats.get("request_id", 0))
 	_lab_candidate_request_id = int(top_rid_begin) if top_rid_begin is int else _pending_region_request_id
@@ -1479,12 +1753,107 @@ func _validate_and_begin_staging(result: Dictionary, center_sa: Vector3, started
 	return true
 
 
+func _validate_catalog_selection(stats: Dictionary, meshes: Array, expected_area_id: int) -> bool:
+	# P1-A07 structured selection validation. Every expected resource must load
+	# or the whole candidate errors (no omission Ready). Catalog counts may
+	# legitimately exceed _cap ONLY here, when counts reconcile one-to-one.
+	var sel_value: Variant = stats.get("selection", null)
+	if not sel_value is Dictionary:
+		_fatal("load_catalog_region returned invalid selection", 4)
+		return false
+	var sel: Dictionary = sel_value
+	var mode_value: Variant = sel.get("mode", "")
+	if not (mode_value is String or mode_value is StringName) or str(mode_value).is_empty():
+		_fatal("load_catalog_region selection has invalid mode", 4)
+		return false
+	var mode := str(mode_value)
+	if mode != "catalog_disc" and mode != "catalog_area":
+		_fatal("load_catalog_region selection has unknown mode", 4)
+		return false
+	var area_value: Variant = sel.get("area_id", -1)
+	if not area_value is int or int(area_value) < 0 or int(area_value) > 255:
+		_fatal("load_catalog_region selection has invalid area_id", 4)
+		return false
+	var area_id := int(area_value)
+	if area_id != expected_area_id:
+		_fatal("load_catalog_region selection area_id does not match request", 4)
+		return false
+	if mode == "catalog_disc" and area_id != 0:
+		_fatal("load_catalog_region catalog_disc must use area 0", 4)
+		return false
+	if mode == "catalog_area" and area_id <= 0:
+		_fatal("load_catalog_region catalog_area must use positive area", 4)
+		return false
+	var radius_value: Variant = sel.get("radius", 0.0)
+	if not (radius_value is float or radius_value is int) or not is_finite(float(radius_value)) or float(radius_value) <= 0.0:
+		_fatal("load_catalog_region selection has invalid radius", 4)
+		return false
+	# Disc radius must match the Open radius; area mode still records a finite
+	# radius but selection is the entire area, not the disc.
+	if mode == "catalog_disc" and absf(float(radius_value) - _radius) > 0.001:
+		_fatal("load_catalog_region selection radius does not match open radius", 4)
+		return false
+	var population_value: Variant = sel.get("population", -1)
+	var catalog_population := int(_open_metadata.get("catalog_population", 0))
+	if catalog_population <= 0 or not population_value is int or int(population_value) != catalog_population:
+		_fatal("load_catalog_region selection has invalid population", 4)
+		return false
+	for key in ["expected_visible", "expected_hidden", "resident", "excluded_outside", "time_models"]:
+		var v: Variant = sel.get(key, -1)
+		if not v is int or int(v) < 0:
+			_fatal("load_catalog_region selection has invalid %s" % key, 4)
+			return false
+	var expected_visible := int(sel.expected_visible)
+	var expected_hidden := int(sel.expected_hidden)
+	var resident := int(sel.resident)
+	var excluded_outside := int(sel.excluded_outside)
+	if resident != meshes.size():
+		_fatal("load_catalog_region selection resident does not match meshes", 4)
+		return false
+	if expected_visible + expected_hidden != resident:
+		_fatal("load_catalog_region selection visible+hidden does not match resident", 4)
+		return false
+	if expected_visible + expected_hidden + excluded_outside != catalog_population:
+		_fatal("load_catalog_region selection expected+excluded does not match population", 4)
+		return false
+	for key in ["lod_visibility_authority", "time_visibility_authority"]:
+		var a: Variant = sel.get(key, "")
+		if not (a is String or a is StringName) or str(a) != CATALOG_LOD_AUTHORITY:
+			_fatal("load_catalog_region selection has invalid %s" % key, 4)
+			return false
+	# Reconcile hidden flags one-to-one; identities must be unique real resources.
+	var hidden_count := 0
+	var seen_mesh_ids := {}
+	for mesh_info in meshes:
+		if bool((mesh_info as Dictionary).get("lod_target_hidden", false)):
+			hidden_count += 1
+		var mesh_value: Variant = (mesh_info as Dictionary).get("mesh", null)
+		if mesh_value is ArrayMesh:
+			var mid := (mesh_value as ArrayMesh).get_instance_id()
+			if seen_mesh_ids.has(mid):
+				_fatal("load_catalog_region meshes contain duplicate resources", 4)
+				return false
+			seen_mesh_ids[mid] = true
+		else:
+			_fatal("load_catalog_region mesh is not an ArrayMesh", 4)
+			return false
+	if hidden_count != expected_hidden:
+		_fatal("load_catalog_region hidden flags do not match expected_hidden", 4)
+		return false
+	if meshes.size() - hidden_count != expected_visible:
+		_fatal("load_catalog_region visible flags do not match expected_visible", 4)
+		return false
+	# Plan safety bounds unchanged: no source geom/UV/edit/drop happens here;
+	# geometry was already validated exactly in the shared pass above.
+	return true
+
+
 func _commit_region_result(result: Dictionary, center_sa: Vector3, started_usec: int) -> bool:
 	# Legacy blocking wrapper (kept for direct callers): validate + begin
 	# staging then explicitly flush unbudgeted reusing the same stepper.
 	# Async poll path uses _validate_and_begin_staging directly to keep
 	# pending true through budgeted staging.
-	if not _validate_and_begin_staging(result, center_sa, started_usec):
+	if not _validate_and_begin_staging(result, center_sa, started_usec, false, 0):
 		return false
 	_flush_region_budget_unbudgeted()
 	_flush_region_budget_unbudgeted()
@@ -1746,7 +2115,7 @@ func _paired_data_summary() -> Dictionary:
 	}
 
 
-func _reject_region_candidate(center_sa: Vector3, result: Dictionary) -> bool:
+func _reject_region_candidate(center_sa: Vector3, result: Dictionary, is_catalog: bool = false, area_id: int = 0) -> bool:
 	var revision_value: Variant = result.get("publication_revision")
 	if not revision_value is int or int(revision_value) != _publication_revision:
 		_fatal("failed load_region returned an invalid publication_revision", 4)
@@ -1754,8 +2123,14 @@ func _reject_region_candidate(center_sa: Vector3, result: Dictionary) -> bool:
 
 	_rejected_load_count += 1
 	_last_region_error = _region_error_status(result, center_sa)
+	# P1-A07: record failed area/mode alongside center so F6 retries the same
+	# mode; never confuse pending target area with committed area.
+	_last_region_error["requested_area_id"] = area_id
+	_last_region_error["requested_is_catalog"] = is_catalog
 	_region_candidate_unavailable = true
 	_failed_region_center_sa = center_sa
+	_failed_region_area_id = area_id
+	_failed_region_is_catalog = is_catalog
 	_region_retry_suppressed = _has_published_region
 	var human_error := str(_last_region_error.get("error", "unspecified bridge error"))
 	if not _has_published_region:
@@ -1804,6 +2179,9 @@ func _release_region() -> void:
 	# avalanche in normal budgeted commits (holds moved O(1) there).
 	_flush_region_budget_unbudgeted()
 	_lab_deferred_ready = {}
+	_lab_deferred_center_sa = Vector3.ZERO
+	_lab_deferred_area_id = 0
+	_lab_deferred_is_catalog = false
 	_lab_deferred_discard_pending = false
 	_lab_staging_active = false
 	_lab_candidate_meshes = []
@@ -1816,6 +2194,8 @@ func _release_region() -> void:
 	_lab_candidate_current_instance = null
 	_lab_candidate_next_mesh = 0
 	_lab_candidate_next_surface = 0
+	_lab_candidate_area_id = 0
+	_lab_candidate_is_catalog = false
 	_lab_candidate_staging_ms_total = 0.0
 	_lab_candidate_sync_prefix_ms = 0.0
 	_lab_candidate_started_usec = 0
@@ -1943,6 +2323,57 @@ func _start_route() -> void:
 	_apply_environment(_environment_cache[0], 0)
 
 
+func _update_catalog_route(_delta: float) -> void:
+	# P1-A07 held-waypoint catalog demo: camera visits TATTOO for area 16
+	# (not ENEX gameplay). Advance ONLY after commit+retire fully settles plus
+	# dwell; reuse pending/quota/F6/sync/close machinery.
+	if _shutdown_started or not _bridge_open:
+		return
+	if _has_pending_region() or _region_budget_busy() or _last_bridge_retire_pending > 0:
+		return
+	if _catalog_route_waiting:
+		var awaited: Dictionary = CATALOG_ROUTE_STOPS[_catalog_route_index % CATALOG_ROUTE_STOPS.size()]
+		if _publication_revision > _catalog_route_base_revision and _last_region_request_id == _catalog_route_request_id and _loaded_is_catalog and _loaded_area_id == int(awaited.area) and _loaded_center_sa.distance_to(awaited.center) < 0.01:
+			_catalog_route_index = (_catalog_route_index + 1) % CATALOG_ROUTE_STOPS.size()
+			_catalog_route_commits += 1
+		else:
+			# Accepted submission is not completed residency. Keep a failed or
+			# cancelled stop selected; never silently advance past missing data.
+			_catalog_route_rejects += 1
+		_catalog_route_waiting = false
+		_catalog_route_last_advance_elapsed = _elapsed
+		_update_overlay()
+		return
+	if _elapsed - _catalog_route_last_advance_elapsed < CATALOG_ROUTE_DWELL_SECONDS:
+		return
+	if CATALOG_ROUTE_STOPS.is_empty():
+		return
+	var stop_index := _catalog_route_index % CATALOG_ROUTE_STOPS.size()
+	var stop: Dictionary = CATALOG_ROUTE_STOPS[stop_index]
+	var center_sa: Vector3 = stop.center
+	var area_id := int(stop.area)
+	camera.position = _sa_to_world(stop.eye)
+	_camera_target_world = _sa_to_world(stop.target)
+	camera.look_at(_camera_target_world, Vector3.UP)
+	_pitch = camera.rotation.x
+	_yaw = camera.rotation.y
+	_remember_accepted_camera()
+	var submitted := _submit_catalog_region(center_sa, area_id)
+	if bool(submitted.get("ok", false)):
+		_catalog_route_waiting = true
+		_catalog_route_request_id = int(submitted.request_id)
+		_catalog_route_base_revision = _publication_revision
+		_update_overlay()
+	else:
+		var err := str(submitted.get("error", ""))
+		if err == "retiring_busy" or err == "duplicate_pending":
+			return
+		# Honest error (e.g. whole-candidate failure): retain old, retry the
+		# same stop after dwell rather than skipping it.
+		_catalog_route_last_advance_elapsed = _elapsed
+		_update_overlay()
+
+
 func _update_free_camera(delta: float) -> void:
 	var movement := Vector3.ZERO
 	var forward := -camera.global_basis.z
@@ -1974,6 +2405,10 @@ func _maybe_reload_region() -> void:
 	# complete world stays active while pending/staging; no frame stalls on raw
 	# parse. While the one retiring generation drains, new admission blocks as
 	# busy and camera intent is naturally retried on a later frame.
+	# P1-A07: scripted catalog route owns submissions; free-camera legacy
+	# reload never issues catalog work here.
+	if _catalog_route_enabled:
+		return
 	if _lab_retire_active or not _lab_deferred_ready.is_empty() or _last_bridge_retire_pending > 0:
 		# Do not queue unbounded supersedes while retiring/deferred held; retry after drain.
 		return
@@ -2078,8 +2513,12 @@ func _capture_scenario(index: int) -> void:
 	var state_index := int(scenario.state)
 	_set_fixed_camera()
 	_apply_environment(_environment_cache[state_index], state_index)
-	if _loaded_center_sa.distance_to(FIXED_TARGET_SA) > 1.0:
-		if not _load_region(FIXED_TARGET_SA):
+	# P1-A07: fixed sync uses catalog load only when the opt-in mode is active.
+	if _catalog_route_enabled:
+		var fixed_ok := true
+		if _loaded_center_sa.distance_to(FIXED_TARGET_SA) > 1.0 or not _loaded_is_catalog or _loaded_area_id != 0:
+			fixed_ok = _load_catalog_region(FIXED_TARGET_SA, 0)
+		if not fixed_ok:
 			if _shutdown_started:
 				return
 			_flags = saved_flags
@@ -2095,6 +2534,24 @@ func _capture_scenario(index: int) -> void:
 			_update_overlay()
 			_write_run_manifest(scenario.id, false, "", "skipped_region_unavailable", str(_last_region_error.get("error", "region candidate unavailable")))
 			return
+	else:
+		if _loaded_center_sa.distance_to(FIXED_TARGET_SA) > 1.0:
+			if not _load_region(FIXED_TARGET_SA):
+				if _shutdown_started:
+					return
+				_flags = saved_flags
+				_apply_environment(saved_environment, saved_environment_index)
+				camera.global_transform = saved_camera_transform
+				_camera_target_world = saved_camera_target
+				_pitch = saved_pitch
+				_yaw = saved_yaw
+				_remember_accepted_camera()
+				_capture_index = index + 1
+				_capture_pending = false
+				_capture_hold = false
+				_update_overlay()
+				_write_run_manifest(scenario.id, false, "", "skipped_region_unavailable", str(_last_region_error.get("error", "region candidate unavailable")))
+				return
 	await _capture_current(scenario.id)
 	if _shutdown_started:
 		return
@@ -2110,7 +2567,7 @@ func _capture_scenario(index: int) -> void:
 	_capture_hold = false
 
 
-func _capture_manual() -> void:
+func _capture_manual(capture_id: String = "") -> void:
 	if _shutdown_started:
 		_capture_pending = false
 		return
@@ -2120,7 +2577,7 @@ func _capture_manual() -> void:
 		_capture_pending = false
 		_capture_hold = false
 		return
-	await _capture_current("manual-%06d" % _frame_count)
+	await _capture_current(capture_id if not capture_id.is_empty() else "manual-%06d" % _frame_count)
 	if _shutdown_started:
 		return
 	_capture_pending = false
@@ -2294,6 +2751,11 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"active": _has_published_region,
 			"active_publication_revision": _publication_revision,
 			"active_center_sa": _vector_to_array(_loaded_center_sa) if _has_published_region else [],
+			"active_area_id": _loaded_area_id if _has_published_region else 0,
+			"active_is_catalog": _loaded_is_catalog if _has_published_region else false,
+			"residency_mode": _residency_mode_label(),
+			"selection": _selection_scalar_summary(),
+			"selection_note": "scalar only; no COL/mesh array dump. Authored lod_target_hidden held hidden as diagnostic policy, not source LOD. No automatic LOD/time visibility/gameplay physics.",
 			"candidate_status": "unavailable" if _region_candidate_unavailable else "none",
 			"retry_suppressed": _region_retry_suppressed,
 			"retry_control": "F6",
@@ -2306,6 +2768,8 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 				"request_id": _pending_region_request_id if _pending_region_active else 0,
 				"session_epoch": _pending_region_session_epoch if _pending_region_active else 0,
 				"center_sa": _vector_to_array(_pending_region_center_sa) if _pending_region_active else [],
+				"area_id": _pending_region_area_id if _pending_region_active else 0,
+				"is_catalog": _pending_region_is_catalog if _pending_region_active else false,
 				"discarded_stale": _pending_region_discarded_stale,
 			},
 			"last_async": {
@@ -2361,11 +2825,21 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"load_count": _load_count,
 			"rejected_load_count": _rejected_load_count,
 			"active_publication_revision": _publication_revision,
+			"residency_mode": _residency_mode_label(),
+			"selection": _selection_scalar_summary(),
+			"catalog_route_enabled": _catalog_route_enabled,
 			"publication": "bounded replacement; the previous complete publication remains active until a valid candidate is fully staged. Initial and fixed captures use synchronous diagnostics; movement/F6 use async submit plus nonblocking poll",
-			"lod_status": "no Godot runtime LOD selection; source representation is whatever the bridge publishes",
+			"lod_status": "no Godot runtime LOD selection; source representation is whatever the bridge publishes. Catalog lod_target_hidden is diagnostic hold-hidden, not source LOD; time visibility unknown-pending-P5-A02; no gameplay physics",
 		},
 		"route": {
 			"enabled": _route_enabled,
+			"catalog_enabled": _catalog_route_enabled,
+			"catalog_index": _catalog_route_index,
+			"catalog_commits": _catalog_route_commits,
+			"catalog_rejects": _catalog_route_rejects,
+			"catalog_waiting": _catalog_route_waiting,
+			"catalog_stops": CATALOG_ROUTE_STOPS.size(),
+			"catalog_dwell_seconds": CATALOG_ROUTE_DWELL_SECONDS,
 			"route_clock_seconds": _route_time,
 			"segment_seconds": ROUTE_SEGMENT_SECONDS,
 			"segments_per_pass": ROUTE_POINTS_SA.size(),
@@ -2424,6 +2898,7 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"Async raw parse runs off main; main conversion/publication/retirement is quota-budgeted per frame but single Godot calls and two root flips are measured atomic units that may overshoot. No hitch-free or faster-GPU claim.",
 			"Route frame intervals start after synchronous initialization; measured open/environment/load stalls are reported separately, while manifest hashing and driver discovery are not timed.",
 			"Residency, absent Godot runtime LOD selection, and fog visibility are separate facts.",
+			"Catalog lod_target_hidden hold-hidden is diagnostic policy, not source LOD; time visibility unknown-pending-P5-A02; no automatic LOD/time visibility/gameplay physics.",
 			"Post toggle implements PC ColourFilter only; PS2 filter/radiosity/heat haze remain unavailable.",
 			"Gameplay collision is unsupported; the viewer does not generate collision data.",
 			"No controlled original capture was supplied, so discrepancy labels are not parity passes.",
@@ -2448,6 +2923,42 @@ func _collect_data_hashes() -> Dictionary:
 	return hashes
 
 
+func _residency_mode_label() -> String:
+	# Scalar-only residency mode for manifests/overlay. Legacy capped
+	# diagnostics vs catalog disc/area; no gameplay/LOD claim.
+	if not _has_published_region:
+		if _catalog_route_enabled:
+			return "catalog_pending"
+		return "legacy_capped"
+	if _loaded_is_catalog:
+		var sel: Variant = _region_stats.get("selection", {})
+		if sel is Dictionary and str(sel.get("mode", "")) == "catalog_area":
+			return "catalog_area"
+		return "catalog_disc"
+	return "legacy_capped"
+
+
+func _selection_scalar_summary() -> Dictionary:
+	# Manifest scalar only: mode/area/counts/authorities, never mesh/COL arrays.
+	var sel_value: Variant = _region_stats.get("selection", null)
+	if not sel_value is Dictionary:
+		return {}
+	var sel: Dictionary = sel_value
+	return {
+		"mode": str(sel.get("mode", "")),
+		"area_id": int(sel.get("area_id", 0)),
+		"radius": float(sel.get("radius", 0.0)),
+		"population": int(sel.get("population", 0)),
+		"expected_visible": int(sel.get("expected_visible", 0)),
+		"expected_hidden": int(sel.get("expected_hidden", 0)),
+		"resident": int(sel.get("resident", 0)),
+		"excluded_outside": int(sel.get("excluded_outside", 0)),
+		"time_models": int(sel.get("time_models", 0)),
+		"lod_visibility_authority": str(sel.get("lod_visibility_authority", "")),
+		"time_visibility_authority": str(sel.get("time_visibility_authority", "")),
+	}
+
+
 func _update_overlay() -> void:
 	if status_label == null:
 		return
@@ -2456,25 +2967,30 @@ func _update_overlay() -> void:
 	var memory_mib := Performance.get_monitor(Performance.MEMORY_STATIC) / (1024.0 * 1024.0)
 	var renderer := RenderingServer.get_current_rendering_method()
 	status_label.text = "SA LEGACY LOOK LAB | %s\n" % renderer
-	status_label.text += "State %d: %s / %s @ %.2fh | route %s\n" % [_environment_index + 1, state.label, _environment_data.get("weather", state.weather), float(_environment_data.get("hour", state.hour)), "ON" if _route_enabled else "off"]
+	status_label.text += "State %d: %s / %s @ %.2fh | route %s catalog %s\n" % [_environment_index + 1, state.label, _environment_data.get("weather", state.weather), float(_environment_data.get("hour", state.hour)), "ON" if _route_enabled else "off", "ON" if _catalog_route_enabled else "off"]
 	status_label.text += "textures=%s prelight=%s vertex-only=%s fog=%s PC-filter=%s\n" % [_on_off(_flags.textures), _on_off(_flags.prelight), _on_off(_flags.vertex_only), _on_off(_flags.fog), _on_off(_flags.post)]
 	status_label.text += "CPU process %.2f ms | engine static %.1f MiB | resources %d\n" % [cpu_frame_ms, memory_mib, int(Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT))]
-	status_label.text += "bounded radius %.0f cap %d | meshes %d surfaces %d | loads %d rejected %d | publication %d\n" % [_radius, _cap, _resident_meshes, _resident_surfaces, _load_count, _rejected_load_count, _publication_revision]
+	status_label.text += "bounded radius %.0f cap %d | meshes %d surfaces %d | loads %d rejected %d | publication %d mode %s area %d\n" % [_radius, _cap, _resident_meshes, _resident_surfaces, _load_count, _rejected_load_count, _publication_revision, _residency_mode_label(), _loaded_area_id if _has_published_region else 0]
 	status_label.text += "sync open %.2f ms | env %.2f ms | publish-work last %.2f ms total %.2f ms (elapsed last %.2f ms diag only) | worker parse+plan last %.2f ms\n" % [_open_game_stall_ms, _environment_cache_stall_ms, _last_load_stall_ms, _total_load_stall_ms, _last_region_publication_elapsed_ms, _last_region_raw_parse_ms]
 	status_label.text += "budget %d/frame conv total %.2f max_item %.2f frames %d staging %.2f commit %.2f retire_max %.2f retire_pending %d staged_discards %d\n" % [_budget_items, _last_region_conversion_ms_total, _last_region_conversion_ms_max_item, _last_region_conversion_frames, _last_region_staging_ms_total, _last_region_commit_ms, _last_region_retire_ms_max_item, _lab_retire_pending_count(), _lab_staged_discards]
 	if _pending_region_active:
-		status_label.text += "async pending req %d epoch %d discarded %d\n" % [_pending_region_request_id, _pending_region_session_epoch, _pending_region_discarded_stale]
+		if _pending_region_is_catalog:
+			status_label.text += "async pending catalog req %d epoch %d area %d discarded %d\n" % [_pending_region_request_id, _pending_region_session_epoch, _pending_region_area_id, _pending_region_discarded_stale]
+		else:
+			status_label.text += "async pending req %d epoch %d discarded %d\n" % [_pending_region_request_id, _pending_region_session_epoch, _pending_region_discarded_stale]
 	else:
 		status_label.text += "async idle submits %d ready %d err %d cancel %d last req %d\n" % [_async_submit_count, _async_ready_count, _async_error_count, _async_cancel_count, _last_region_request_id]
 	if _lab_staging_active or _lab_retire_active:
 		status_label.text += "lab staging=%s retire_active=%s busy=%s bridge_retire=%d\n" % ["yes" if _lab_staging_active else "no", "yes" if _lab_retire_active else "no", "yes" if _region_budget_busy() else "no", _last_bridge_retire_pending]
+	if _catalog_route_enabled:
+		status_label.text += "catalog route stop %d/%d dwell %.1fs; no auto LOD/time visibility/gameplay physics\n" % [_catalog_route_index, CATALOG_ROUTE_STOPS.size(), CATALOG_ROUTE_DWELL_SECONDS]
 	if _f6_ignored_while_pending > 0:
 		status_label.text += "F6 ignored while pending: %d\n" % _f6_ignored_while_pending
 	if _region_candidate_unavailable:
 		status_label.text += "REGION CANDIDATE UNAVAILABLE: %s | showing committed revision %d; F6 retry\n" % [_bounded_status_string(_last_region_error.get("error", "unspecified bridge error"), 180), _publication_revision]
 	status_label.text += "WASD move  Q/E fall/rise  Shift fast  RMB look  Esc release/quit  R route\n"
 	status_label.text += "1 clear  2 evening  3 night  4 overcast | F1-F4 diagnostics | F5 PC filter | F6 retry | F12 capture\n"
-	status_label.text += "LOD unavailable | gameplay collision unsupported\n"
+	status_label.text += "LOD unavailable | gameplay collision unsupported | catalog hidden is diagnostic, time unknown-pending-P5-A02\n"
 	var paired_summary := _paired_data_summary()
 	if bool(paired_summary.get("present", false)):
 		status_label.text += "paired data: %d->%d COL %df (data only, no gameplay)\n" % [int(paired_summary.get("child_model_id", -1)), int(paired_summary.get("parent_model_id", -1)), int(paired_summary.get("faces", 0))]
@@ -2527,12 +3043,16 @@ func _close_bridge() -> void:
 			_pending_region_active = false
 			_pending_region_request_id = 0
 			_pending_region_session_epoch = 0
+			_pending_region_area_id = 0
+			_pending_region_is_catalog = false
 			if _drain_out is Dictionary and str(_drain_out.get("status", "")) == "cancelled":
 				_async_cancel_count += 1
 		else:
 			_pending_region_active = false
 			_pending_region_request_id = 0
 			_pending_region_session_epoch = 0
+			_pending_region_area_id = 0
+			_pending_region_is_catalog = false
 	if not _lab_deferred_ready.is_empty():
 		# Teardown explicit unbudgeted flush per contract: retire deferred via
 		# the single queue then flush below (no budgeted drain at shutdown).
@@ -2540,11 +3060,15 @@ func _close_bridge() -> void:
 		_pending_region_active = false
 		_pending_region_request_id = 0
 		_pending_region_session_epoch = 0
+		_pending_region_area_id = 0
+		_pending_region_is_catalog = false
 	if _lab_staging_active:
 		_discard_staging_to_retiring("teardown")
 		_pending_region_active = false
 		_pending_region_request_id = 0
 		_pending_region_session_epoch = 0
+		_pending_region_area_id = 0
+		_pending_region_is_catalog = false
 	_flush_region_budget_unbudgeted()
 	_shutdown_started = true
 	_capture_pending = false

@@ -39,6 +39,7 @@
 
 #include <array>
 #include <condition_variable>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -48,12 +49,58 @@
 #include <thread>
 #include <vector>
 
+// P1-A07 region selection lane (plain C++, no Godot). Window is the frozen
+// capped diagnostic path; CatalogDisc/CatalogArea are the opt-in catalog
+// residency mode (area0 XY disc with Open radius, or whole positive area).
+// Values are part of the worker protocol: Submit rejects unknown values.
+enum class RegionSelection : int { Window = 0, CatalogDisc = 1, CatalogArea = 2 };
+
+// P1-A07 catalog area limits (authored low-byte area code). Main rejects
+// out-of-range immediately without scanning the catalog; worker revalidates.
+// Empty in-range selections may still fail on the worker (selection error).
+constexpr int kRegionAreaMin = 0;
+constexpr int kRegionAreaMax = 255;
+
+// P1-A07 typed catalog error codes (RawRegionPacket::ErrorCode, never parsed
+// from human strings): catalog_selection_error (Select failure),
+// selected_model_failed (selected load failure), catalog_accounting_mismatch
+// (expected vs Rendered reconciliation mismatch). Other P0 typed plan
+// failures are preserved exact via RegionPlanFailure.
+constexpr char kCatalogSelectionError[] = "catalog_selection_error";
+constexpr char kSelectedModelFailed[] = "selected_model_failed";
+constexpr char kCatalogAccountingMismatch[] = "catalog_accounting_mismatch";
+
 struct RegionRequest {
     float X{};
     float Y{};
     float Z{};
     uint64_t RequestId{};
     uint64_t SessionEpoch{};
+    // P1-A07 catalog residency lane, appended at END so old 5-field aggregate
+    // initializers keep compiling unchanged (rest default-initialized).
+    // Window preserves the exact capped diagnostic path (A05/A06, incl cap).
+    // CatalogDisc selects the area0 XY disc with the Open radius; CatalogArea
+    // selects the whole positive area (ROI ignores radius). Main validates
+    // coords/area range; worker revalidates enum/area plus existing checks.
+    RegionSelection Selection{RegionSelection::Window};
+    int AreaId{};
+};
+
+// P1-A07 owned scalar catalog summary for RawRegionPacket (plain C++, no
+// Godot). Mirrors Stats['selection'] for catalog success: mode
+// catalog_disc/catalog_area, area_id, radius, population, expected_visible,
+// expected_hidden, resident, excluded_outside, time_models. Visibility
+// authorities stay unknown-pending-P5-A02 (lab/bridge labels, not source).
+struct RegionCatalogSummary {
+    std::string Mode;
+    int AreaId{};
+    float Radius{};
+    size_t Population{};
+    size_t ExpectedVisible{};
+    size_t ExpectedHidden{};
+    size_t Resident{};
+    size_t ExcludedOutside{};
+    size_t TimeModels{};
 };
 
 struct RawRegionPacket {
@@ -64,6 +111,18 @@ struct RawRegionPacket {
     E2EPagerFrame Frame{};
     std::array<int, 4> Counters{};
     std::string Error;
+    // P1-A07 typed error code (see kCatalog* constants above). Empty means no
+    // catalog-typed failure; Window Update failures keep Error without a code.
+    // Set by stage (select/load/reconcile), never by parsing human strings.
+    std::string ErrorCode;
+    // P1-A07 owned catalog residency: HiddenTargets are the authored-parent
+    // closure retained hidden as explicit lab DIAGNOSTIC policy (not source
+    // runtime LOD). HasCatalog marks a catalog-lane packet; Catalog is the
+    // owned scalar summary backing Stats['selection']. Window packets keep
+    // HiddenTargets empty and HasCatalog false.
+    std::vector<NativePlacementIdentity> HiddenTargets;
+    RegionCatalogSummary Catalog;
+    bool HasCatalog = false;
     double ParseMs{};
     // P1-A06 owned plan: production ParseFn runs BuildRegionPlan on the
     // worker after Update/counters. Fake unit parsers need not invent a plan
@@ -92,7 +151,9 @@ public:
 
     // Accepts only a fresh latest request: nonzero ID strictly greater than
     // every previously accepted ID, matching session epoch, finite XYZ, and
-    // not stopped. Overwrites any queued (not yet started) request so only
+    // not stopped. P1-A07 additionally rejects unknown Selection values and
+    // out-of-range/inconsistent AreaId (Window/CatalogDisc require 0,
+    // CatalogArea requires 1..255). Overwrites any queued (not yet started) request so only
     // the latest is ever parsed. Never destroys heavy packets under the
     // caller mutex; stale in-flight/ready results are discarded by the
     // worker off mutex. Returns true when accepted, false when rejected.
