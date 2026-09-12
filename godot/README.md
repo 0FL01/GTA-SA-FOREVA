@@ -16,6 +16,30 @@ it is not aliased to an invented rainy-LA environment.
 
 ## Pinned Inputs
 
+### Committed core frames (P2-A05)
+
+`sa_core_frame_probe [owned-game-dir]` exercises `NativeScriptFrame`, which
+publishes `shared_ptr<const NativeScriptFrameSnapshot>` only after the existing
+SCM `RunPass` completes. Owned clock/pad samples, VM state/globals/threads and
+ordered post-commit clock/fade/output observations contain no Godot/RW pointers.
+Pending and quota continuation freeze the pass sample; no new scheduler, clock,
+service implementation or gameplay is introduced. Failed passes retain the
+previous presentation without rolling back already committed VM/host effects.
+Successful reload invalidates the current epoch, not previously retained values.
+
+```sh
+docker --context rootless exec -w /workspace mad-sa-graphics-build cmake --build build/godot-native --parallel 2
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_frame_probe /game
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_session_probe /game
+```
+
+The 104-check frame test and existing 5451-check session regression pass. Real
+startup still commits14 instructions then reports Unsupported `04E4@56022`:
+fixture success is not completed boot. Evidence: `artifacts/build-runs/p2-a05-*`.
+The frame TU is core-only; the extension remains byte-identical to P2-A04.
+
+### Runtime pins
+
 - Godot `4.6.1-stable`, official Linux x86_64 editor/runtime, engine commit
   `14d19694e0c88a3f9e82d899a0400f27a24c176e`.
 - Official archive SHA-512:

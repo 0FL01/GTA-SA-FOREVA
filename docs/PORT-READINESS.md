@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution paused at user request after P2-A04.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) is the single fresh summary of result, evidence, versions and commands: root `875916f` / native `2457d32b`. Full-port scope remains active; worker protocol is unchanged.
+**Execution resumed; DIRECT at user request, no subagents.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records the current P2-A05 boundary and prior verified root `875916f` / native `2457d32b` evidence. Full-port scope remains active.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -10,7 +10,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 |---|---|---|
 | P0 | implemented; target reflight open | Finite UV/provenance/retained-world CPU and rendered clean-package gates pass; external Fedora reflight is not claimed |
 | P1 | A01–A07 verified | Qualified identities/catalog/chain, paired render/COL, sole-owner async parser, budgeted publication/retirement and catalog-backed exterior/interior residency verified |
-| P2 | A01–A04 verified; paused before A05 implementation | After resume: settle snapshot/event/pass-continuation contract, then implement its direct fixture |
+| P2 | A01–A05 verified; A06 next | Immutable owned snapshot/events over sole RunPass verified (104 frame +5451 VM checks); next diagnostic player/vehicle presentation, not source gameplay |
 | P3 | pending | First real player/Automobile gameplay slice |
 | P4 | pending | Genuine SCM boot, first mission and portable save loop |
 | P5 | pending | Whole-world entities and all source vehicle families |

@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: PAUSED after the P2-A04 checkpoint at user request. P2-A05 has preliminary research only, no implementation; do not start the next atom until resumed. Worker protocol remains cheap default / costly ambiguity.
+Execution: ACTIVE, resumed 2026-09-12. Latest user instruction selects DIRECT execution: parent performs RECON, implementation and verification without subagents. P2-A05 verified; P2-A06 is next.
 Activated: 2026-09-11
 Last updated: 2026-09-12
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -76,7 +76,7 @@ P0 implementation and available server gates are verified; target reflight stays
 | P2-A02 | verified | Established source Timer/Clock profile, pause/scale/snapshot domains and RNG/tick separation in `sa_core`. | Repeated defined schedule produces the same clock/RNG trace without silent dt dropping or universal `60Hz` conversion. |
 | P2-A03 | verified | Translated device input into deterministic semantic commands with correct edge handling. | One press/hold/release trace matches between headless and Godot hosts. |
 | P2-A04 | verified | Adopted world resources through existing generation refs and world-query boundaries. | Stale resource completion cannot mutate or satisfy a newer generation query. |
-| P2-A05 | pending | Add committed snapshots, ordered presentation events and SCM scheduling seams without leaking Godot/RW pointers. | Boundary test serializes/inspects one tick and rejects presentation-owned pointers or mutation. |
+| P2-A05 | verified | Added immutable owned snapshots and ordered post-commit clock/fade/output observations over the sole existing RunPass; no Godot/RW pointers. | 104-check frame fixture, ASan/UBSan and 5451-check existing session regression pass; Pending/quota, pause, exact final WAIT, mission order, failure retention/reload epochs, const consumer and real Unsupported frontier. |
 | P2-A06 | pending | Rehost existing player/vehicle presentation only as an explicitly labelled diagnostic approximation with safe teardown/interpolation. | Matching headless/Godot trace survives scene teardown; interpolation changes presentation only and approximation is not reported complete. |
 
 ### P3 - First real playable vertical slice (`pending`)
@@ -169,14 +169,18 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-12 — P2-A04 verified; execution paused
+### 2026-09-12 — DIRECT; P2-A05 verified
+
+- **New evidence:** `p2-a05-frame.log` and `p2-a05-sanitized.log` both `sa-core-frame-ok checks=104`; unchanged existing VM probe `p2-a05-session.log`5451 checks; startup, clock509412, input497, world79, native build+smoke pass. Logs under `artifacts/build-runs/`. Rebuilt extension SHA256 is still exactly `0e2e1115ba6f2838daf29dc46dd4882f7b53118447ba816fc0a4931090d9d598`, so prior clean rendered-package evidence remains applicable; this atom does not host the VM in Godot. Core now10 TUs. Synthetic fixture initially forgot the six executable SCM header jumps and used integer operands for a float service schema: corrected test encoding/counts, no product semantics changed to pass them.
+
+- **Current boundary:** one completed existing `RunPass` publishes an owned immutable snapshot. Quota/Pending continuation holds the same sampled clock/input and advances Session time only once. This bounded frame policy does not change the bare Session API or native host. Caller retains clock/pad authority; no combined tick API with partial rejection, no second scheduler. A commit observer records ordered value-only instruction/clock/fade/output observations after VM commit, not Pending attempts or fabricated world effects. Failed passes retain the previous presentation snapshot without pretending to roll back host effects. Successful reload changes epoch; retained snapshots remain readable. Direct fixture covers order, pause, continuation, faults and reload plus real unsupported startup frontier.
 
 - **Result:** `sa_core` reuses generation-qualified world publication and real COL ownership; stale generation/metadata/changed-owner commits retain the previous publication. The 79-check fixture uses synthetic isolated metadata plus real3991 COL/122 faces, not whole-world physics or Godot world authority.
 - **Versions:** verified code root `875916f`, native `2457d32b` (both pushed); Godot4.6.1 / godot-cpp4.5, GCC13/rootless `mad-sa-graphics-build`. Extension SHA256 `0e2e1115ba6f2838daf29dc46dd4882f7b53118447ba816fc0a4931090d9d598`.
 - **Evidence:** `artifacts/build-runs/p2-a04-gates.log` → `p2-a04-gates-ok`; `p2-a04-world.log`, `p2-a04-collision.log`, `p2-a04-package-runtime.log` cover core adoption, native collision and clean Wayland/Vulkan paired-data regression. Core startup/input/clock and read-only trace pass. Core archive has9 TUs; extension extracts only Pad; single ELF entry export. Startup remains14 commits then Unsupported04E4@56022 (next56034), not completed boot. Full six axes and target-GPU reflight remain open.
 - **Build/core test:** `docker --context rootless exec -w /workspace mad-sa-graphics-build cmake --build build/godot-native --parallel 2`, then `docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_world_probe /game`.
 - **Demo:** `./play-godot.sh -- --game-dir "/path/to/owned/GTA San Andreas" --catalog-route --seconds 80`; clean delivery is `artifacts/godot/package/`, assets external/read-only. Package procedure: `godot/README.md`.
-- **Next, only after resume:** (1) settle P2-A05's immutable snapshot/event and `RunPass` continuation contract without advancing time mid-pass; (2) implement that bounded seam and its direct fixture. P2-A05 code has not started. Stop here; no further research or implementation in this checkpoint.
+- **Next:** P2-A06 diagnostic presentation integration; continue the existing ledger without claiming the diagnostic slice is source gameplay. No source gameplay/boot/save closure is implied by P2-A05.
 
 ### Preserved boundary notes
 

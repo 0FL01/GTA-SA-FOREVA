@@ -102,6 +102,7 @@ set_target_properties(sa_legacy PROPERTIES
 # extension TU that uses it.
 set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptFrame.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceRng.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceClock.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePad.cpp"
@@ -121,6 +122,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core PRIVATE -Wall -Wextra -Wpedantic)
     set_source_files_properties(
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptFrame.cpp"
         PROPERTIES COMPILE_OPTIONS "-fexceptions"
     )
     # Strict source float semantics for the clock, the reused RNG, and the
@@ -147,6 +149,17 @@ target_link_libraries(sa_core PUBLIC Threads::Threads)
 
 add_executable(sa_core_startup sa_core_startup.cpp)
 target_link_libraries(sa_core_startup PRIVATE sa_core)
+
+add_executable(sa_core_frame_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptFrameProbe.cpp")
+target_link_libraries(sa_core_frame_probe PRIVATE sa_core)
+add_executable(sa_core_session_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSessionProbe.cpp")
+target_link_libraries(sa_core_session_probe PRIVATE sa_core)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_core_frame_probe PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(sa_core_session_probe PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
 # P2-A02 owned source-clock probe: links ONLY sa_core, never the extension.
 add_executable(sa_core_clock_probe
