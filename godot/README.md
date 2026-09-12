@@ -229,6 +229,25 @@ Require `sa-core-startup-ok` plus the printed unavailable-frontier line. The
 fixture only reads the game directory; malformed-load copies stay in memory
 and no asset file is written or copied.
 
+## Source clock (P2-A02)
+
+Owned deterministic `CTimer`/`CClock` phase (caller ticks, no OS clock, no
+RNG draw, no `CStats`, no serialization, no `Restore`). `sa_core` gains the
+new clock plus the unchanged source RNG; `libsa_legacy.so` is untouched and
+the probe links only `sa_core`.
+
+```bash
+./tools/godot-build.sh
+build/godot-native/sa_core_clock_probe "/path/to/owned/GTA San Andreas"
+```
+
+Require `native-source-clock-ok`. Named limits: Timer/Clock/Game-unpaused
+profile only; fresh `NonClippedStep` is owned `0` (source never assigns it),
+retained on reinit; `+inf` FPS on zero prior increment is diagnostic, not
+JSON; `GameMs` horizon rejects before `uint32` wrap while `NC`/`Pause` wrap;
+strict binary32 (`-fno-fast-math -ffp-contract=off`), no x87 parity; no
+frame-partition invariance; missing game data is nonzero exit.
+
 ## Sole-owner parser worker (P1-A05)
 
 One C++ worker owns region parsing and counter capture, with one latest-request

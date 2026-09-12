@@ -94,9 +94,13 @@ set_target_properties(sa_legacy PROPERTIES
 )
 
 # P2-A01 owned startup core: existing session + POSIX OS adapter only.
+# P2-A02 adds the owned source clock plus the existing source RNG (both
+# unchanged API reuse; no extension linkage change).
 # sa_legacy above is unchanged; this core is not linked into the extension yet.
 set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceRng.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceClock.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/os_file_posix.cpp"
 )
 add_library(sa_core STATIC ${SA_CORE_SOURCES})
@@ -111,8 +115,25 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
         PROPERTIES COMPILE_OPTIONS "-fexceptions"
     )
+    # Strict source float semantics for the clock and the reused RNG;
+    # no source-file edits, only build flags.
+    set_source_files_properties(
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceClock.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceRng.cpp"
+        PROPERTIES COMPILE_OPTIONS "-fno-fast-math;-ffp-contract=off"
+    )
 endif()
 target_link_libraries(sa_core PUBLIC Threads::Threads)
 
 add_executable(sa_core_startup sa_core_startup.cpp)
 target_link_libraries(sa_core_startup PRIVATE sa_core)
+
+# P2-A02 owned source-clock probe: links ONLY sa_core, never the extension.
+add_executable(sa_core_clock_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceClockProbe.cpp"
+)
+target_link_libraries(sa_core_clock_probe PRIVATE sa_core)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_core_clock_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+endif()
