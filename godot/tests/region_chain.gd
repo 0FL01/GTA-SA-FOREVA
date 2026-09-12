@@ -118,8 +118,8 @@ func _run_normal(_options: Dictionary) -> void:
 	var roads_revision: int = lab._publication_revision
 	var held_collision: Dictionary = lab._region_collision.duplicate(true)
 	var held_stats: Dictionary = lab._region_stats.duplicate(true)
-	var held_nodes: Array = lab.mesh_root.get_children().map(func(node: Node) -> int: return node.get_instance_id())
-	var held_meshes: Array = lab.mesh_root.get_children().map(func(node: Node) -> int: return (node as MeshInstance3D).mesh.get_instance_id())
+	var held_nodes: Array = lab._active_region_root().get_children().map(func(node: Node) -> int: return node.get_instance_id())
+	var held_meshes: Array = lab._active_region_root().get_children().map(func(node: Node) -> int: return (node as MeshInstance3D).mesh.get_instance_id())
 	# Rendered evidence while the pair is retained: summary only, never source arrays.
 	await lab._capture_current("paired-retained")
 	if not _check(_validate_capture_summary_only(lab, "paired-retained"), "paired capture summary only"):
@@ -139,9 +139,9 @@ func _run_normal(_options: Dictionary) -> void:
 		return
 	if not _check(_deep_equal(lab._region_collision, held_collision), "rejection retains COL deep-equal"):
 		return
-	if not _check(lab.mesh_root.get_children().map(func(node: Node) -> int: return node.get_instance_id()) == held_nodes, "rejection retains node identities"):
+	if not _check(lab._active_region_root().get_children().map(func(node: Node) -> int: return node.get_instance_id()) == held_nodes, "rejection retains node identities"):
 		return
-	var retained_mesh_ids: Array = lab.mesh_root.get_children().map(func(node: Node) -> int: return (node as MeshInstance3D).mesh.get_instance_id())
+	var retained_mesh_ids: Array = lab._active_region_root().get_children().map(func(node: Node) -> int: return (node as MeshInstance3D).mesh.get_instance_id())
 	if not _check(retained_mesh_ids == held_meshes, "rejection retains mesh resources"):
 		return
 	if not _validate_pair(lab, "retained pair after NaN"):
@@ -161,6 +161,7 @@ func _run_normal(_options: Dictionary) -> void:
 	var deadline := Time.get_ticks_msec() + 30000
 	while lab._has_pending_region() and Time.get_ticks_msec() < deadline:
 		lab._poll_pending_region()
+		lab._pump_region_budget()
 		await process_frame
 	if not _check(not lab._has_pending_region() and lab._async_submit_count == async_count + 1 and lab._load_count == load_count and lab._publication_revision == roads_revision, "explicit async F6 without publication"):
 		return
@@ -200,7 +201,7 @@ func _run_normal(_options: Dictionary) -> void:
 	lab._release_region()
 	if not _check(lab._region_collision.is_empty(), "release clears COL payload"):
 		return
-	if not _check(lab.mesh_root.get_children().is_empty(), "release clears nodes"):
+	if not _check(lab._active_region_root().get_children().is_empty() and lab._staging_region_root().get_children().is_empty(), "release clears both region roots"):
 		return
 	if not _check(lab._publication_revision == pre_release_revision, "release preserves revision sequence"):
 		return
@@ -278,7 +279,7 @@ func _validate_pair(lab: Node, label: String) -> bool:
 			return false
 	var child_index := int(child.get("mesh_index", -1))
 	var parent_index := int(parent.get("mesh_index", -1))
-	var nodes: Array = lab.mesh_root.get_children()
+	var nodes: Array = lab._active_region_root().get_children()
 	if not _check(child_index >= 0 and child_index < nodes.size(), label + " child index bounded"):
 		return false
 	if not _check(parent_index >= 0 and parent_index < nodes.size(), label + " parent index bounded"):
@@ -315,7 +316,7 @@ func _validate_pair(lab: Node, label: String) -> bool:
 
 
 func _no_parent_alternate(lab: Node) -> bool:
-	for node in lab.mesh_root.get_children():
+	for node in lab._active_region_root().get_children():
 		if bool(node.get_meta("lod_chain_alternate", false)):
 			return false
 		if int(node.get_meta("source_model_id", -1)) == 4043:

@@ -17,7 +17,7 @@ func _run() -> void:
 	lab.camera.look_at(lab._camera_target_world)
 	if not _check(lab._load_region(ROADS), "finite roads replacement"):
 		return
-	var nodes: Array = lab.mesh_root.get_children().map(func(node: Node) -> int: return node.get_instance_id())
+	var nodes: Array = lab._active_region_root().get_children().map(func(node: Node) -> int: return node.get_instance_id())
 	var stats: Dictionary = lab._region_stats.duplicate(true)
 	var revision: int = lab._publication_revision
 	if not _check(not lab._load_region(RADAR), "NaN must reject"):
@@ -26,7 +26,7 @@ func _run() -> void:
 		return
 	if not _check(lab._publication_revision == revision and lab._loaded_center_sa == ROADS and lab._region_stats == stats, "unchanged committed state"):
 		return
-	if not _check(nodes == lab.mesh_root.get_children().map(func(node: Node) -> int: return node.get_instance_id()), "retained nodes"):
+	if not _check(nodes == lab._active_region_root().get_children().map(func(node: Node) -> int: return node.get_instance_id()), "retained nodes"):
 		return
 	var count: int = lab._load_count
 	for attempt in range(3):
@@ -42,6 +42,7 @@ func _run() -> void:
 	var deadline := Time.get_ticks_msec() + 30000
 	while lab._has_pending_region() and Time.get_ticks_msec() < deadline:
 		lab._poll_pending_region()
+		lab._pump_region_budget()
 		await process_frame
 	if not _check(not lab._has_pending_region() and lab._async_submit_count == async_count + 1 and lab._load_count == count and lab._publication_revision == revision, "explicit async retry without publication"):
 		return

@@ -1,14 +1,18 @@
 // region_worker unit: deterministic sole-parser checks with CV barriers.
 // No game data, no Godot/GL, no new framework: fake ParseFn providers only.
 // Every barrier uses wait_for with a bounded timeout; no sleep ordering.
-// Prints region-worker-ok on full success.
+// Plus small synthetic RegionPlan fixtures (exact prepack/basis/day-night/
+// material alpha/order, invalid finite/index/provenance). Existing barrier
+// semantics unchanged. Prints region-worker-ok on full success.
 
+#include "../native/sa_region_plan.h"
 #include "../native/sa_region_worker.h"
 
 #include <chrono>
 #include <cmath>
 #include <condition_variable>
 #include <cstdio>
+#include <cstring>
 #include <future>
 #include <limits>
 #include <mutex>
@@ -606,6 +610,325 @@ bool TestSingleThread(std::thread::id mainTid) {
     return ok;
 }
 
+// --- P1-A06 synthetic RegionPlan fixtures (pure, no game data/Godot/GL). ---
+
+namespace plan_fixture {
+
+WorldShotImage MakeImage(int w, int h, uint8_t alpha, uint32_t filter) {
+    WorldShotImage image{};
+    std::snprintf(image.name, sizeof(image.name), "testtex");
+    image.w = w;
+    image.h = h;
+    image.filter = filter;
+    image.rgba.assign(static_cast<size_t>(w) * static_cast<size_t>(h) * 4, 200);
+    for (size_t i = 3; i < image.rgba.size(); i += 4) {
+        image.rgba[i] = alpha;
+    }
+    NativeAssetIdentity::ArchiveMember member{"models.img", "test.txd"};
+    image.sourceIdentity.lineage = {member};
+    image.sourceIdentity.owner = member;
+    image.sourceIdentity.name = "testtex";
+    image.sourceIdentity.filter = filter;
+    image.hasSourceIdentity = true;
+    return image;
+}
+
+WorldShotMesh MakeMesh(int tris, int imageIndex) {
+    WorldShotMesh mesh{};
+    mesh.tris = tris;
+    const size_t t = static_cast<size_t>(tris);
+    mesh.pos.assign(t * 9, 10.0f);
+    mesh.nrm.assign(t * 9, 0.0f);
+    for (size_t i = 2; i < mesh.nrm.size(); i += 3) {
+        mesh.nrm[i] = 1.0f;
+    }
+    mesh.uv.assign(t * 6, 0.5f);
+    mesh.triImg.assign(t, imageIndex);
+    mesh.triCol.assign(t * 3, 0.5f);
+    mesh.color[0] = mesh.color[1] = mesh.color[2] = 0.5f;
+    mesh.dayColors.assign(t * 12, 255);
+    mesh.nightColors.assign(t * 12, 255);
+    mesh.surfaces.resize(t);
+    for (size_t i = 0; i < t; ++i) {
+        mesh.surfaces[i].color = {1.0f, 1.0f, 1.0f, 1.0f};
+        mesh.surfaces[i].ambient = 1.0f;
+        mesh.surfaces[i].diffuse = 1.0f;
+        mesh.surfaces[i].vehicleAlpha = false;
+        mesh.surfaces[i].sourceMaterial = 0;
+        mesh.surfaces[i].sourceGeometry = 0;
+        mesh.surfaces[i].sourceTriangle = static_cast<int>(i);
+    }
+    mesh.sourceModelId = 1;
+    mesh.sourceModelName = "testmodel";
+    mesh.sourceTxdName = "testtxd";
+    mesh.sourceArchiveName = "testarchive";
+    mesh.sourcePlacementId = 7;
+    return mesh;
+}
+
+bool FloatNear(float a, float b) {
+    return std::fabs(a - b) < 1e-6f;
+}
+
+} // namespace plan_fixture
+
+bool TestPlanPrepackBasisDayNight() {
+    bool ok = true;
+    const auto fail = [&](const char* message) {
+        std::printf("plan-prepack: %s\n", message);
+        ok = false;
+    };
+    WorldShotScene scene;
+    scene.images.push_back(plan_fixture::MakeImage(1, 1, 255, 0x1102));
+    WorldShotMesh mesh = plan_fixture::MakeMesh(1, 0);
+    mesh.pos = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    mesh.nrm = {0, 1, 0, 0, 0, 1, 1, 0, 0};
+    mesh.uv = {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f};
+    mesh.dayColors = {255, 0, 0, 255, 0, 255, 0, 128, 0, 0, 255, 0};
+    mesh.nightColors = mesh.dayColors;
+    scene.meshes.push_back(mesh);
+    RegionPlan plan;
+    RegionPlanFailure failure;
+    if (!BuildRegionPlan(scene, plan, failure)) {
+        fail("valid prepack scene rejected");
+        return false;
+    }
+    if (plan.imageModes.size() != 1 || plan.imageModes[0] != RegionPlanAlpha::Opaque) {
+        fail("image mode not opaque");
+    }
+    if (plan.meshes.size() != 1 || plan.meshes[0].surfaces.size() != 1) {
+        fail("expected one mesh with one surface");
+        return ok;
+    }
+    const auto& surf = plan.meshes[0].surfaces[0];
+    const float exPos[9] = {1, 3, -2, 4, 6, -5, 7, 9, -8};
+    const float exNrm[9] = {0, 0, -1, 0, 1, 0, 1, 0, 0};
+    const float exUv[6] = {0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f};
+    for (int i = 0; i < 9; ++i) {
+        if (!plan_fixture::FloatNear(surf.positions[static_cast<size_t>(i)], exPos[i])) {
+            fail("basis position mismatch");
+            break;
+        }
+        if (!plan_fixture::FloatNear(surf.normals[static_cast<size_t>(i)], exNrm[i])) {
+            fail("basis normal mismatch");
+            break;
+        }
+    }
+    for (int i = 0; i < 6; ++i) {
+        if (!plan_fixture::FloatNear(surf.uvs[static_cast<size_t>(i)], exUv[i])) {
+            fail("uv mismatch");
+            break;
+        }
+    }
+    const float exDay[12] = {1, 0, 0, 1, 0, 1, 0, 128.0f / 255.0f, 0, 0, 1, 0};
+    for (int i = 0; i < 12; ++i) {
+        if (!plan_fixture::FloatNear(surf.day[static_cast<size_t>(i)], exDay[i])) {
+            fail("day rgba mismatch");
+            break;
+        }
+        if (!plan_fixture::FloatNear(surf.night[static_cast<size_t>(i)], exDay[i])) {
+            fail("night rgba mismatch");
+            break;
+        }
+    }
+    if (surf.imageIndex != 0) {
+        fail("surface image index mismatch");
+    }
+    // The prepack fixture deliberately includes vertex alpha 128: source
+    // classification is blended even though its texture is opaque.
+    if (std::strcmp(RegionPlanAlphaName(surf.alpha), "blend") != 0) {
+        fail("surface alpha name not blend");
+    }
+    if (RegionPlanTotalSurfaces(plan) != 1 || RegionPlanTotalUnits(plan) != 1 + 1 + 1 + 1) {
+        fail("total units mismatch (images+surfaces+meshes+paired)");
+    }
+    return ok;
+}
+
+bool TestPlanMaterialAlphaOrder() {
+    bool ok = true;
+    const auto fail = [&](const char* message) {
+        std::printf("plan-alpha: %s\n", message);
+        ok = false;
+    };
+    WorldShotScene scene;
+    scene.images.push_back(plan_fixture::MakeImage(1, 1, 255, 0x1102));
+    WorldShotImage cutout = plan_fixture::MakeImage(2, 1, 255, 0x1102);
+    cutout.rgba[3] = 255;
+    cutout.rgba[7] = 0;
+    scene.images.push_back(cutout);
+    scene.images.push_back(plan_fixture::MakeImage(1, 1, 128, 0x1102));
+    WorldShotMesh mesh = plan_fixture::MakeMesh(4, 0);
+    mesh.triImg = {0, 2, 0, 0};
+    mesh.surfaces[3].vehicleAlpha = true;
+    scene.meshes.push_back(mesh);
+    RegionPlan plan;
+    RegionPlanFailure failure;
+    if (!BuildRegionPlan(scene, plan, failure)) {
+        fail("valid alpha scene rejected");
+        return false;
+    }
+    if (plan.imageModes.size() != 3 || plan.imageModes[0] != RegionPlanAlpha::Opaque ||
+        plan.imageModes[1] != RegionPlanAlpha::Cutout ||
+        plan.imageModes[2] != RegionPlanAlpha::Blend) {
+        fail("image modes opaque/cutout/blend mismatch");
+    }
+    if (plan.meshes.size() != 1 || plan.meshes[0].surfaces.size() != 3) {
+        fail("expected three material groups (opaque pair + blend + vehicle)");
+        return ok;
+    }
+    const auto& g0 = plan.meshes[0].surfaces[0];
+    const auto& g1 = plan.meshes[0].surfaces[1];
+    const auto& g2 = plan.meshes[0].surfaces[2];
+    if (g0.representativeTriangle != 0 || g0.alpha != RegionPlanAlpha::Opaque) {
+        fail("group0 must be opaque representative 0 (first-encounter order)");
+    }
+    if (g0.positions.size() != 2 * 3 * 3) {
+        fail("group0 must prepack two triangles (0,2)");
+    }
+    if (g1.representativeTriangle != 1 || g1.alpha != RegionPlanAlpha::Blend) {
+        fail("group1 must be blend representative 1");
+    }
+    if (g2.representativeTriangle != 3 || g2.alpha != RegionPlanAlpha::Blend) {
+        fail("group2 must be vehicle-blend representative 3");
+    }
+    {
+        WorldShotScene nightScene;
+        nightScene.images.push_back(plan_fixture::MakeImage(1, 1, 255, 0x1102));
+        WorldShotMesh nightMesh = plan_fixture::MakeMesh(1, 0);
+        nightMesh.nightColors[3] = 0;
+        nightScene.meshes.push_back(nightMesh);
+        RegionPlan nightPlan;
+        RegionPlanFailure nightFailure;
+        if (!BuildRegionPlan(nightScene, nightPlan, nightFailure)) {
+            fail("night-mismatch scene rejected");
+        } else if (nightPlan.meshes.empty() || nightPlan.meshes[0].surfaces.empty() ||
+                   nightPlan.meshes[0].surfaces[0].alpha != RegionPlanAlpha::Blend) {
+            fail("day/night alpha mismatch must force blend");
+        }
+    }
+    return ok;
+}
+
+bool TestPlanInvalidFiniteIndexProvenance() {
+    bool ok = true;
+    const auto fail = [&](const char* message) {
+        std::printf("plan-invalid: %s\n", message);
+        ok = false;
+    };
+    const float nan = std::numeric_limits<float>::quiet_NaN();
+    const float inf = std::numeric_limits<float>::infinity();
+    {
+        WorldShotScene scene;
+        scene.images.push_back(plan_fixture::MakeImage(1, 1, 255, 0x1102));
+        WorldShotMesh mesh = plan_fixture::MakeMesh(1, 0);
+        mesh.uv[2] = nan;
+        scene.meshes.push_back(mesh);
+        RegionPlan plan;
+        RegionPlanFailure failure;
+        if (BuildRegionPlan(scene, plan, failure)) {
+            fail("nan uv accepted");
+        } else if (failure.kind != RegionPlanFailure::Kind::NonfiniteUv ||
+                   failure.meshIndex != 0 || failure.triangle != 0 || failure.uvIndex != 2) {
+            fail("nan uv failure indices mismatch");
+        }
+    }
+    {
+        WorldShotScene scene;
+        scene.images.push_back(plan_fixture::MakeImage(1, 1, 255, 0x1102));
+        WorldShotMesh mesh = plan_fixture::MakeMesh(1, 0);
+        mesh.pos[0] = inf;
+        scene.meshes.push_back(mesh);
+        RegionPlan plan;
+        RegionPlanFailure failure;
+        if (BuildRegionPlan(scene, plan, failure) ||
+            failure.kind != RegionPlanFailure::Kind::BadPosition) {
+            fail("inf position not rejected as BadPosition");
+        }
+    }
+    {
+        WorldShotScene scene;
+        scene.images.push_back(plan_fixture::MakeImage(1, 1, 255, 0x1102));
+        WorldShotMesh mesh = plan_fixture::MakeMesh(1, 0);
+        mesh.triCol[0] = 2.0f;
+        scene.meshes.push_back(mesh);
+        RegionPlan plan;
+        RegionPlanFailure failure;
+        if (BuildRegionPlan(scene, plan, failure) ||
+            failure.kind != RegionPlanFailure::Kind::BadMaterialColor) {
+            fail("triCol outside [0,1] not rejected");
+        }
+    }
+    {
+        WorldShotScene scene;
+        scene.images.push_back(plan_fixture::MakeImage(1, 1, 255, 0x1102));
+        WorldShotMesh mesh = plan_fixture::MakeMesh(1, -2);
+        scene.meshes.push_back(mesh);
+        RegionPlan plan;
+        RegionPlanFailure failure;
+        if (BuildRegionPlan(scene, plan, failure) ||
+            failure.kind != RegionPlanFailure::Kind::BadImageIndex || !failure.missingTexture ||
+            failure.imageIndex != -2) {
+            fail("-2 must report missing_texture with index");
+        }
+    }
+    {
+        WorldShotScene scene;
+        scene.images.push_back(plan_fixture::MakeImage(1, 1, 255, 0x1102));
+        WorldShotMesh mesh = plan_fixture::MakeMesh(1, 99);
+        scene.meshes.push_back(mesh);
+        RegionPlan plan;
+        RegionPlanFailure failure;
+        if (BuildRegionPlan(scene, plan, failure) ||
+            failure.kind != RegionPlanFailure::Kind::BadImageIndex || failure.missingTexture) {
+            fail("out-of-range index must report invalid_image_index");
+        }
+    }
+    {
+        WorldShotScene scene;
+        WorldShotImage image = plan_fixture::MakeImage(1, 1, 255, 0x1102);
+        image.hasSourceIdentity = false;
+        scene.images.push_back(image);
+        scene.meshes.push_back(plan_fixture::MakeMesh(1, 0));
+        RegionPlan plan;
+        RegionPlanFailure failure;
+        if (BuildRegionPlan(scene, plan, failure) ||
+            failure.kind != RegionPlanFailure::Kind::BadTextureIdentity ||
+            failure.reason != "missing_source_identity") {
+            fail("missing_source_identity reason mismatch");
+        }
+    }
+    {
+        WorldShotScene scene;
+        WorldShotImage image = plan_fixture::MakeImage(1, 1, 255, 0x1102);
+        image.sourceIdentity.owner = {"other.img", "other.txd"};
+        scene.images.push_back(image);
+        scene.meshes.push_back(plan_fixture::MakeMesh(1, 0));
+        RegionPlan plan;
+        RegionPlanFailure failure;
+        if (BuildRegionPlan(scene, plan, failure) ||
+            failure.kind != RegionPlanFailure::Kind::BadTextureIdentity ||
+            failure.reason != "owner_not_in_lineage") {
+            fail("owner_not_in_lineage reason mismatch");
+        }
+    }
+    {
+        WorldShotScene scene;
+        WorldShotImage image = plan_fixture::MakeImage(1, 1, 255, 0x1102);
+        image.filter = 0x9999;
+        scene.images.push_back(image);
+        scene.meshes.push_back(plan_fixture::MakeMesh(1, 0));
+        RegionPlan plan;
+        RegionPlanFailure failure;
+        if (BuildRegionPlan(scene, plan, failure) ||
+            failure.kind != RegionPlanFailure::Kind::BadTextureIdentity ||
+            failure.reason != "filter_mismatch") {
+            fail("filter_mismatch reason mismatch");
+        }
+    }
+    return ok;
+}
+
 } // namespace
 
 int main() {
@@ -624,6 +947,15 @@ int main() {
         ok = false;
     }
     if (!TestSingleThread(mainTid)) {
+        ok = false;
+    }
+    if (!TestPlanPrepackBasisDayNight()) {
+        ok = false;
+    }
+    if (!TestPlanMaterialAlphaOrder()) {
+        ok = false;
+    }
+    if (!TestPlanInvalidFiniteIndexProvenance()) {
         ok = false;
     }
     if (ok) {

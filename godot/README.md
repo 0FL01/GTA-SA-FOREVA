@@ -212,8 +212,8 @@ tree.
 
 One C++ worker owns region parsing and counter capture, with one latest-request
 slot and bounded raw-packet ownership. Movement and F6 submit without waiting for
-parsing. Godot object creation stays on the main thread: it is **not yet upload-
-budgeted**, and startup/fixed-camera diagnostic loads deliberately remain blocking.
+parsing. Godot object creation stays on the main thread and uses the P1-A06 work
+quotas below. Startup/fixed-camera diagnostic loads deliberately remain blocking.
 Worker parse time and main-thread conversion/publication stall are separate metrics.
 
 The bridge exposes `submit_region`, `poll_region` and `cancel_region`; sync
@@ -227,7 +227,7 @@ before holding an immutable frame. Old render/COL stays live until a valid commi
 ```bash
 g++ -std=c++20 -Wall -Wextra -Wpedantic -Werror \
   -I gta-reversed/source -I godot/native godot/native/sa_region_worker.cpp \
-  godot/tests/region_worker.cpp -pthread -o artifacts/graphics/region-worker-test
+  godot/native/sa_region_plan.cpp godot/tests/region_worker.cpp -pthread -o artifacts/graphics/region-worker-test
 timeout 30s artifacts/graphics/region-worker-test
 
 build/godot-deps/godot-4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64 \
@@ -242,6 +242,41 @@ reopen epochs, paired122-face retention and capture cancellation. Repeat the lat
 from the clean package with explicit Wayland/Vulkan flags for integration evidence.
 This does not claim automatic source LOD, gameplay collision, hardware performance
 or original-image parity.
+
+## Publication and retirement work quotas (P1-A06)
+
+`open_game(game_dir, radius, cap, budget_items=64)` accepts1..4096 work items, not
+milliseconds. Existing3-argument calls keep64. Worker planning validates and
+prepacks source arrays without Godot calls; main-thread `poll_region` may return
+nonterminal `preparing` across frames. Each texture upload, surface, mesh metadata
+or paired-COL packet is an indivisible measured unit. Lab node/material creation
+and retirement share a separate per-frame quota. Two persistent roots keep the
+candidate hidden; commit flips visibility and adopts already-prepared state.
+
+Cancelled/old generations retain **all** mesh/texture references, including not-yet-
+staged resources, until metadata/node/resource holds drain incrementally. Deferred
+discard is retained behind the single retiring slot, with admission backpressure.
+Sync diagnostics and teardown are explicitly unbudgeted flushes. A single driver
+call or root flip may exceed a desired frame time: this is not a hard deadline,
+FPS guarantee or hitch-free streaming. Motion that continually supersedes requests
+may defer commits until a candidate gets enough uninterrupted publication work.
+
+```bash
+build/godot-deps/godot-4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64 \
+  --headless --path godot --script res://tests/region_budget.gd -- \
+  --game-dir /game --cap 16 --capture-dir /workspace/artifacts/godot/budget-cpu
+```
+
+This decisive fixture forces budget1 and a small **real-data**16-instance set,
+including the3991/4043 chain and122 COL faces. Require `region-budget-ok`; it tests
+partial cancellation/supersession, old-generation identity and COL retention,
+weak-reference lifetime of unstaged resources, drain-to-zero and repeated identical
+settled centers. Repeat on explicit Wayland/Vulkan; a320×180 test window is sufficient
+for ownership/upload evidence, not image-parity evidence. Default-cap256 regressions
+remain separate. CPU `conversion_ms_total + staging_ms_total + commit_ms` excludes
+inter-frame waiting; `publication_elapsed_ms` is wall-time diagnostic only. Sync
+stall also includes the blocking worker wait. Retirement maxima are separately
+reported; no GPU-only timing is inferred.
 
 ## Known differences, not hidden fixes
 
@@ -272,8 +307,9 @@ coefficients and model-local source material-slot boundaries reach ArrayMesh; se
 mip chains and renderer-specific flags are not yet carried by the reader boundary.
 Source authored LOD selection is not implemented in Godot; overlapping detail/LOD
 objects and vegetation sorting/edge aliasing remain visible discrepancies. Loading
-is asynchronous for movement/F6, while initial loads and main-thread GPU publication
-remain blocking and measured; this is not advertised as hitch-free streaming.
+is asynchronous for movement/F6; main-thread GPU publication/retirement uses work
+quotas, while initial loads and indivisible driver calls remain blocking and measured.
+This is not advertised as hitch-free streaming.
 The route crosses the bounded region's reload threshold; compare repeated cycles,
 not just the first frame. GPU VRAM and GPU-only timing are not inferred from CPU CSV.
 

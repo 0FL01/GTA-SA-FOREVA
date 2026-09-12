@@ -11,6 +11,7 @@
 
 #include "app/platform/linux/NativeCollisionAssets.h"
 #include "app/platform/linux/NativeLodCatalog.h"
+#include "sa_region_plan.h"
 #include "sa_region_worker.h"
 
 namespace godot {
@@ -19,10 +20,10 @@ class SALegacyBridge : public RefCounted {
     GDCLASS(SALegacyBridge, RefCounted)
 
 public:
-    SALegacyBridge() = default;
+    SALegacyBridge();
     ~SALegacyBridge() override;
 
-    Dictionary OpenGame(const String& gameDir, float radius, int32_t cap);
+    Dictionary OpenGame(const String& gameDir, float radius, int32_t cap, int64_t budgetItems = 64);
     Dictionary LoadRegion(const Vector3& saPosition);
     Dictionary SubmitRegion(const Vector3& saPosition);
     Dictionary PollRegion();
@@ -34,17 +35,45 @@ protected:
     static void _bind_methods();
 
 private:
-    // P1-A05: converts one taken raw packet to Godot world without holding
-    // raw state. Uses packet Frame/Counters, never StreamPager on main.
-    // Increments m_PublicationRevision only after full successful conversion.
-    Dictionary PreparePublication(const RawRegionPacket& raw);
+    // P1-A06 incremental conversion + single retiring slot. Exactly one
+    // current conversion plus ONE retiring generation; admission of the next
+    // worker Ready is gated until retiring is empty. Raw requests still
+    // coalesce in the worker queue. Definitions live in sa_legacy_bridge.cpp
+    // so Godot Ref destruction stays on main with honest per-unit timing.
+    struct StagedConversion;
+    struct RetiringGeneration;
+
+    Dictionary BuildProgressLocked(const String& phase, int64_t done, int64_t total) const;
+    int64_t RetirePendingLocked() const;
+    void DrainRetiringLocked(int64_t quota);
+    void FlushRetiringUnbudgetedLocked();
+    void DiscardConversionToRetiringLocked();
+    bool ConversionMatchesExposedLocked() const;
+    // Returns false plus error/code/context for immediate terminals (parse
+    // failure, plan failure, revision exhausted) without creating a staged
+    // conversion. Returns true when m_Conversion is initialized for budgeted
+    // stepping (plan ok, revision ok).
+    bool InitConversionLocked(std::unique_ptr<RawRegionPacket> packet, String& error,
+                              String& errorCode, Dictionary& errorContext);
+    enum class AdvanceOutcome { NeedMore, Ready, Error };
+    // Advances m_Conversion by up to quota units (textures/surfaces/metadata/
+    // paired, one shared quota). Increments frames once per call that does
+    // work. Measures each atomic Godot unit honestly into msTotal/msMax.
+    AdvanceOutcome AdvanceConversionLocked(int64_t quota, String& error);
+    int64_t ConversionTotalLocked() const;
+    int64_t ConversionDoneLocked() const;
+    String ConversionPhaseLocked() const;
+    // Builds the exact former ready payload (meshes/stats/lineage) from a
+    // completed conversion, increments revision, retires raw on the worker,
+    // and clears m_Conversion. Only call when Advance returned Ready.
+    Dictionary BuildReadyPayloadLocked();
 
     std::string m_GameDir;
     bool m_Ready = false;
     // Object-lifetime sequence: close/reopen preserves it; only a published region advances it.
     int64_t m_PublicationRevision = 0;
     // P1-A04 single-chain LOD supplement: actual paired render + COL packet only.
-    // No gameplay physics, no general LOD, no A06. Retained across LoadRegion
+    // No gameplay physics, no general LOD. Retained across LoadRegion
     // calls; cleared on CloseGame without resetting m_PublicationRevision.
     std::shared_ptr<const NativeLodCatalog> m_Catalog;
     NativeLodChainDecision m_Decision;
@@ -68,13 +97,27 @@ private:
     int64_t m_DiscardedStale = 0;
     // Latest exposed async request awaiting one-shot poll. Sync LoadRegion
     // rejects while this is set. Cleared one-shot by poll (ready/error/
-    // cancelled), by superseding Submit (old counted as discarded), or Close.
+    // cancelled/preparing stays active), by superseding Submit (old counted
+    // as discarded), or Close.
     bool m_ExposedActive = false;
     uint64_t m_ExposedRequestId = 0;
     uint64_t m_ExposedEpoch = 0;
     // Cancel ack pending one-shot poll. A superseding Submit clears it and
     // the latest request wins.
     bool m_ExposedCancelled = false;
+    // P1-A06 budget: logical conversion/staging/retirement work quota per
+    // PollRegion call (shared single quota, not N times quota). 1..4096,
+    // default 64. Set on successful Open, preserved across Close.
+    int64_t m_BudgetItems = 64;
+    // Cumulative staged discards: increments when a taken (preparing)
+    // conversion is locally cancelled/superseded into the single retire
+    // slot. Never reset across close/reopen. Repeated cancel cannot append
+    // because admission is closed (one-shot cancel ack).
+    int64_t m_StagedDiscards = 0;
+    double m_RetireMsTotal = 0.0;
+    double m_RetireMsMaxItem = 0.0;
+    std::unique_ptr<StagedConversion> m_Conversion;
+    std::unique_ptr<RetiringGeneration> m_Retiring;
 };
 
 } // namespace godot

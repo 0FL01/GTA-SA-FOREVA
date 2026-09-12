@@ -211,8 +211,8 @@ func _run_lab_fixture() -> bool:
 	lab.camera.position = Vector3(ROADS_CENTER_SA.x, ROADS_CENTER_SA.z + 20.0, -ROADS_CENTER_SA.y + 20.0)
 	lab._camera_target_world = Vector3(ROADS_CENTER_SA.x, ROADS_CENTER_SA.z, -ROADS_CENTER_SA.y)
 	lab.camera.look_at(lab._camera_target_world)
-	var held_nodes: Array = lab.mesh_root.get_children().map(func(node: Node) -> int: return node.get_instance_id())
-	var held_mesh_ids: Array = lab.mesh_root.get_children().map(func(node: Node) -> int: return (node as MeshInstance3D).mesh.get_instance_id())
+	var held_nodes: Array = _lab_active_node_ids(lab)
+	var held_mesh_ids: Array = _lab_active_mesh_ids(lab)
 	var held_collision: Dictionary = lab._region_collision.duplicate(true)
 	lab._maybe_reload_region()
 	if not _check(lab._has_pending_region(), "lab normal movement uses async submit"):
@@ -221,7 +221,7 @@ func _run_lab_fixture() -> bool:
 		return false
 	if not _check(lab._publication_revision == initial_rev, "old world retained while pending"):
 		return false
-	if not _check(lab.mesh_root.get_children().map(func(node: Node) -> int: return node.get_instance_id()) == held_nodes, "old nodes retained while pending"):
+	if not _check(_lab_active_node_ids(lab) == held_nodes, "old nodes retained while pending"):
 		return false
 	# Duplicate near the same pending center must not resubmit every frame.
 	var submits_before: int = lab._async_submit_count
@@ -241,8 +241,8 @@ func _run_lab_fixture() -> bool:
 	if not _check((lab._region_stats.get("raw_parse_ms") is float or lab._region_stats.get("raw_parse_ms") is int), "lab stats carry raw_parse_ms scalar"):
 		return false
 	var roads_rev: int = lab._publication_revision
-	var roads_nodes: Array = lab.mesh_root.get_children().map(func(node: Node) -> int: return node.get_instance_id())
-	var roads_meshes: Array = lab.mesh_root.get_children().map(func(node: Node) -> int: return (node as MeshInstance3D).mesh.get_instance_id())
+	var roads_nodes: Array = _lab_active_node_ids(lab)
+	var roads_meshes: Array = _lab_active_mesh_ids(lab)
 	var roads_collision: Dictionary = lab._region_collision.duplicate(true)
 	var roads_stats: Dictionary = lab._region_stats.duplicate(true)
 	# Invalid radar via async errors but retains active mesh IDs, COL packed
@@ -252,7 +252,7 @@ func _run_lab_fixture() -> bool:
 		return false
 	if not _check(lab._has_pending_region(), "invalid pending active"):
 		return false
-	if not _check(lab._publication_revision == roads_rev and lab.mesh_root.get_children().map(func(node: Node) -> int: return node.get_instance_id()) == roads_nodes, "old world retained before error poll"):
+	if not _check(lab._publication_revision == roads_rev and _lab_active_node_ids(lab) == roads_nodes, "old world retained before error poll"):
 		return false
 	if not await _await_lab_settled(lab):
 		printerr("region-async-fail: lab invalid async deadline")
@@ -262,9 +262,9 @@ func _run_lab_fixture() -> bool:
 		return false
 	if not _check(lab._publication_revision == roads_rev, "async error retains revision"):
 		return false
-	if not _check(lab.mesh_root.get_children().map(func(node: Node) -> int: return node.get_instance_id()) == roads_nodes, "async error retains node IDs"):
+	if not _check(_lab_active_node_ids(lab) == roads_nodes, "async error retains node IDs"):
 		return false
-	if not _check(lab.mesh_root.get_children().map(func(node: Node) -> int: return (node as MeshInstance3D).mesh.get_instance_id()) == roads_meshes, "async error retains mesh resources"):
+	if not _check(_lab_active_mesh_ids(lab) == roads_meshes, "async error retains mesh resources"):
 		return false
 	if not _check(_deep_equal(lab._region_collision, roads_collision), "async error retains COL packed bytes"):
 		return false
@@ -382,8 +382,8 @@ func _await_bridge_terminal(expect_id: int) -> Dictionary:
 		if not polled is Dictionary:
 			return {"ok": false, "status": "error", "error": "non-Dictionary poll"}
 		var status := str(polled.get("status", ""))
-		if status == "pending" or status == "idle":
-			if not _check(not bool(polled.get("ok", false)), "pending/idle ok=false is not failure"):
+		if status == "pending" or status == "idle" or status == "preparing":
+			if not _check(not bool(polled.get("ok", false)), "pending/idle/preparing ok=false is not failure"):
 				return {"ok": false, "status": "error", "error": "pending marked ok"}
 			continue
 		return polled
@@ -391,6 +391,10 @@ func _await_bridge_terminal(expect_id: int) -> Dictionary:
 
 
 func _await_lab_settled(lab: Node) -> bool:
+	# A06: await bridge preparing + hidden lab staging + hidden retirement.
+	# Idle polls still pump C++ retirement; budgeted staging/retirement share
+	# the per-frame quota via _pump_region_budget. Settled means no pending
+	# (preparing/staging/deferred) and no lab budget busy and no C++ retire.
 	var start_msec := Time.get_ticks_msec()
 	for _frame in range(MAX_POLL_FRAMES):
 		await process_frame
@@ -399,9 +403,18 @@ func _await_lab_settled(lab: Node) -> bool:
 		if Time.get_ticks_msec() - start_msec > POLL_DEADLINE_MSEC:
 			return false
 		lab._poll_pending_region()
-		if not lab._has_pending_region():
+		lab._pump_region_budget()
+		if not lab._has_pending_region() and not lab._region_budget_busy() and int(lab._last_bridge_retire_pending) == 0:
 			return true
 	return false
+
+
+func _lab_active_node_ids(lab: Node) -> Array:
+	return lab._active_region_root().get_children().map(func(node: Node) -> int: return node.get_instance_id())
+
+
+func _lab_active_mesh_ids(lab: Node) -> Array:
+	return lab._active_region_root().get_children().map(func(node: Node) -> int: return (node as MeshInstance3D).mesh.get_instance_id())
 
 
 func _validate_bridge_pair(packet: Dictionary) -> bool:
@@ -451,7 +464,9 @@ func _validate_lab_pair(lab: Node, label: String) -> bool:
 		return false
 	if not _check(int(col.get("faces", -1)) == 122, label + " 122 faces"):
 		return false
-	var nodes: Array = lab.mesh_root.get_children()
+	# A06: active generation lives under the visible persistent root; the
+	# hidden staging/retiring root never mixes into the active set.
+	var nodes: Array = lab._active_region_root().get_children()
 	var child_index := int(child.get("mesh_index", -1))
 	var parent_index := int(parent.get("mesh_index", -1))
 	if not _check(child_index >= 0 and child_index < nodes.size() and parent_index >= 0 and parent_index < nodes.size() and child_index != parent_index, label + " distinct slots"):
@@ -459,6 +474,8 @@ func _validate_lab_pair(lab: Node, label: String) -> bool:
 	var child_node := nodes[child_index] as MeshInstance3D
 	var parent_node := nodes[parent_index] as MeshInstance3D
 	if not _check(child_node.visible and not parent_node.visible, label + " visibility"):
+		return false
+	if not _check(lab._active_region_root().visible and not lab._staging_region_root().visible, label + " two-root flip"):
 		return false
 	return true
 

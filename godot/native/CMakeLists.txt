@@ -55,6 +55,7 @@ set(NATIVE_LOD_SOURCES
 add_library(sa_legacy SHARED
     register_types.cpp
     sa_legacy_bridge.cpp
+    sa_region_plan.cpp
     sa_region_worker.cpp
     os_file_posix.cpp
     "${NATIVE_SOURCE_DIR}/app/platform/linux/StreamPager.cpp"
@@ -65,7 +66,7 @@ add_library(sa_legacy SHARED
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     set_source_files_properties(${NATIVE_LOD_SOURCES} PROPERTIES COMPILE_OPTIONS
         "-fexceptions;-fno-fast-math;-ffp-contract=off")
-    set_source_files_properties(sa_region_worker.cpp PROPERTIES COMPILE_OPTIONS
+    set_source_files_properties(sa_region_worker.cpp sa_region_plan.cpp PROPERTIES COMPILE_OPTIONS
         "-fexceptions;-fno-fast-math;-ffp-contract=off")
 endif()
 target_compile_features(sa_legacy PRIVATE cxx_std_20)

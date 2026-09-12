@@ -125,6 +125,60 @@ var _async_ready_count := 0
 var _async_error_count := 0
 var _async_cancel_count := 0
 var _f6_ignored_while_pending := 0
+# P1-A06 budgeted publication/retirement: logical work quota per pump, not a
+# hard wall-time/FPS promise. One Godot texture/surface/metadata creation or
+# one retirement free counts as one quota work item; nonpreemptible Godot
+# calls (single texture upload, single surface add, root visibility flips)
+# are measured atomic units and may honestly overshoot the quota.
+var _budget_items := 64
+var _region_root_a: Node3D
+var _region_root_b: Node3D
+var _region_active_is_a := true
+var _lab_staging_active := false
+var _lab_candidate_center_sa := Vector3.ZERO
+var _lab_candidate_revision := 0
+var _lab_candidate_request_id := 0
+var _lab_candidate_session_epoch := 0
+var _lab_candidate_meshes: Array = []
+var _lab_candidate_stats: Dictionary = {}
+var _lab_candidate_stats_csv := ""
+var _lab_candidate_collision: Dictionary = {}
+var _lab_candidate_pair_child := -1
+var _lab_candidate_pair_parent := -1
+var _lab_candidate_next_mesh := 0
+var _lab_candidate_next_surface := 0
+var _lab_candidate_current_instance: MeshInstance3D
+var _lab_candidate_staged_instances: Array = []
+var _lab_candidate_staged_materials: Array = []
+var _lab_candidate_mesh_holds: Array = []
+var _lab_candidate_texture_holds: Array = []
+var _lab_candidate_discarded_stale := 0
+var _lab_retire_active := false
+var _lab_retire_material_holds: Array = []
+var _lab_retire_mesh_holds: Array = []
+var _lab_retire_texture_holds: Array = []
+var _lab_retire_metadata_holds: Array = []
+var _active_metadata_holds: Array = []
+var _lab_deferred_discard_pending := false
+var _lab_staged_discards := 0
+var _last_region_conversion_ms_total := 0.0
+var _last_region_conversion_ms_max_item := 0.0
+var _last_region_conversion_frames := 0
+var _last_region_commit_ms := 0.0
+var _last_region_staging_ms_total := 0.0
+var _last_region_publication_elapsed_ms := 0.0
+var _last_region_retire_ms_max_item := 0.0
+var _last_bridge_retire_pending := 0
+var _last_bridge_staged_discards := 0
+var _last_bridge_progress: Dictionary = {}
+var _active_mesh_holds: Array = []
+var _active_texture_holds: Array = []
+var _lab_deferred_ready: Dictionary = {}
+var _lab_deferred_center_sa := Vector3.ZERO
+var _lab_deferred_started_usec := 0
+var _lab_candidate_started_usec := 0
+var _lab_candidate_staging_ms_total := 0.0
+var _lab_candidate_sync_prefix_ms := 0.0
 
 
 func _ready() -> void:
@@ -169,11 +223,28 @@ func _ready() -> void:
 			return
 
 	var open_started := Time.get_ticks_usec()
-	var opened: Variant = _bridge.call("open_game", _game_dir, _radius, _cap)
+	# P1-A06: pass logical budget quota at Open (1..4096). Old 3-arg bridges
+	# stay compatible (introspect arg count first so no invalid-call error is
+	# pushed on old binaries); new bridges enforce the range with DEFVAL(64).
+	if _budget_items < 1 or _budget_items > 4096:
+		_fatal("budget_items must be in [1,4096]", 2)
+		return
+	var open_uses_budget := false
+	for info in ClassDB.class_get_method_list("SALegacyBridge", true):
+		if info is Dictionary and str(info.get("name", "")) == "open_game":
+			var arg_list: Array = info.get("args", [])
+			if arg_list.size() >= 4:
+				open_uses_budget = true
+	var opened: Variant
+	if open_uses_budget:
+		opened = _bridge.call("open_game", _game_dir, _radius, _cap, _budget_items)
+	else:
+		opened = _bridge.call("open_game", _game_dir, _radius, _cap)
 	_open_game_stall_ms = float(Time.get_ticks_usec() - open_started) / 1000.0
 	if not _bridge_result_ok(opened, "open_game"):
 		return
 	_bridge_open = true
+	_ensure_region_roots()
 	_open_metadata = opened.duplicate(true)
 	_open_metadata.erase("ok")
 	_data_hashes = _collect_data_hashes()
@@ -209,8 +280,12 @@ func _process(delta: float) -> void:
 		else:
 			_update_free_camera(delta)
 
-	# P1-A05: single nonblocking poll per frame; never blocks on raw parse.
+	# P1-A06: single nonblocking bridge poll per frame (idle polls still pump
+	# C++ retirement; idle is never fake Ready) plus one budgeted lab pump
+	# that advances hidden staging and hidden retirement together under the
+	# per-frame quota. Never blocks on raw parse or whole-scene commit.
 	_poll_pending_region()
+	_pump_region_budget()
 	if not _capture_hold:
 		_maybe_reload_region()
 	_record_frame(wall_delta)
@@ -261,11 +336,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_F5:
 				_toggle_flag("post")
 			KEY_F6:
-				# P1-A05: explicit retry uses async submit, never a blocking wait.
-				# F6 while an async request is pending is ignored and documented
-				# in the overlay; the pending request keeps the old world.
+				# P1-A05/A06: explicit retry uses async submit, never a blocking wait.
+				# F6 while an async request is pending or the budget retiring
+				# generation drains is ignored and documented in the overlay
+				# (existing counter); the pending request keeps the old world.
+				# Camera intent is naturally retried on later frames.
 				if _region_candidate_unavailable and not _capture_hold:
-					if _pending_region_active:
+					if _pending_region_active or _region_budget_busy():
 						_f6_ignored_while_pending += 1
 					elif _loading:
 						pass
@@ -472,19 +549,470 @@ func _cache_environments() -> bool:
 	return true
 
 
+func _ensure_region_roots() -> void:
+	# P1-A06: two persistent attached roots under mesh_root. Active holds the
+	# visible complete generation; inactive (staging) holds hidden staging
+	# candidate or hidden retiring generation, never both. No per-frame
+	# creation/destruction; commit flips two visibilities plus swaps.
+	if mesh_root == null:
+		return
+	if is_instance_valid(_region_root_a) and is_instance_valid(_region_root_b):
+		return
+	_region_root_a = Node3D.new()
+	_region_root_a.name = "RegionA"
+	_region_root_b = Node3D.new()
+	_region_root_b.name = "RegionB"
+	mesh_root.add_child(_region_root_a)
+	mesh_root.add_child(_region_root_b)
+	_region_active_is_a = true
+	_region_root_a.visible = true
+	_region_root_b.visible = false
+
+
+func _active_region_root() -> Node3D:
+	return _region_root_a if _region_active_is_a else _region_root_b
+
+
+func _staging_region_root() -> Node3D:
+	return _region_root_b if _region_active_is_a else _region_root_a
+
+
+func _lab_retire_pending_count() -> int:
+	var count := _lab_retire_material_holds.size() + _lab_retire_mesh_holds.size() + _lab_retire_texture_holds.size() + _lab_retire_metadata_holds.size()
+	if _lab_retire_active and is_instance_valid(_staging_region_root()):
+		count += _staging_region_root().get_child_count()
+	if not _lab_deferred_ready.is_empty():
+		var deferred_meshes: Variant = _lab_deferred_ready.get("meshes", [])
+		if deferred_meshes is Array:
+			count += (deferred_meshes as Array).size()
+			# Deferred complete generation will retire metadata + mesh + bound
+			# texture holds; count bound textures now so pending reflects the
+			# future retiring queue (materials are empty for deferred).
+			for mesh_info in (deferred_meshes as Array):
+				if mesh_info is Dictionary:
+					var sms: Variant = (mesh_info as Dictionary).get("surface_materials", [])
+					if sms is Array:
+						for surface_info in (sms as Array):
+							if surface_info is Dictionary and (surface_info as Dictionary).get("texture", null) is Texture2D:
+								count += 1
+			# Mesh holds mirror metadata count (one per mesh); count them too.
+			count += (deferred_meshes as Array).size()
+	return count
+
+
+func _region_budget_busy() -> bool:
+	# Public test helper: true while hidden lab staging or hidden lab
+	# retirement still holds work. Bridge preparing is covered by
+	# _has_pending_region(); C++ retire_pending is in _last_bridge_retire_pending.
+	# Tests with set_process(false) manually pump via _pump_region_budget().
+	# Deferred ready (complete GPU generation) also gates admission while held,
+	# including discard-pending marked for budgeted retirement.
+	if not _lab_deferred_ready.is_empty():
+		return true
+	return _lab_staging_active or _lab_retire_active
+
+
+func _update_bridge_progress_diagnostics(polled: Dictionary) -> void:
+	var progress_value: Variant = polled.get("progress", {})
+	if progress_value is Dictionary:
+		_last_bridge_progress = (progress_value as Dictionary).duplicate(true)
+		var retire_value: Variant = _last_bridge_progress.get("retire_pending", 0)
+		_last_bridge_retire_pending = int(retire_value) if retire_value is int else 0
+		var discard_value: Variant = _last_bridge_progress.get("staged_discards", 0)
+		_last_bridge_staged_discards = int(discard_value) if discard_value is int else 0
+	else:
+		# Old A05 bridge has no progress dict: no C++ budget/retire to drain.
+		_last_bridge_progress = {}
+		_last_bridge_retire_pending = 0
+		# Keep last known staged_discards? Old bridge never discards via budget.
+		_last_bridge_staged_discards = 0
+
+
+func _lab_gpu_holds_from_meshes(meshes: Array) -> Dictionary:
+	# Local-only collector for deferred discard-pending retirement. Validation
+	# path collects inline in its existing full pass; this helper shares the
+	# same bound-texture rule (Texture2D only) for deferred payloads that were
+	# never staged. No resource cache/authority change.
+	var mesh_holds: Array = []
+	var texture_holds: Array = []
+	for mesh_info in meshes:
+		if not mesh_info is Dictionary:
+			continue
+		var mesh_value: Variant = (mesh_info as Dictionary).get("mesh", null)
+		if mesh_value is ArrayMesh:
+			mesh_holds.append(mesh_value)
+		var sms_value: Variant = (mesh_info as Dictionary).get("surface_materials", [])
+		if sms_value is Array:
+			for surface_info in (sms_value as Array):
+				if surface_info is Dictionary:
+					var texture_value: Variant = (surface_info as Dictionary).get("texture", null)
+					if texture_value is Texture2D:
+						texture_holds.append(texture_value)
+	return {"mesh_holds": mesh_holds, "texture_holds": texture_holds}
+
+
+func _lab_move_deferred_to_retiring() -> bool:
+	# Move a held deferred complete GPU generation to the single retiring
+	# queue (metadata + complete mesh/texture holds) for budgeted drain. Caller
+	# ensures no staging and no active retiring (single retiring generation);
+	# if retiring exists, retain deferred marked discard-pending instead.
+	if _lab_deferred_ready.is_empty():
+		return false
+	if _lab_staging_active or _lab_retire_active:
+		_lab_deferred_discard_pending = true
+		return false
+	var meshes_value: Variant = _lab_deferred_ready.get("meshes", [])
+	if not meshes_value is Array:
+		_lab_deferred_ready = {}
+		_lab_deferred_discard_pending = false
+		_lab_staged_discards += 1
+		return true
+	var meshes: Array = meshes_value
+	var holds := _lab_gpu_holds_from_meshes(meshes)
+	_lab_retire_metadata_holds = meshes
+	_lab_retire_mesh_holds = holds.get("mesh_holds", [])
+	_lab_retire_texture_holds = holds.get("texture_holds", [])
+	_lab_retire_material_holds = []
+	_lab_retire_active = true
+	_lab_deferred_ready = {}
+	_lab_deferred_discard_pending = false
+	_lab_staged_discards += 1
+	return true
+
+
+func _lab_try_consume_deferred_budgeted() -> bool:
+	# Budgeted deferred consumer for poll/pump idle: when retire drains and no
+	# staging, either stage a normal deferred or retire a discard-pending one.
+	# Never overwrites/appends a second retiring generation; retains marked
+	# payload while old retire exists. Returns true if it made progress.
+	if _lab_deferred_ready.is_empty():
+		return false
+	if _pending_region_active or _lab_staging_active or _lab_retire_active:
+		return false
+	if _lab_deferred_discard_pending:
+		return _lab_move_deferred_to_retiring()
+	return false
+
+
+func _pump_region_budget() -> void:
+	# One budgeted lab pump: hidden staging creation and hidden retirement
+	# share the single per-frame quota (_budget_items total, 1..4096).
+	# Each staged node or ShaderMaterial counts as one work item; each
+	# retired node free or flat ref-hold drop counts as one. Whole-scene
+	# commit is never counted as one unit. Nonpreemptible Godot calls
+	# (single texture/surface/metadata creation, single free, two root
+	# flips) are measured atomic units that may honestly overshoot quota.
+	if _shutdown_started or not _bridge_open:
+		return
+	_ensure_region_roots()
+	var budget := _budget_items
+	if budget < 1:
+		budget = 1
+	if budget > 4096:
+		budget = 4096
+	var used := 0
+	while used < budget and _lab_staging_active:
+		_lab_stage_one_item()
+		used += 1
+		if _lab_candidate_next_mesh >= _lab_candidate_meshes.size():
+			_lab_commit_staged_candidate()
+			break
+	while used < budget and _lab_retire_active and not _lab_staging_active:
+		_lab_retire_one_item()
+		used += 1
+	# Manual-pump tests (set_process(false)) never call _poll: convert an idle
+	# deferred here too. Discard-pending moves to retiring budgetedly; normal
+	# deferred staging is left to _poll to preserve pending identity semantics.
+	if used < budget and _lab_try_consume_deferred_budgeted():
+		used += 1
+		while used < budget and _lab_retire_active:
+			_lab_retire_one_item()
+			used += 1
+
+
+func _flush_region_budget_unbudgeted() -> void:
+	# Explicit unbudgeted flush reusing the same stepper: used only by sync
+	# diagnostics, capture preempt, release and teardown. Not a per-frame quota.
+	var guard := 0
+	while (_lab_staging_active or _lab_retire_active or not _lab_deferred_ready.is_empty()) and guard < 100000:
+		if _lab_staging_active:
+			_lab_stage_one_item()
+			if _lab_candidate_next_mesh >= _lab_candidate_meshes.size():
+				_lab_commit_staged_candidate()
+				# Sync flush retires the just-created retiring generation
+				# immediately below instead of leaving it budgeted.
+				if not _lab_staging_active and not _lab_retire_active and _lab_deferred_ready.is_empty():
+					break
+		elif _lab_retire_active:
+			_lab_retire_one_item()
+		elif not _lab_deferred_ready.is_empty():
+			# Explicit flush may drain deferred unbudgeted per contract: normal
+			# deferred would need validation+staging, but flush context always
+			# discards (sync-preempt/teardown/release), so retire directly.
+			_lab_deferred_discard_pending = true
+			if not _lab_move_deferred_to_retiring():
+				break
+		else:
+			break
+		guard += 1
+
+
+func _lab_stage_one_item() -> void:
+	# One quota work item: either one hidden node add or one hidden
+	# ShaderMaterial creation+override. Caller ensures staging active and
+	# budget remains. No await; staging root stays hidden until commit.
+	# Measured into _lab_candidate_staging_ms_total (per-unit CPU only, no
+	# free-frame intervals); published to _last_region_staging_ms_total on
+	# commit, discarded on cancel/reject without touching active stats.
+	if not _lab_staging_active:
+		return
+	if _lab_candidate_next_mesh >= _lab_candidate_meshes.size():
+		return
+	var item_started := Time.get_ticks_usec()
+	var staging_root := _staging_region_root()
+	var mesh_info: Dictionary = _lab_candidate_meshes[_lab_candidate_next_mesh]
+	var mesh: ArrayMesh = mesh_info.mesh
+	var surface_materials: Array = mesh_info.surface_materials
+	if _lab_candidate_current_instance == null or not is_instance_valid(_lab_candidate_current_instance):
+		var instance := MeshInstance3D.new()
+		instance.mesh = mesh
+		if _lab_candidate_next_mesh == _lab_candidate_pair_parent:
+			instance.visible = false
+		instance.set_meta("lod_chain_alternate", _lab_candidate_next_mesh == _lab_candidate_pair_parent)
+		instance.set_meta("source_model_id", int(mesh_info.get("source_model_id", -1)))
+		instance.set_meta("source_model", str(mesh_info.get("source_model", "")))
+		staging_root.add_child(instance)
+		_lab_candidate_current_instance = instance
+		_lab_candidate_staged_instances.append(instance)
+		# A06: candidate mesh/texture holds already contain ALL validated GPU
+		# refs from setup (local collection); no per-stage append here so
+		# unstaged last refs survive cancel until budgeted retirement.
+		_lab_candidate_next_surface = 0
+		# New hidden node starts with current environment on its (still zero)
+		# materials; each material below is created then immediately given the
+		# current environment so the first visible frame is not stale.
+		_lab_candidate_staging_ms_total += float(Time.get_ticks_usec() - item_started) / 1000.0
+		return
+	if _lab_candidate_next_surface < surface_materials.size():
+		var material := LegacyMaterials.make_surface(surface_materials[_lab_candidate_next_surface])
+		_lab_candidate_current_instance.set_surface_override_material(_lab_candidate_next_surface, material)
+		_lab_candidate_staged_materials.append(material)
+		# A06: bound textures already held fully from setup; no per-stage
+		# texture append (would duplicate and leave unstaged refs unheld).
+		if not _environment_data.is_empty():
+			LegacyMaterials.set_environment([material], _environment_data, _flags)
+		_lab_candidate_next_surface += 1
+		if _lab_candidate_next_surface >= surface_materials.size():
+			_lab_candidate_current_instance = null
+			_lab_candidate_next_mesh += 1
+		_lab_candidate_staging_ms_total += float(Time.get_ticks_usec() - item_started) / 1000.0
+		return
+	# Defensive: surface count mismatch should have failed validation; advance.
+	_lab_candidate_current_instance = null
+	_lab_candidate_next_mesh += 1
+	_lab_candidate_staging_ms_total += float(Time.get_ticks_usec() - item_started) / 1000.0
+
+
+func _lab_commit_staged_candidate() -> void:
+	# Atomic no-await commit: two root visibility flips plus O(1) state/list
+	# swaps. Does NOT loop detach/add all children. Old active root becomes
+	# hidden retiring; staging root becomes visible active. Old holds move via
+	# reference swap (no whole-generation dictionary clear avalanche).
+	# Measurement: _last_load_stall_ms/_total_load_stall_ms are aggregated
+	# measured main-thread work only, never multi-frame elapsed. Sync stall =
+	# sync blocking bridge prefix (_lab_candidate_sync_prefix_ms, worker wait
+	# plus conversion inside load_region) + lab staging (_lab_candidate
+	# _staging_ms_total: validation/setup plus node/material items, no free
+	# intervals) + atomic commit. Async stall = C++ conversion_ms_total +
+	# staging + commit (ready-poll call itself excluded to avoid
+	# double-counting conversion). _last_region_publication_elapsed_ms is wall
+	# from candidate start to commit end, diagnostic only, never added.
+	if not _lab_staging_active:
+		return
+	_ensure_region_roots()
+	var commit_started := Time.get_ticks_usec()
+	var staging_root := _staging_region_root()
+	var active_root := _active_region_root()
+	staging_root.visible = true
+	active_root.visible = false
+	var old_materials := _materials
+	var old_mesh_holds := _active_mesh_holds
+	var old_texture_holds := _active_texture_holds
+	var old_metadata := _active_metadata_holds
+	_materials = _lab_candidate_staged_materials
+	_active_mesh_holds = _lab_candidate_mesh_holds
+	_active_texture_holds = _lab_candidate_texture_holds
+	_active_metadata_holds = _lab_candidate_meshes
+	_lab_retire_material_holds = old_materials
+	_lab_retire_mesh_holds = old_mesh_holds
+	_lab_retire_texture_holds = old_texture_holds
+	_lab_retire_metadata_holds = old_metadata
+	_region_active_is_a = not _region_active_is_a
+	_lab_retire_active = _has_published_region and (active_root.get_child_count() > 0 or not _lab_retire_material_holds.is_empty() or not _lab_retire_mesh_holds.is_empty() or not _lab_retire_texture_holds.is_empty() or not _lab_retire_metadata_holds.is_empty())
+	# Deep copies/serialization already completed before hidden staging. Commit
+	# only adopts their owned references; do not allocate a new COL after flips.
+	_region_stats = _lab_candidate_stats
+	_region_collision = _lab_candidate_collision
+	_region_stats_csv = _lab_candidate_stats_csv
+	_resident_meshes = _lab_candidate_staged_instances.size()
+	_resident_surfaces = _lab_candidate_staged_materials.size()
+	_loaded_center_sa = _lab_candidate_center_sa
+	_has_published_region = true
+	_publication_revision = _lab_candidate_revision
+	_region_candidate_unavailable = false
+	_region_retry_suppressed = false
+	_remember_accepted_camera()
+	# Stats are scalar only: worker parse+plan plus C++ conversion plus lab
+	# staging plus lab commit. Failed/cancelled candidates never reach here,
+	# so their partial staging accumulator is discarded without touching
+	# active stats (existing invariant).
+	var stats_raw: Variant = _region_stats.get("raw_parse_ms", 0.0)
+	_last_region_raw_parse_ms = float(stats_raw) if (stats_raw is float or stats_raw is int) and is_finite(float(stats_raw)) else 0.0
+	var conv_total: Variant = _region_stats.get("conversion_ms_total", 0.0)
+	_last_region_conversion_ms_total = float(conv_total) if (conv_total is float or conv_total is int) and is_finite(float(conv_total)) else 0.0
+	var conv_max: Variant = _region_stats.get("conversion_ms_max_item", 0.0)
+	_last_region_conversion_ms_max_item = float(conv_max) if (conv_max is float or conv_max is int) and is_finite(float(conv_max)) else 0.0
+	var conv_frames: Variant = _region_stats.get("conversion_frames", 0)
+	_last_region_conversion_frames = int(conv_frames) if conv_frames is int else 0
+	_last_region_request_id = _lab_candidate_request_id
+	_last_region_session_epoch = _lab_candidate_session_epoch
+	_pending_region_discarded_stale = _lab_candidate_discarded_stale
+	# Ready counts only async staged commits (pending was true); sync
+	# diagnostics use _load_count, preserving A05 semantics.
+	if _pending_region_active:
+		_async_ready_count += 1
+	_pending_region_active = false
+	_pending_region_request_id = 0
+	_pending_region_session_epoch = 0
+	_lab_staging_active = false
+	_lab_candidate_meshes = []
+	_lab_candidate_stats = {}
+	_lab_candidate_collision = {}
+	_lab_candidate_staged_instances = []
+	_lab_candidate_staged_materials = []
+	_lab_candidate_mesh_holds = []
+	_lab_candidate_texture_holds = []
+	_lab_candidate_current_instance = null
+	_lab_candidate_next_mesh = 0
+	_lab_candidate_next_surface = 0
+	_last_region_commit_ms = float(Time.get_ticks_usec() - commit_started) / 1000.0
+	_last_region_staging_ms_total = _lab_candidate_staging_ms_total
+	if _lab_candidate_started_usec != 0:
+		_last_region_publication_elapsed_ms = float(Time.get_ticks_usec() - _lab_candidate_started_usec) / 1000.0
+	else:
+		_last_region_publication_elapsed_ms = 0.0
+	if _lab_candidate_sync_prefix_ms > 0.0:
+		_last_load_stall_ms = _lab_candidate_sync_prefix_ms + _last_region_staging_ms_total + _last_region_commit_ms
+	else:
+		_last_load_stall_ms = _last_region_conversion_ms_total + _last_region_staging_ms_total + _last_region_commit_ms
+	_total_load_stall_ms += _last_load_stall_ms
+	_lab_candidate_staging_ms_total = 0.0
+	_lab_candidate_sync_prefix_ms = 0.0
+	_lab_candidate_started_usec = 0
+	_update_overlay()
+
+
+func _lab_retire_one_item() -> void:
+	# One quota work item of hidden retirement: single metadata dict drop,
+	# single node free, or single flat hold drop. Metadata pops first so the
+	# full candidate metadata retires budgetedly; mesh/texture last refs free
+	# only when their hold pops (nodes still hold refs until freed). Measured;
+	# single free may overshoot quota honestly.
+	if not _lab_retire_active:
+		return
+	var started := Time.get_ticks_usec()
+	var retire_root := _staging_region_root()
+	if not _lab_retire_metadata_holds.is_empty():
+		_lab_retire_metadata_holds.pop_back()
+		var elapsed_meta := float(Time.get_ticks_usec() - started) / 1000.0
+		if elapsed_meta > _last_region_retire_ms_max_item:
+			_last_region_retire_ms_max_item = elapsed_meta
+		if retire_root.get_child_count() == 0 and _lab_retire_material_holds.is_empty() and _lab_retire_mesh_holds.is_empty() and _lab_retire_texture_holds.is_empty() and _lab_retire_metadata_holds.is_empty():
+			_lab_retire_active = false
+		return
+	if retire_root.get_child_count() > 0:
+		var node := retire_root.get_child(0)
+		retire_root.remove_child(node)
+		node.free()
+		var elapsed := float(Time.get_ticks_usec() - started) / 1000.0
+		if elapsed > _last_region_retire_ms_max_item:
+			_last_region_retire_ms_max_item = elapsed
+		if retire_root.get_child_count() == 0 and _lab_retire_material_holds.is_empty() and _lab_retire_mesh_holds.is_empty() and _lab_retire_texture_holds.is_empty() and _lab_retire_metadata_holds.is_empty():
+			_lab_retire_active = false
+		return
+	if not _lab_retire_material_holds.is_empty():
+		_lab_retire_material_holds.pop_back()
+	elif not _lab_retire_mesh_holds.is_empty():
+		_lab_retire_mesh_holds.pop_back()
+	elif not _lab_retire_texture_holds.is_empty():
+		_lab_retire_texture_holds.pop_back()
+	else:
+		_lab_retire_active = false
+		return
+	var elapsed_hold := float(Time.get_ticks_usec() - started) / 1000.0
+	if elapsed_hold > _last_region_retire_ms_max_item:
+		_last_region_retire_ms_max_item = elapsed_hold
+	if retire_root.get_child_count() == 0 and _lab_retire_material_holds.is_empty() and _lab_retire_mesh_holds.is_empty() and _lab_retire_texture_holds.is_empty() and _lab_retire_metadata_holds.is_empty():
+		_lab_retire_active = false
+
+
+func _discard_staging_to_retiring(reason: String) -> void:
+	# Cancel/supersede during lab staging retains old active, moves FULL
+	# candidate (metadata + ALL GPU mesh/texture holds pre-collected in setup)
+	# to the one retiring generation. Bridge prepared counter may already be
+	# consumed but active stays unchanged; monotonic seq stays valid.
+	# Discarded partial staging CPU is dropped without touching published
+	# active stats (existing invariant). Reference assignment only; candidate
+	# rebinding below never clears the shared array object, so unstaged last
+	# refs survive until budgeted retirement pops them.
+	if not _lab_staging_active:
+		return
+	# Staging root already holds the partial nodes; convert its role to
+	# retiring without moving children. Staged holds become retiring holds
+	# via O(1) move (no avalanche clear).
+	_lab_retire_metadata_holds = _lab_candidate_meshes
+	_lab_retire_material_holds = _lab_candidate_staged_materials
+	_lab_retire_mesh_holds = _lab_candidate_mesh_holds
+	_lab_retire_texture_holds = _lab_candidate_texture_holds
+	_lab_retire_active = true
+	_lab_staging_active = false
+	_lab_candidate_meshes = []
+	_lab_candidate_stats = {}
+	_lab_candidate_collision = {}
+	_lab_candidate_staged_instances = []
+	_lab_candidate_staged_materials = []
+	_lab_candidate_mesh_holds = []
+	_lab_candidate_texture_holds = []
+	_lab_candidate_current_instance = null
+	_lab_candidate_next_mesh = 0
+	_lab_candidate_next_surface = 0
+	_lab_candidate_staging_ms_total = 0.0
+	_lab_candidate_sync_prefix_ms = 0.0
+	_lab_candidate_started_usec = 0
+	_lab_staged_discards += 1
+
+
 func _load_region(center_sa: Vector3) -> bool:
-	# Synchronous diagnostic path: initial load and fixed captures only.
-	# Normal movement and F6 use _submit_region_async plus _poll_pending_region.
-	# Fixed captures must never see a stale async commit: cancel and consume
-	# any outstanding async before issuing sync.
+	# Synchronous diagnostic path (explicit unbudgeted flush reusing the same
+	# stepper): initial load and fixed captures only. Normal movement and F6
+	# use _submit_region_async plus _poll_pending_region/_pump_region_budget.
+	# Fixed captures must never see a stale async commit: cancel/consume+flush
+	# before holding immutable frames. Keeps the blocking contract.
 	if _loading or _shutdown_started:
 		return false
-	if _has_pending_region():
+	_ensure_region_roots()
+	if _has_pending_region() or _region_budget_busy():
 		_drain_pending_for_sync("sync-preempt")
 		if _shutdown_started:
 			return false
-		if _has_pending_region():
+		if _has_pending_region() or _lab_staging_active:
 			return false
+		# Sync flush must start from a drained retiring generation so the
+		# staging root is free; drain flushes retiring unbudgeted above.
+		if _lab_retire_active:
+			_flush_region_budget_unbudgeted()
+			if _lab_retire_active:
+				return false
 	_loading = true
 	var started := Time.get_ticks_usec()
 	var result: Variant = _bridge.call("load_region", center_sa)
@@ -494,18 +1022,47 @@ func _load_region(center_sa: Vector3) -> bool:
 	if not result is Dictionary:
 		_fatal("load_region returned a non-Dictionary result", 4)
 		return false
-	return _commit_region_result(result, center_sa, started)
+	_update_bridge_progress_diagnostics(result)
+	if not _validate_and_begin_staging(result, center_sa, started):
+		# Validation/rejection already handled; sync failures retain old.
+		# _validate returns false for both reject (ok=false, retains old) and
+		# fatal malformed (terminal). Distinguish via shutdown flag? Reject
+		# returns false without fatal; report accordingly.
+		return false
+	# Sync stall keeps its blocking worker wait: the bridge call above already
+	# contains worker wait plus conversion, so commit uses this prefix instead
+	# of adding conversion_ms_total again (no double count).
+	if _lab_staging_active:
+		_lab_candidate_sync_prefix_ms = _last_bridge_load_call_ms
+	# Explicit flush: stage all + commit + retire old immediately (blocking).
+	_flush_region_budget_unbudgeted()
+	# Flush also drains the retiring generation created by this sync commit
+	# so fixed captures hold a settled world (old freed now, not budgeted).
+	_flush_region_budget_unbudgeted()
+	if _lab_staging_active:
+		return false
+	return _has_published_region and _publication_revision > 0
 
 
 func _has_pending_region() -> bool:
+	# True through GPU preparing + lab staging until commit/cancel (including
+	# deferred ready held while the retiring generation drains).
+	if _lab_staging_active:
+		return true
+	if not _lab_deferred_ready.is_empty():
+		return true
 	return _pending_region_active and _pending_region_request_id != 0
 
 
 func _submit_region_async(center_sa: Vector3) -> Dictionary:
 	# Latest-only async submit via the shared worker. Never blocks on raw
-	# parse; the old complete world and paired COL stay active until poll
-	# commits. Duplicate requests near the same pending center are ignored so
-	# per-frame movement does not resubmit identical work.
+	# parse; the old complete world and paired COL stay active until budgeted
+	# commit. Duplicate requests near the same pending center are ignored so
+	# per-frame movement does not resubmit identical work. While the one
+	# retiring lab generation drains (or C++ retire_pending>0), new admission
+	# is blocked as busy (camera intent naturally retried next frame; F6 busy
+	# uses the existing ignored counter). No unbounded queue by repeated
+	# supersede: at most one retiring generation plus one bridge pending.
 	if _shutdown_started or not _bridge_open or _bridge == null:
 		return {"ok": false, "error": "bridge not open", "request_id": 0, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
 	if not _bridge.has_method("submit_region"):
@@ -513,11 +1070,28 @@ func _submit_region_async(center_sa: Vector3) -> Dictionary:
 		return {"ok": false, "error": "missing submit_region", "request_id": 0, "session_epoch": 0, "discarded_stale": 0, "publication_revision": _publication_revision}
 	if _loading:
 		return {"ok": false, "error": "sync load in progress", "request_id": 0, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+	_ensure_region_roots()
+	if _lab_retire_active or not _lab_deferred_ready.is_empty() or _last_bridge_retire_pending > 0:
+		return {"ok": false, "error": "retiring_busy", "request_id": 0, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
 	if _pending_region_active:
 		if _planar_region_distance(center_sa, _pending_region_center_sa) < 1.0:
 			return {"ok": false, "error": "duplicate_pending", "request_id": _pending_region_request_id, "session_epoch": _pending_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
 		if _planar_region_distance(center_sa, _pending_region_center_sa) < _region_reload_threshold():
 			return {"ok": false, "error": "duplicate_pending", "request_id": _pending_region_request_id, "session_epoch": _pending_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
+		if _lab_staging_active:
+			# Supersede during lab staging retains old active, moves partial
+			# candidate to the one retiring root. Prepared bridge counter may
+			# already be consumed but active stays unchanged; monotonic seq
+			# stays valid. New admission blocks as busy until the retiring
+			# generation drains (camera intent naturally retried after);
+			# no unbounded queue by repeated supersede.
+			_discard_staging_to_retiring("supersede")
+			_pending_region_active = false
+			_pending_region_request_id = 0
+			_pending_region_session_epoch = 0
+			_async_cancel_count += 1
+			_update_overlay()
+			return {"ok": false, "error": "retiring_busy", "request_id": 0, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
 	var submitted: Variant = _bridge.call("submit_region", center_sa)
 	if not submitted is Dictionary:
 		_fatal("submit_region returned a non-Dictionary result", 4)
@@ -540,23 +1114,62 @@ func _submit_region_async(center_sa: Vector3) -> Dictionary:
 
 
 func _poll_pending_region() -> void:
-	# Single nonblocking poll per frame. Pending/idle with ok=false is not a
-	# failure; the old world stays active. Ready/error are one-shot and only
-	# applied when request_id and session_epoch match the pending request;
-	# foreign id/epoch is a terminal protocol error before any mutation.
-	if not _pending_region_active:
-		return
+	# Single nonblocking bridge poll per frame. Idle polls still pump C++
+	# retirement (idle is never fake Ready). Pending/preparing/idle with
+	# ok=false are not failures; old world stays active. Preparing is
+	# nonterminal budgeted C++ conversion: keep pending, update progress.
+	# Ready/error/cancelled are one-shot and only applied when request_id and
+	# session_epoch match the pending request; foreign id/epoch is terminal
+	# protocol error before any mutation. Ready starts hidden lab staging
+	# (budgeted) and keeps pending true through lab staging until commit.
 	if _shutdown_started or not _bridge_open or _bridge == null:
 		return
 	if not _bridge.has_method("poll_region"):
+		return
+	# Deferred ready (bridge ready arrived while retiring drained): begin
+	# staging now that the staging root is free. Discard-pending deferred is
+	# never adopted for staging; it retires budgetedly when free. CANCEL marks
+	# discard-pending so a later poll cannot stage it.
+	if not _pending_region_active and not _lab_deferred_ready.is_empty() and not _lab_staging_active and not _lab_retire_active:
+		if _lab_deferred_discard_pending:
+			_lab_move_deferred_to_retiring()
+			return
+		var deferred := _lab_deferred_ready
+		var deferred_center := _lab_deferred_center_sa
+		var deferred_started := _lab_deferred_started_usec
+		_lab_deferred_ready = {}
+		_lab_deferred_discard_pending = false
+		_pending_region_active = true
+		_pending_region_request_id = int(deferred.get("request_id", 0))
+		_pending_region_session_epoch = int(deferred.get("session_epoch", 0))
+		_pending_region_center_sa = deferred_center
+		_validate_and_begin_staging(deferred, deferred_center, deferred_started)
 		return
 	var convert_started := Time.get_ticks_usec()
 	var polled: Variant = _bridge.call("poll_region")
 	if not polled is Dictionary:
 		_fatal("poll_region returned a non-Dictionary result", 4)
 		return
+	_update_bridge_progress_diagnostics(polled)
 	var status := str(polled.get("status", ""))
+	if not _pending_region_active:
+		# Idle pump drains C++ retirement; never treat idle as Ready.
+		# If a terminal arrived with no lab pending (e.g., stale after cancel),
+		# ignore it: no fake Ready, no revision advance.
+		return
 	if status == "pending" or status == "idle":
+		return
+	if status == "preparing":
+		# Nonterminal: validate identity when present, keep pending and old.
+		var prepar_rid: Variant = polled.get("request_id", _pending_region_request_id)
+		var prepar_epoch: Variant = polled.get("session_epoch", _pending_region_session_epoch)
+		if prepar_rid is int and prepar_epoch is int:
+			if int(prepar_rid) != _pending_region_request_id or int(prepar_epoch) != _pending_region_session_epoch:
+				_pending_region_active = false
+				_pending_region_request_id = 0
+				_pending_region_session_epoch = 0
+				_fatal("async region protocol mismatch: foreign request_id/session_epoch in preparing", 4)
+				return
 		return
 	var rid: Variant = polled.get("request_id")
 	var epoch: Variant = polled.get("session_epoch")
@@ -564,9 +1177,13 @@ func _poll_pending_region() -> void:
 		_pending_region_active = false
 		_pending_region_request_id = 0
 		_pending_region_session_epoch = 0
+		if _lab_staging_active:
+			_discard_staging_to_retiring("protocol-mismatch")
 		_fatal("async region protocol mismatch: foreign request_id/session_epoch", 4)
 		return
 	if status == "cancelled":
+		if _lab_staging_active:
+			_discard_staging_to_retiring("cancelled")
 		_pending_region_active = false
 		_pending_region_request_id = 0
 		_pending_region_session_epoch = 0
@@ -575,14 +1192,32 @@ func _poll_pending_region() -> void:
 		return
 	if status == "ready":
 		var center := _pending_region_center_sa
-		_pending_region_active = false
-		_pending_region_request_id = 0
-		_pending_region_session_epoch = 0
-		_async_ready_count += 1
-		_commit_region_result(polled, center, convert_started)
+		# If retiring/staging/deferred blocks admission, hold the ready payload
+		# deferred until drain instead of losing the one-shot packet or mixing
+		# generations. Never overwrite an existing deferred (single deferred +
+		# single retiring bound); retain the old and keep pending cleared.
+		if _lab_retire_active or _lab_staging_active or not _lab_deferred_ready.is_empty():
+			if not _lab_deferred_ready.is_empty():
+				_pending_region_active = false
+				_pending_region_request_id = 0
+				_pending_region_session_epoch = 0
+				return
+			_lab_deferred_ready = (polled as Dictionary).duplicate(true)
+			_lab_deferred_center_sa = center
+			_lab_deferred_started_usec = convert_started
+			_lab_deferred_discard_pending = false
+			_pending_region_active = false
+			_pending_region_request_id = 0
+			_pending_region_session_epoch = 0
+			return
+		# Keep pending true through lab staging; ready count increments only
+		# on staged commit (cancelled staged work never becomes ready).
+		_validate_and_begin_staging(polled, center, convert_started)
 		return
 	if status == "error":
 		var failed_center := _pending_region_center_sa
+		if _lab_staging_active:
+			_discard_staging_to_retiring("error")
 		_pending_region_active = false
 		_pending_region_request_id = 0
 		_pending_region_session_epoch = 0
@@ -592,12 +1227,39 @@ func _poll_pending_region() -> void:
 	_pending_region_active = false
 	_pending_region_request_id = 0
 	_pending_region_session_epoch = 0
+	if _lab_staging_active:
+		_discard_staging_to_retiring("unknown-status")
 	_fatal("poll_region returned unknown status %s" % status, 4)
 
 
 func _cancel_pending_region() -> Dictionary:
-	if not _has_pending_region():
+	# Direct bridge cancel/supersede after preparing begins (not just raw
+	# queue) plus lab staging cancel: retains old active, moves partial
+	# candidate to the one retiring root. No old Ready, no revision advance
+	# on cancel.
+	if not _has_pending_region() and _lab_deferred_ready.is_empty():
 		return {"ok": false, "error": "no pending region", "request_id": 0}
+	if not _lab_deferred_ready.is_empty():
+		# Midrun cancel of a deferred complete GPU generation: never clear the
+		# dict (would free unstaged last refs unbudgeted) and never create a
+		# second retiring generation. Mark discard-pending, gate admission
+		# while held; move to the single retiring queue budgetedly when free
+		# (immediately if already free). CANCEL-marked payload is never staged.
+		if _lab_staging_active:
+			_discard_staging_to_retiring("cancel-deferred")
+			_pending_region_active = false
+			_pending_region_request_id = 0
+			_pending_region_session_epoch = 0
+			_async_cancel_count += 1
+		_lab_deferred_discard_pending = true
+		_pending_region_active = false
+		_pending_region_request_id = 0
+		_pending_region_session_epoch = 0
+		_async_cancel_count += 1
+		if not _lab_staging_active and not _lab_retire_active:
+			_lab_move_deferred_to_retiring()
+		_update_overlay()
+		return {"ok": true, "request_id": 0, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
 	var rid := _pending_region_request_id
 	var result: Variant = _bridge.call("cancel_region", rid)
 	if not result is Dictionary:
@@ -605,32 +1267,92 @@ func _cancel_pending_region() -> Dictionary:
 		return {"ok": false, "error": "non-Dictionary cancel result", "request_id": rid}
 	if bool(result.get("ok", false)):
 		_poll_pending_region()
+		# Cancel during lab staging (bridge already ready, no exposed to
+		# cancel): bridge ack fails as unknown, but lab staging must still be
+		# discarded to retiring with old retained.
+		if _has_pending_region() and _lab_staging_active:
+			_discard_staging_to_retiring("cancel")
+			_pending_region_active = false
+			_pending_region_request_id = 0
+			_pending_region_session_epoch = 0
+			_async_cancel_count += 1
+			_update_overlay()
+	else:
+		# Bridge has no exposed request (already ready/consumed) but lab
+		# staging exists: explicit cancel discards staging to retiring.
+		if _has_pending_region() and _lab_staging_active:
+			_discard_staging_to_retiring("cancel")
+			_pending_region_active = false
+			_pending_region_request_id = 0
+			_pending_region_session_epoch = 0
+			_async_cancel_count += 1
+			_update_overlay()
+			return {"ok": true, "request_id": rid, "session_epoch": _last_region_session_epoch, "discarded_stale": _pending_region_discarded_stale, "publication_revision": _publication_revision}
 	return result
 
 
 func _drain_pending_for_sync(reason: String) -> void:
 	# Fixed captures and sync diagnostics must never see a stale async commit
-	# over the fixed frame: cancel the outstanding request, then consume its
-	# one-shot terminal (cancelled) without publishing. Cancel-before-poll
-	# discards even a ready-but-untaken packet, so no stale world is committed.
-	if not _has_pending_region():
+	# over the fixed frame: cancel/consume+flush before holding immutable
+	# frames. Cancel-before-poll discards even a ready-but-untaken packet, so
+	# no stale world is committed. Explicit unbudgeted flush reusing the same
+	# stepper drains lab staging/retiring and C++ retirement (bounded).
+	if not _has_pending_region() and _lab_deferred_ready.is_empty() and not _region_budget_busy() and _last_bridge_retire_pending == 0:
 		return
-	if _bridge != null and _bridge_open and _bridge.has_method("cancel_region"):
+	if _bridge != null and _bridge_open and _bridge.has_method("cancel_region") and _has_pending_region():
 		var rid := _pending_region_request_id
 		var _cancelled: Variant = _bridge.call("cancel_region", rid)
 	if _bridge != null and _bridge_open and _bridge.has_method("poll_region") and not _shutdown_started:
 		_poll_pending_region()
+	# Lab staging partial (if any) becomes the one retiring generation with
+	# old retained; deferred ready is marked discard-pending (never staged)
+	# and retired via the single retiring queue. Explicit unbudgeted flush
+	# below drains it per sync contract.
+	if not _lab_deferred_ready.is_empty():
+		_lab_deferred_discard_pending = true
+		_pending_region_active = false
+		_pending_region_request_id = 0
+		_pending_region_session_epoch = 0
+	if _lab_staging_active:
+		_discard_staging_to_retiring("sync-preempt")
+		_pending_region_active = false
+		_pending_region_request_id = 0
+		_pending_region_session_epoch = 0
+	# Unbudgeted flush of lab retiring plus bounded C++ retire pump.
+	_flush_region_budget_unbudgeted()
+	if _bridge != null and _bridge_open and _bridge.has_method("poll_region") and not _shutdown_started:
+		var guard := 0
+		while guard < 100:
+			var polled: Variant = _bridge.call("poll_region")
+			if not polled is Dictionary:
+				break
+			_update_bridge_progress_diagnostics(polled)
+			if _last_bridge_retire_pending == 0:
+				break
+			guard += 1
 	# If the worker already retired the packet without a cancel ack (should not
 	# happen after cancel), a single poll above still consumes it exactly once.
 	if _has_pending_region() and reason == "sync-preempt":
-		pass
+		# Force-clear a stuck pending only after cancel+consume+flush above;
+		# never publish partial or stale resources.
+		if _lab_staging_active:
+			_discard_staging_to_retiring("sync-preempt-force")
+		_pending_region_active = false
+		_pending_region_request_id = 0
+		_pending_region_session_epoch = 0
 
 
-func _commit_region_result(result: Dictionary, center_sa: Vector3, started_usec: int) -> bool:
-	# Shared validate + prepare + commit for sync and async ready payloads.
-	# Copy-before-commit: the full candidate (meshes, materials, COL) is staged
-	# before the old world is released; no await occurs between staging and
-	# publication. Async never bypasses this validation.
+func _validate_and_begin_staging(result: Dictionary, center_sa: Vector3, started_usec: int) -> bool:
+	# Shared validation for sync and async ready payloads (P0/chain/async
+	# typed payload validation/rejection/context/recovery and COL bytes
+	# preserved). Old complete nodes/stats/paired COL stay unchanged until
+	# all candidate validated + nodes/materials ready. On success begins
+	# hidden budgeted staging under the staging root and keeps pending true;
+	# commit happens later via _pump (budgeted) or flush (sync). Never
+	# publishes partial or stale resources. Validation/setup CPU is measured
+	# into the per-candidate staging accumulator; failures discard without
+	# touching published active stats.
+	var setup_started := Time.get_ticks_usec()
 	var ok_value: Variant = result.get("ok")
 	if not ok_value is bool:
 		_fatal("load_region returned an invalid ok value", 4)
@@ -654,6 +1376,12 @@ func _commit_region_result(result: Dictionary, center_sa: Vector3, started_usec:
 	if not result.get("stats") is Dictionary:
 		_fatal("load_region returned invalid stats", 4)
 		return false
+	# A06: collect ALL candidate GPU refs in locals during this same full
+	# validation pass (no second geometry pass). Assigned to candidate holds
+	# in setup below; per-stage appends removed so unstaged last refs survive
+	# cancel until budgeted retirement.
+	var all_mesh_holds: Array = []
+	var all_texture_holds: Array = []
 	for mesh_info in meshes:
 		if not mesh_info is Dictionary:
 			_fatal("load_region returned malformed mesh metadata", 4)
@@ -673,6 +1401,7 @@ func _commit_region_result(result: Dictionary, center_sa: Vector3, started_usec:
 		if surface_materials.size() != mesh_value.get_surface_count():
 			_fatal("load_region surface material count does not match ArrayMesh surfaces", 4)
 			return false
+		all_mesh_holds.append(mesh_value)
 		for surface_info in surface_materials:
 			if not surface_info is Dictionary:
 				_fatal("load_region returned malformed surface material metadata", 4)
@@ -696,6 +1425,8 @@ func _commit_region_result(result: Dictionary, center_sa: Vector3, started_usec:
 			):
 				_fatal("load_region returned invalid surface material values", 4)
 				return false
+			if surface_info.texture is Texture2D:
+				all_texture_holds.append(surface_info.texture)
 
 	var collision_out := _prepare_region_collision(result, meshes, int(revision_value))
 	if not bool(collision_out.get("ok", false)):
@@ -705,56 +1436,59 @@ func _commit_region_result(result: Dictionary, center_sa: Vector3, started_usec:
 	var pair_parent_index: int = int(collision_out.get("parent_index", -1))
 
 	var candidate_stats: Dictionary = result.stats.duplicate(true)
-	var candidate_instances: Array[MeshInstance3D] = []
-	var candidate_materials: Array = []
-	var candidate_surfaces := 0
-	for mesh_index in range(meshes.size()):
-		var mesh_info: Dictionary = meshes[mesh_index]
-		var mesh: ArrayMesh = mesh_info.mesh
-		var instance := MeshInstance3D.new()
-		instance.mesh = mesh
-		var surface_materials: Array = mesh_info.surface_materials
-		for surface_index in range(mesh.get_surface_count()):
-			var material := LegacyMaterials.make_surface(surface_materials[surface_index])
-			instance.set_surface_override_material(surface_index, material)
-			candidate_materials.append(material)
-			candidate_surfaces += 1
-		if mesh_index == pair_parent_index:
-			instance.visible = false
-		instance.set_meta("lod_chain_alternate", mesh_index == pair_parent_index)
-		instance.set_meta("source_model_id", int(mesh_info.get("source_model_id", -1)))
-		instance.set_meta("source_model", str(mesh_info.get("source_model", "")))
-		candidate_instances.append(instance)
-
-	_release_region()
-	_region_stats = candidate_stats
-	_region_collision = prepared_collision
-	_region_stats_csv = JSON.stringify(_region_stats)
-	_materials = candidate_materials
-	_resident_meshes = candidate_instances.size()
-	_resident_surfaces = candidate_surfaces
-	for instance in candidate_instances:
-		mesh_root.add_child(instance)
-	_loaded_center_sa = center_sa
-	_has_published_region = true
-	_publication_revision = int(revision_value)
-	_region_candidate_unavailable = false
-	_region_retry_suppressed = false
-	_remember_accepted_camera()
-	if not _environment_data.is_empty():
-		LegacyMaterials.set_environment(_environment_materials(), _environment_data, _flags)
-	# Worker raw_parse_ms is parse-only. Async stall measures conversion/publication;
-	# sync diagnostic stall also includes waiting for the worker. No GPU budget claim.
-	var stats_raw: Variant = candidate_stats.get("raw_parse_ms", 0.0)
-	_last_region_raw_parse_ms = float(stats_raw) if (stats_raw is float or stats_raw is int) and is_finite(float(stats_raw)) else 0.0
-	var top_rid: Variant = result.get("request_id", candidate_stats.get("request_id", 0))
-	_last_region_request_id = int(top_rid) if top_rid is int else 0
-	var top_epoch: Variant = result.get("session_epoch", candidate_stats.get("session_epoch", 0))
-	_last_region_session_epoch = int(top_epoch) if top_epoch is int else 0
-	_pending_region_discarded_stale = int(result.get("discarded_stale", _pending_region_discarded_stale)) if result.get("discarded_stale") is int else _pending_region_discarded_stale
-	_last_load_stall_ms = float(Time.get_ticks_usec() - started_usec) / 1000.0
-	_total_load_stall_ms += _last_load_stall_ms
+	# Begin hidden budgeted staging: clear any prior partial in the staging
+	# root (should be empty; if retiring blocks, caller defers instead).
+	_ensure_region_roots()
+	var staging_root := _staging_region_root()
+	# Staging root must be empty when beginning (no retiring/deferred coexists
+	# with new staging by admission gate). Defensive: if retiring or deferred
+	# still holds a generation, do not mix generations.
+	if _lab_retire_active or not _lab_deferred_ready.is_empty():
+		# Caller should have deferred; do not start staging over retiring.
+		return false
+	for child in staging_root.get_children():
+		# Defensive flush of a stale empty staging remnant (no active mix).
+		# Measured as setup work below with the rest of validation.
+		staging_root.remove_child(child)
+		child.free()
+	_lab_staging_active = true
+	_lab_candidate_center_sa = center_sa
+	_lab_candidate_revision = int(revision_value)
+	var top_rid_begin: Variant = result.get("request_id", candidate_stats.get("request_id", 0))
+	_lab_candidate_request_id = int(top_rid_begin) if top_rid_begin is int else _pending_region_request_id
+	var top_epoch_begin: Variant = result.get("session_epoch", candidate_stats.get("session_epoch", 0))
+	_lab_candidate_session_epoch = int(top_epoch_begin) if top_epoch_begin is int else _pending_region_session_epoch
+	_lab_candidate_meshes = meshes
+	_lab_candidate_stats = candidate_stats
+	_lab_candidate_stats_csv = JSON.stringify(candidate_stats)
+	_lab_candidate_collision = prepared_collision
+	_lab_candidate_pair_child = pair_child_index
+	_lab_candidate_pair_parent = pair_parent_index
+	_lab_candidate_next_mesh = 0
+	_lab_candidate_next_surface = 0
+	_lab_candidate_current_instance = null
+	_lab_candidate_staged_instances = []
+	_lab_candidate_staged_materials = []
+	_lab_candidate_mesh_holds = all_mesh_holds
+	_lab_candidate_texture_holds = all_texture_holds
+	_lab_candidate_staging_ms_total = float(Time.get_ticks_usec() - setup_started) / 1000.0
+	_lab_candidate_sync_prefix_ms = 0.0
+	_lab_candidate_started_usec = started_usec
+	_lab_candidate_discarded_stale = int(result.get("discarded_stale", _pending_region_discarded_stale)) if result.get("discarded_stale") is int else _pending_region_discarded_stale
+	_update_bridge_progress_diagnostics(result)
 	return true
+
+
+func _commit_region_result(result: Dictionary, center_sa: Vector3, started_usec: int) -> bool:
+	# Legacy blocking wrapper (kept for direct callers): validate + begin
+	# staging then explicitly flush unbudgeted reusing the same stepper.
+	# Async poll path uses _validate_and_begin_staging directly to keep
+	# pending true through budgeted staging.
+	if not _validate_and_begin_staging(result, center_sa, started_usec):
+		return false
+	_flush_region_budget_unbudgeted()
+	_flush_region_budget_unbudgeted()
+	return not _lab_staging_active and _has_published_region
 
 
 func _prepare_region_collision(result: Dictionary, meshes: Array, revision: int) -> Dictionary:
@@ -1064,10 +1798,54 @@ func _region_error_status(result: Dictionary, center_sa: Vector3) -> Dictionary:
 
 
 func _release_region() -> void:
-	for child in mesh_root.get_children():
-		mesh_root.remove_child(child)
-		child.free()
+	# Explicit unbudgeted flush path reusing the same stepper: frees hidden
+	# staging and hidden retiring immediately (blocking), then active.
+	# Persistent roots stay attached (empty); no whole-generation dict clear
+	# avalanche in normal budgeted commits (holds moved O(1) there).
+	_flush_region_budget_unbudgeted()
+	_lab_deferred_ready = {}
+	_lab_deferred_discard_pending = false
+	_lab_staging_active = false
+	_lab_candidate_meshes = []
+	_lab_candidate_stats = {}
+	_lab_candidate_collision = {}
+	_lab_candidate_staged_instances = []
+	_lab_candidate_staged_materials = []
+	_lab_candidate_mesh_holds = []
+	_lab_candidate_texture_holds = []
+	_lab_candidate_current_instance = null
+	_lab_candidate_next_mesh = 0
+	_lab_candidate_next_surface = 0
+	_lab_candidate_staging_ms_total = 0.0
+	_lab_candidate_sync_prefix_ms = 0.0
+	_lab_candidate_started_usec = 0
+	_lab_retire_active = false
+	_lab_retire_material_holds = []
+	_lab_retire_mesh_holds = []
+	_lab_retire_texture_holds = []
+	_lab_retire_metadata_holds = []
+	_lab_staged_discards = 0
+	_last_bridge_retire_pending = 0
+	_last_bridge_staged_discards = 0
+	_last_bridge_progress = {}
+	if is_instance_valid(_region_root_a):
+		for child in _region_root_a.get_children():
+			_region_root_a.remove_child(child)
+			child.free()
+	if is_instance_valid(_region_root_b):
+		for child in _region_root_b.get_children():
+			_region_root_b.remove_child(child)
+			child.free()
+	# Legacy direct children (pre-A06 scenes) flushed as well, but roots stay.
+	if mesh_root != null:
+		for child in mesh_root.get_children():
+			if child != _region_root_a and child != _region_root_b:
+				mesh_root.remove_child(child)
+				child.free()
 	_materials.clear()
+	_active_mesh_holds.clear()
+	_active_texture_holds.clear()
+	_active_metadata_holds.clear()
 	_resident_meshes = 0
 	_resident_surfaces = 0
 	_region_stats.clear()
@@ -1192,8 +1970,13 @@ func _update_free_camera(delta: float) -> void:
 
 
 func _maybe_reload_region() -> void:
-	# P1-A05: normal movement submits async, never a blocking wait. The old
-	# complete world stays active while pending; no frame stalls on raw parse.
+	# P1-A05/A06: normal movement submits async, never a blocking wait. The old
+	# complete world stays active while pending/staging; no frame stalls on raw
+	# parse. While the one retiring generation drains, new admission blocks as
+	# busy and camera intent is naturally retried on a later frame.
+	if _lab_retire_active or not _lab_deferred_ready.is_empty() or _last_bridge_retire_pending > 0:
+		# Do not queue unbounded supersedes while retiring/deferred held; retry after drain.
+		return
 	var camera_sa := _world_to_sa(camera.global_position)
 	var reload_threshold := _region_reload_threshold()
 	if _pending_region_active:
@@ -1333,7 +2116,7 @@ func _capture_manual() -> void:
 		return
 	_capture_hold = true
 	_drain_pending_for_sync("capture-manual")
-	if _shutdown_started or _has_pending_region():
+	if _shutdown_started or _has_pending_region() or _region_budget_busy():
 		_capture_pending = false
 		_capture_hold = false
 		return
@@ -1373,7 +2156,7 @@ func _open_frame_csv() -> bool:
 	if _csv_file == null:
 		_fatal("cannot open frame CSV: %s" % path, 5)
 		return false
-	_csv_file.store_line("frame,runtime_seconds,cpu_frame_interval_ms,cpu_process_ms,cpu_physics_ms,engine_static_memory_bytes,engine_static_memory_peak_bytes,resource_count,render_objects,render_primitives,render_draw_calls,route_enabled,capture_hold,route_clock_seconds,route_pass,route_pass_seconds,route_segment,environment_transition,open_game_sync_stall_ms,environment_cache_sync_stall_ms,load_count,last_bridge_load_call_ms,last_region_publication_stall_ms,total_region_publication_stall_ms,resident_meshes,resident_surfaces,bridge_region_stats_json,wall_seconds,pending_request_id,pending_session_epoch,last_raw_parse_ms,async_submit_count,async_ready_count,async_error_count,async_cancel_count,last_request_id,last_session_epoch,f6_ignored_while_pending")
+	_csv_file.store_line("frame,runtime_seconds,cpu_frame_interval_ms,cpu_process_ms,cpu_physics_ms,engine_static_memory_bytes,engine_static_memory_peak_bytes,resource_count,render_objects,render_primitives,render_draw_calls,route_enabled,capture_hold,route_clock_seconds,route_pass,route_pass_seconds,route_segment,environment_transition,open_game_sync_stall_ms,environment_cache_sync_stall_ms,load_count,last_bridge_load_call_ms,last_region_publication_stall_ms,total_region_publication_stall_ms,resident_meshes,resident_surfaces,bridge_region_stats_json,wall_seconds,pending_request_id,pending_session_epoch,last_raw_parse_ms,async_submit_count,async_ready_count,async_error_count,async_cancel_count,last_request_id,last_session_epoch,f6_ignored_while_pending,budget_items,conversion_ms_total,conversion_ms_max_item,conversion_frames,commit_ms,staging_ms_total,publication_elapsed_ms,retire_ms_max_item,retire_pending,staged_discards,bridge_retire_pending,bridge_staged_discards")
 	return true
 
 
@@ -1420,6 +2203,18 @@ func _record_frame(delta: float) -> void:
 		_last_region_request_id,
 		_last_region_session_epoch,
 		_f6_ignored_while_pending,
+		_budget_items,
+		"%.4f" % _last_region_conversion_ms_total,
+		"%.4f" % _last_region_conversion_ms_max_item,
+		_last_region_conversion_frames,
+		"%.4f" % _last_region_commit_ms,
+		"%.4f" % _last_region_staging_ms_total,
+		"%.4f" % _last_region_publication_elapsed_ms,
+		"%.4f" % _last_region_retire_ms_max_item,
+		_lab_retire_pending_count(),
+		_lab_staged_discards,
+		_last_bridge_retire_pending,
+		_last_bridge_staged_discards,
 	]
 	_csv_file.store_csv_line(PackedStringArray(values.map(func(value): return str(value))))
 	if _frame_count % 60 == 0:
@@ -1517,11 +2312,37 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 				"request_id": _last_region_request_id,
 				"session_epoch": _last_region_session_epoch,
 				"raw_parse_ms": _last_region_raw_parse_ms,
+				"conversion_ms_total": _last_region_conversion_ms_total,
+				"conversion_ms_max_item": _last_region_conversion_ms_max_item,
+				"conversion_frames": _last_region_conversion_frames,
+				"staging_ms_total": _last_region_staging_ms_total,
+				"commit_ms": _last_region_commit_ms,
+				"publication_elapsed_ms": _last_region_publication_elapsed_ms,
+				"retire_ms_max_item": _last_region_retire_ms_max_item,
+				"retire_pending": _lab_retire_pending_count(),
+				"staged_discards": _lab_staged_discards,
+				"bridge_retire_pending": _last_bridge_retire_pending,
+				"bridge_staged_discards": _last_bridge_staged_discards,
+				"bridge_progress": _last_bridge_progress.duplicate(true),
+				"budget_items": _budget_items,
+				"budget_busy": _region_budget_busy(),
+				"lab_staging_active": _lab_staging_active,
+				"lab_retire_active": _lab_retire_active,
 				"submit_count": _async_submit_count,
 				"ready_count": _async_ready_count,
 				"error_count": _async_error_count,
 				"cancel_count": _async_cancel_count,
 				"f6_ignored_while_pending": _f6_ignored_while_pending,
+			},
+			"budget": {
+				"budget_items": _budget_items,
+				"quota_label": "quota work items: one hidden node add or one hidden ShaderMaterial creation counts as one staging item; one hidden node free or one flat ref-hold drop counts as one retirement item; whole-scene commit is never one unit",
+				"overshoot_note": "nonpreemptible Godot calls (single texture upload, single surface add, single free, two root visibility flips) are measured atomic units: time overshoot remains possible while work-item counts stay bounded; not a hard deadline/FPS claim. Bridge budgeted-free totals/max are in bridge_progress; sync/teardown flushes are explicitly unbudgeted",
+				"staging_active": _lab_staging_active,
+				"retire_active": _lab_retire_active,
+				"retire_pending": _lab_retire_pending_count(),
+				"staged_discards": _lab_staged_discards,
+				"busy": _region_budget_busy(),
 			},
 		},
 		"post_effect": {
@@ -1562,11 +2383,23 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"last_region_publication_stall_ms": _last_load_stall_ms,
 			"total_region_publication_stall_ms": _total_load_stall_ms,
 			"last_region_raw_parse_ms": _last_region_raw_parse_ms,
+			"conversion_ms_total": _last_region_conversion_ms_total,
+			"conversion_ms_max_item": _last_region_conversion_ms_max_item,
+			"conversion_frames": _last_region_conversion_frames,
+			"staging_ms_total": _last_region_staging_ms_total,
+			"commit_ms": _last_region_commit_ms,
+			"publication_elapsed_ms": _last_region_publication_elapsed_ms,
+			"retire_ms_max_item": _last_region_retire_ms_max_item,
+			"retire_pending": _lab_retire_pending_count(),
+			"staged_discards": _lab_staged_discards,
+			"bridge_retire_pending": _last_bridge_retire_pending,
+			"bridge_staged_discards": _last_bridge_staged_discards,
+			"budget_items": _budget_items,
 			"async_submit_count": _async_submit_count,
 			"async_ready_count": _async_ready_count,
 			"async_error_count": _async_error_count,
 			"async_cancel_count": _async_cancel_count,
-			"timing_split": "raw_parse_ms is worker parse; async stall includes main conversion/publication, while sync diagnostic stall also includes worker wait. No upload-budget or faster-GPU claim",
+			"timing_split": "stall_ms is aggregated measured main-thread work only, never multi-frame elapsed: sync = bridge_load_call_ms (blocking worker wait+conversion) + staging_ms_total + commit_ms; async = conversion_ms_total + staging_ms_total + commit_ms (ready-poll call excluded to avoid double-counting conversion); staging_ms_total is lab validation/setup plus node/material items, excludes commit and free-frame intervals; publication_elapsed_ms is wall candidate-start to commit-end diagnostic only, never added; raw_parse_ms is worker parse+plan off main; retire_ms_max_item is lab single-free max, separate; discarded/cancelled/rejected partial staging never publishes; quota work items may honestly overshoot on nonpreemptible Godot calls, not a hard deadline/FPS claim",
 		},
 		"data_hashes": combined_hashes,
 		"source_identity": {
@@ -1588,7 +2421,7 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 		"bridge_open_metadata": _open_metadata,
 		"bridge_region_stats": _region_stats,
 		"limitations": [
-			"Async raw parse runs off main; main conversion/publication may still hitch. No hitch-free, upload-budgeted, or faster-GPU claim.",
+			"Async raw parse runs off main; main conversion/publication/retirement is quota-budgeted per frame but single Godot calls and two root flips are measured atomic units that may overshoot. No hitch-free or faster-GPU claim.",
 			"Route frame intervals start after synchronous initialization; measured open/environment/load stalls are reported separately, while manifest hashing and driver discovery are not timed.",
 			"Residency, absent Godot runtime LOD selection, and fog visibility are separate facts.",
 			"Post toggle implements PC ColourFilter only; PS2 filter/radiosity/heat haze remain unavailable.",
@@ -1627,11 +2460,14 @@ func _update_overlay() -> void:
 	status_label.text += "textures=%s prelight=%s vertex-only=%s fog=%s PC-filter=%s\n" % [_on_off(_flags.textures), _on_off(_flags.prelight), _on_off(_flags.vertex_only), _on_off(_flags.fog), _on_off(_flags.post)]
 	status_label.text += "CPU process %.2f ms | engine static %.1f MiB | resources %d\n" % [cpu_frame_ms, memory_mib, int(Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT))]
 	status_label.text += "bounded radius %.0f cap %d | meshes %d surfaces %d | loads %d rejected %d | publication %d\n" % [_radius, _cap, _resident_meshes, _resident_surfaces, _load_count, _rejected_load_count, _publication_revision]
-	status_label.text += "sync open %.2f ms | env %.2f ms | load+publish last %.2f ms total %.2f ms | raw_parse last %.2f ms\n" % [_open_game_stall_ms, _environment_cache_stall_ms, _last_load_stall_ms, _total_load_stall_ms, _last_region_raw_parse_ms]
+	status_label.text += "sync open %.2f ms | env %.2f ms | publish-work last %.2f ms total %.2f ms (elapsed last %.2f ms diag only) | worker parse+plan last %.2f ms\n" % [_open_game_stall_ms, _environment_cache_stall_ms, _last_load_stall_ms, _total_load_stall_ms, _last_region_publication_elapsed_ms, _last_region_raw_parse_ms]
+	status_label.text += "budget %d/frame conv total %.2f max_item %.2f frames %d staging %.2f commit %.2f retire_max %.2f retire_pending %d staged_discards %d\n" % [_budget_items, _last_region_conversion_ms_total, _last_region_conversion_ms_max_item, _last_region_conversion_frames, _last_region_staging_ms_total, _last_region_commit_ms, _last_region_retire_ms_max_item, _lab_retire_pending_count(), _lab_staged_discards]
 	if _pending_region_active:
 		status_label.text += "async pending req %d epoch %d discarded %d\n" % [_pending_region_request_id, _pending_region_session_epoch, _pending_region_discarded_stale]
 	else:
 		status_label.text += "async idle submits %d ready %d err %d cancel %d last req %d\n" % [_async_submit_count, _async_ready_count, _async_error_count, _async_cancel_count, _last_region_request_id]
+	if _lab_staging_active or _lab_retire_active:
+		status_label.text += "lab staging=%s retire_active=%s busy=%s bridge_retire=%d\n" % ["yes" if _lab_staging_active else "no", "yes" if _lab_retire_active else "no", "yes" if _region_budget_busy() else "no", _last_bridge_retire_pending]
 	if _f6_ignored_while_pending > 0:
 		status_label.text += "F6 ignored while pending: %d\n" % _f6_ignored_while_pending
 	if _region_candidate_unavailable:
@@ -1676,14 +2512,18 @@ func _finish_shutdown(code: int) -> void:
 
 
 func _close_bridge() -> void:
-	# P1-A05: cancel and consume outstanding async before RW shutdown so no
+	# P1-A05/A06: cancel/consume outstanding async before RW shutdown so no
 	# stale commit lands during teardown, then prevent deferred callbacks.
-	if _pending_region_active and _bridge != null and _bridge_open:
-		if _bridge.has_method("cancel_region"):
+	# Explicit unbudgeted flush reusing the same stepper drains hidden staging
+	# (to retiring, old retained) and hidden retiring immediately. Active
+	# complete generation stays for inspection; scene free releases it.
+	if (_pending_region_active or not _lab_deferred_ready.is_empty()) and _bridge != null and _bridge_open:
+		if _bridge.has_method("cancel_region") and _pending_region_active:
 			var _cancel_id := _pending_region_request_id
 			var _cancel_out: Variant = _bridge.call("cancel_region", _cancel_id)
 		if _bridge.has_method("poll_region"):
 			var _drain_out: Variant = _bridge.call("poll_region")
+			_update_bridge_progress_diagnostics(_drain_out if _drain_out is Dictionary else {})
 			_pending_region_active = false
 			_pending_region_request_id = 0
 			_pending_region_session_epoch = 0
@@ -1693,6 +2533,19 @@ func _close_bridge() -> void:
 			_pending_region_active = false
 			_pending_region_request_id = 0
 			_pending_region_session_epoch = 0
+	if not _lab_deferred_ready.is_empty():
+		# Teardown explicit unbudgeted flush per contract: retire deferred via
+		# the single queue then flush below (no budgeted drain at shutdown).
+		_lab_deferred_discard_pending = true
+		_pending_region_active = false
+		_pending_region_request_id = 0
+		_pending_region_session_epoch = 0
+	if _lab_staging_active:
+		_discard_staging_to_retiring("teardown")
+		_pending_region_active = false
+		_pending_region_request_id = 0
+		_pending_region_session_epoch = 0
+	_flush_region_budget_unbudgeted()
 	_shutdown_started = true
 	_capture_pending = false
 	_capture_hold = false
@@ -1730,7 +2583,10 @@ func _status_vector_to_array(value: Vector3) -> Array:
 
 
 func _environment_materials() -> Array:
+	# Current environment changes apply to hidden staged materials as well so
+	# the first visible frame is not stale; no artistic changes.
 	var result := _materials.duplicate()
+	result.append_array(_lab_candidate_staged_materials)
 	result.append(_sky_material)
 	return result
 

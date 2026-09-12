@@ -9,7 +9,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | Stage | State | Delivery / next gate |
 |---|---|---|
 | P0 | implemented; target reflight open | Finite UV/provenance/retained-world CPU and rendered clean-package gates pass; external Fedora reflight is not claimed |
-| P1 | A01–A05 verified; A06 in_progress | Qualified identities/catalog/chain, paired render/COL and sole-owner async parser verified; budgeted main-thread publication/retirement research is current |
+| P1 | A01–A06 verified; A07 in_progress | Qualified identities/catalog/chain, paired render/COL, sole-owner async parser and budgeted main-thread publication/retirement verified; catalog-backed exterior/interior research is current |
 | P2 | pending | Minimal C++ authority hosted by Godot |
 | P3 | pending | First real player/Automobile gameplay slice |
 | P4 | pending | Genuine SCM boot, first mission and portable save loop |
@@ -19,7 +19,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P8 | pending | Complete source progression/content and PC-save compatibility |
 | P9 | pending | Cross-axis full-port and target release closure |
 
-P0/P1-A01 are integrated; A02/A03 feed A04's actual paired render/COL publication. Its parent resource is hidden/prepared, not automatic LOD or gameplay collision. A05 moves normal movement/F6 parsing to one worker with tested cancellation/epochs/join; clean Vulkan async/manual-capture/normal-route gates pass. GPU conversion and initial diagnostic loads still block: A06 budgets are current research, not implemented. P0 target reflight remains open. Use decisive direct tests and affected regressions, variable disjoint cheap/costly lanes, parent integration/evidence and stage commit/push. Earlier Radeon780M feedback is not acceptance of new packages or the full game.
+P0/P1-A01 are integrated; A02/A03 feed A04's actual paired render/COL publication. Its parent resource is hidden/prepared, not automatic LOD or gameplay collision. A05 moves normal movement/F6 parsing to one worker with tested cancellation/epochs/join; clean Vulkan async/manual-capture/normal-route gates pass. A06 budgets main-thread conversion/staging/retirement under quota 64 production default (budget1 fixture quota1/cap16; work items, not ms/FPS) with two-root commit and weakref-proven hidden-stage retirement; sync/teardown stay unbudgeted. Final 40s route proves safe lifecycle only: continuous movement on slow llvmpipe outran prepared uploads (ready 0/submit 7/cancel 7, Grove retained), kept as a performance/continuous-supersession limit. P0 target reflight remains open. Use decisive direct tests and affected regressions, variable disjoint cheap/costly lanes, parent integration/evidence and stage commit/push. Earlier Radeon780M feedback is not acceptance of new packages or the full game.
 
 The [2026-09-11 Godot goal](goals/2026-09-11-godot-legacy-look-lab.md) supersedes native feature work as the current direction; [the request is archived verbatim](goals/2026-09-11-godot-legacy-look-lab-request.md). The native status below remains a regression baseline, not a completed game. First deliverable is an asset-free district inspection lab; existing CJ/vehicle mechanics follow visual validation rather than changing simulation simultaneously. See `godot/README.md` for the pinned engine, build/package/run commands and target Fedora44/Wayland/Mesa/RX780M procedure. Full F1/F2 and native R6 remain unresolved.
 
@@ -27,7 +27,7 @@ The [2026-09-11 Godot goal](goals/2026-09-11-godot-legacy-look-lab.md) supersede
 
 Godot delivery evidence: `godot/README.md`, journal GODOT-LAB-01 and `artifacts/godot/package/`. Real Grove Street, four environments, component toggles including PC filter,9 controlled captures, both renderer pixel tests and3-pass bounded reload/memory measurements pass on software Wayland/Vulkan. Known LOD/foliage/material-effect differences and missing target-GPU/original-reference acceptance are explicit. The decision is to continue the Godot lab direction, not certify full migration from one district.
 
-Updated: 2026-09-11. **Full F1/F2/R6 remains active; the original game is not yet fully playable.**
+Updated: 2026-09-12. **Full F1/F2/R6 remains active; the original game is not yet fully playable.**
 
 Authority: [frozen goal and chronological evidence](goals/2026-09-08-linux-native-opengl-port.md).
 Manual evidence: [live-test journal](LIVE-TEST-JOURNAL.md).

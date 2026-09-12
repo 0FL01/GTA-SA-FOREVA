@@ -1,10 +1,10 @@
-// sa_region_worker: sole-owner asynchronous raw-region parser for P1-A05.
+// sa_region_worker: sole-owner asynchronous raw-region parser for P1-A05/A06.
 // Pure C++ coordinator: one parser thread owns ParseFn (production wires
-// StreamPager_Update plus StreamPager_Counters capture). No Godot, no GL,
-// no gameplay monolith, no escaped RenderWare pointers: packets carry only
-// owned StreamPager value types (WorldShotScene, NativePlacementIdentity,
-// E2EPagerFrame). Init/configuration precede thread startup; Shutdown
-// follows Stop join.
+// StreamPager_Update plus StreamPager_Counters capture plus BuildRegionPlan).
+// No Godot, no GL, no gameplay monolith, no escaped RenderWare pointers:
+// packets carry only owned StreamPager value types (WorldShotScene,
+// NativePlacementIdentity, E2EPagerFrame) plus the owned P1-A06 RegionPlan.
+// Init/configuration precede thread startup; Shutdown follows Stop join.
 //
 // Coordinator protocol (main thread drives, worker parses):
 // - Bridge assigns never-reused RequestIds and a session epoch. Worker
@@ -35,6 +35,7 @@
 #pragma once
 
 #include "app/platform/linux/StreamPager.h"
+#include "sa_region_plan.h"
 
 #include <array>
 #include <condition_variable>
@@ -64,6 +65,13 @@ struct RawRegionPacket {
     std::array<int, 4> Counters{};
     std::string Error;
     double ParseMs{};
+    // P1-A06 owned plan: production ParseFn runs BuildRegionPlan on the
+    // worker after Update/counters. Fake unit parsers need not invent a plan
+    // except plan tests (PlanReady false means no plan was built).
+    RegionPlan Plan;
+    RegionPlanFailure PlanFailure;
+    bool PlanReady = false;
+    bool PlanOk = false;
 };
 
 enum class RegionWait { Pending, Ready, Superseded, Cancelled, Stopped };
