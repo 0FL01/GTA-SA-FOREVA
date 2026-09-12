@@ -9,7 +9,7 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 - Native `8e5b1e3a`: actual model400 `landstal`, DFF/TXD/common TXD, embedded `landstal_col`, full `LANDSTAL` handling row and source constructor literals publish one immutable Automobile state. Passenger capacity comes from actual door-dummy topology; driver/passenger identities and failure atomicity are explicit. No400/476 substitution path.
 - `sa_source_automobile_probe /game`: `sa-core-automobile-ok checks=44 ... tris=2785 frames=52`; ASan+UBSan/leak run passes. Camera72, ped-world84, tasks294, real-clump107, diagnostic actor trace equality and rebuilt native smoke pass.
 - Boundary: no pool/world publication, suspension/control/collision or Godot driving; P3-A05 selected. Overall20/68=29.4% by equal atom count, not game readiness.
-- Follow-up native through `c74cc5e6`: all35 relevant handling fields, ordinary player pedal/keyboard-steer states, existing source transmission/air resistance, and four suspension lines derived from actual wheel dummy positions; direct+sanitized count67. A05 remains open for wheel force/traction response and contacts.
+- Follow-up native through `2daa4602`: all35 handling fields, controls, transmission/air resistance, DFF-derived suspension, grounded wheel traction/force states and ordered contact provenance; direct+sanitized count75. A05 remains open for real-COL contact response/integration; fixture contacts do not claim detection.
 
 ### GODOT-P3-10 — 2026-09-12, DIRECT; source camera transition ownership
 

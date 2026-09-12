@@ -68,12 +68,13 @@ Current extension SHA256 after the adapter is
 docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_source_automobile_probe /game
 ```
 
-Require `sa-core-automobile-ok checks=67`. This read-only fixture binds actual
+Require `sa-core-automobile-ok checks=75`. This read-only fixture binds actual
 model400 `landstal`, DFF/TXD/embedded COL and the `LANDSTAL` handling row into
 immutable constructor/occupant state, then exercises ordinary keyboard control,
-the existing source transmission/air-resistance owner and suspension lines from
-the actual wheel dummy positions. It deliberately does not claim vehicle
-pool/world insertion, wheel force/traction response, collision or Godot driving.
+the existing source transmission/air-resistance owner, suspension lines from
+actual wheel dummies, grounded wheel traction/forces and bounded ordered contact
+provenance. It deliberately does not claim vehicle pool/world insertion,
+real-COL contact detection/response or Godot driving.
 
 ### Source ped tasks (P3-A01 bounded fixture verified)
 
