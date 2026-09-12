@@ -4,6 +4,11 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-04 — 2026-09-12, DIRECT agent; ordinary locomotion, atom open
+
+- Native `96b8b7e2`, root containing this checkpoint (base `a39cbef`). Retail ordinary idle/start/walk/run/stop path uses source clump ownership, actual blend constants4/8 and WALK_start lookahead, not a fabricated finish marker. Reset bit affects phase, not Playing; running activity is an observation for the future stats owner. Sprint/exhaustion/turn/adrenaline remain Unsupported in this scoped primitive.
+- `p3-walk-probe.log`/`p3-walk-sanitized.log`25 checks, `p3-walk-assets.log`53 real-bank checks/13 clips, task50/jump75/clump38 regressions and coherent build pass. Core15 TUs; extension hash stays `02b4434f095028c084351cb700a7f27cd9c3f591c0b7b21b6039b74ff7ad14b2`, retaining fresh rendered evidence. A01 stays open for integrated on-foot/jump bodies and inactive-task animation notification delivery;16/68 count unchanged.
+
 ### GODOT-P3-03 — 2026-09-12, DIRECT agent; source task-slot ownership, atom open
 
 - Native `6d47af4f`, root containing this checkpoint (base `3181d42`). Owned source five-primary/six-secondary task-tree flow: nested creation/unwinding, parent control, first active primary, ten primary transitions versus full secondary draining, timer/event clear/flush order. Executing-root destruction/reentrant Manage reject Busy; installing other slots during processing is supported. Existing reversed source's first-match FindActive bugfix is explicit.
