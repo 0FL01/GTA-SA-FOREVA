@@ -4,6 +4,12 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-02 — 2026-09-12, DIRECT agent; shared clump ownership, atom open
+
+- Native `0d1f78f5`, root containing this checkpoint (base `a2c4994`). Source association Add-first/Blend-last sync, ordered blend/step/time, finish/delete distinction and nonrecycled owner/serial identity verified. Jump tasks borrow the clump, receive its events once and detach callbacks on destruction without deleting animations. Real IFP metadata is provided by the existing reader; no new loader/physics authority.
+- `artifacts/build-runs/p3-clump-gates.log` ends `p3-clump-gates-ok`:107 control/75 jump/38 clump/45 real-bank checks with13 real clips; full-source clump/jump sanitizers, frame104/session5451, native build/smoke and unchanged27-row diagnostic actor trace. Shared-clump fixture first reached exactly one walk cycle when checking a nonzero time; independent walk speed0.5 now isolates reset-time behavior without changing source looping.
+- New extension SHA256 `02b4434f095028c084351cb700a7f27cd9c3f591c0b7b21b6039b74ff7ad14b2`; fresh asset-free package rendered actor/region_chain/region_async passes. `artifacts/godot/p3-clump-actors.png` reviewed; server software Vulkan is not target-GPU/source visual parity. Core13 TUs, not a Godot-hosted source ped. P3-A01 still in_progress for task slots and normal idle/start/stop flow; verified count16/68 unchanged.
+
 ### GODOT-P3-01 — 2026-09-12, DIRECT agent; source primitives, atom open
 
 - Native `0216bb70`, root containing this checkpoint (base `93ca421`). Static owned-retail RE follows playidles/vtable/ProcessPed/Zelda to SetRealMoveAnim0x627780, not upstream0x60A9C0. Constants and strict ratio1/2 branch boundaries confirmed; no EXE runtime dependency or asset copying.

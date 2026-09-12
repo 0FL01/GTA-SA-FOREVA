@@ -108,6 +108,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePad.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedControl.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceJump.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceAnimClump.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCollisionAssets.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceGround.cpp"
@@ -135,6 +136,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePad.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedControl.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceJump.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceAnimClump.cpp"
         PROPERTIES COMPILE_OPTIONS "-fno-fast-math;-ffp-contract=off"
     )
     # P2-A04 isolated world authority: existing Assets/EntityInfo/SourceGround/
@@ -164,11 +166,14 @@ add_executable(sa_core_ped_control_probe "${NATIVE_SOURCE_DIR}/app/platform/linu
 target_link_libraries(sa_core_ped_control_probe PRIVATE sa_core)
 add_executable(sa_core_jump_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceJumpProbe.cpp")
 target_link_libraries(sa_core_jump_probe PRIVATE sa_core)
+add_executable(sa_core_clump_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceAnimClumpProbe.cpp")
+target_link_libraries(sa_core_clump_probe PRIVATE sa_core)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_frame_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_session_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_ped_control_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_jump_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+    target_compile_options(sa_core_clump_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
 endif()
 
 # P2-A02 owned source-clock probe: links ONLY sa_core, never the extension.
@@ -225,4 +230,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 add_executable(sa_diagnostic_actors_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeDiagnosticActorsProbe.cpp")
 target_link_libraries(sa_diagnostic_actors_probe PRIVATE sa_diagnostic)
+add_executable(sa_source_clump_assets_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceClumpAssetsProbe.cpp")
+target_link_libraries(sa_source_clump_assets_probe PRIVATE sa_diagnostic)
 target_link_libraries(sa_legacy PRIVATE sa_diagnostic)

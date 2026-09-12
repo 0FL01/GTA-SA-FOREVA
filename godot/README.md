@@ -51,10 +51,22 @@ docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot
 docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_jump_probe
 ```
 
-These probes use explicit synthetic clips/world predicates, not manufactured
-gameplay Ready. Full task-slot/clump association ownership and normal idle/start/
-stop transitions remain open. No physics or Godot source-ped host is claimed.
-The extension is byte-identical to A06; evidence is `artifacts/build-runs/p3-a01-*`.
+The initial probes use explicit synthetic clips/world predicates, not manufactured
+gameplay Ready. Shared `NativeSourceAnimClump` now owns source Add/Blend selection,
+three-pass updates and post-task retirement. `NativeSourceJump(clump)` reads real
+clip durations and observes each update; its task destructor detaches callbacks,
+not clump-owned animations. The standalone fixture API remains available.
+
+```sh
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_clump_probe
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_source_clump_assets_probe /game
+```
+
+Current counts: control107/jump75/clump38/real-bank45 (13 real clips). The bank
+probe reuses `IfpAnimPlayerBank::Describe`, not a new parser. Task slots and normal
+idle/start/stop transitions remain open; no physics or Godot source-ped host is
+claimed. Fresh clean Vulkan actor/region/async regressions cover the changed
+extension; evidence is `artifacts/build-runs/p3-clump-*`.
 Static RE used the local owned `Grand-Theft-Auto-San-Andreas/gta-sa.exe` read-only;
 neither native nor Godot runtime reads that executable.
 
