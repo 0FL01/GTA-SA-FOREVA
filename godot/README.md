@@ -208,6 +208,27 @@ Godot may create a local `.godot/` import cache after launch; it is runtime stat
 not an input to republish. Re-run the package script to recreate a clean transfer
 tree.
 
+## Script session seed (P2-A01)
+
+Owned SCM startup seed, not a Godot VM and not a boot. It reuses the existing
+session through `LoadMain`, pins the real header facts, advances the existing
+clock to123ms, commits14 pure instructions, then stops at the first honest
+unavailable frontier (`04E4` collision at `56022`, next `56034`). World, player
+and scene stay `Unsupported`; the original native `--headless` frontier stays
+separate. `sa_core` is not linked into `libsa_legacy.so` yet.
+
+```bash
+./tools/godot-build.sh
+file build/godot-native/sa_core_startup
+readelf -d godot/bin/libsa_legacy.so | head -20
+nm --dynamic --defined-only --format=just-symbols godot/bin/libsa_legacy.so
+build/godot-native/sa_core_startup "/path/to/owned/GTA San Andreas"
+```
+
+Require `sa-core-startup-ok` plus the printed unavailable-frontier line. The
+fixture only reads the game directory; malformed-load copies stay in memory
+and no asset file is written or copied.
+
 ## Sole-owner parser worker (P1-A05)
 
 One C++ worker owns region parsing and counter capture, with one latest-request

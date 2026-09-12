@@ -47,6 +47,15 @@ No desktop-wide screenshots of unrelated applications. A software-rendered VDS r
 
 Append actual sessions below; do not erase failed runs or replace these pending rows with assumed success.
 
+## GODOT-P2-12 — 2026-09-12 UTC / LOAD-only portable core seam verified
+
+- **Scope/status:** P2-A01 verified, closed LOAD-only seam; P2-A02 selected `in_progress` semantic research ONLY (no implementation). Native `dca0185b`; root `d2390f0` plus parent-owned uncommitted core CMake/new `sa_core_startup.cpp`+Godot README (companion hash not invented here). Six axes + P0 target reflight remain open; 68 atoms unchanged. Full plan detail stays in goal checkpoint/history, not duplicated here.
+- **Seam:** static `sa_core` from exact `NativeScriptSession.cpp` + existing `os_file_posix.cpp` only; public existing NativeScript types, no new framework/no GodotVM/no service integration; new `sa_core_startup` argc1 game dir. No `RealtimeScriptHost`, RW/Godot/SDL/OpenAL/GL/EXE/Wine authority.
+- **Direct checks:** fresh GCC13 `tools/godot-build.sh` PASS `p2-a01-build.log`; real `/game` startup `p2-a01-startup.log` prints `sa-core-frontier unavailable opcode=04E4 ip=56022 next=56034 reason=collision-unavailable` then `sa-core-startup-ok`, exit 0. Exit0 is fixture success, not completed boot. 14 pure commits; owner stub ONLY Unsupported; sticky exact fault; real metadata 194125 main / 55976 code / 43800 globals / 135 missions / 79 streamed / build 569; error reload size/GOTO/mission-offset/non-directory preserves Loaded/State/Threads/ALL metadata/10950 global cells. Missing path reuses existing SCMFILE as game DIR => ENOTDIR, not `/tmp`. All asset bytes read-only RAM, never copied to disk.
+- **Link/IO closure:** `readelf` exe NEEDED only `libstdc++.so.6`/`libgcc_s.so.1`/`libc.so.6`; `nm` archive only std/POSIX + 4 `OS_File` resolved inside core; `ninja -t query` archive exact 2 objects. `strace` `p2-a01-io.trace/log` shows no exe open, no `O_WRONLY`/`RDWR`, no game write, startup-marker pass.
+- **No unrelated rerun:** extension SHA256 UNCHANGED `b409d17720bbcdd340bf54e26928f4b0880cb89e7c2cd211b61a3f663340208e` => no extra GL/package/native full-sweep rerun; readers/native unchanged.
+- **Frontier distinction:** existing native Host deeper main53/mission1234/0814 vs new LOAD-only core-profile collision frontier — neither is full boot. Next P2-A02 researches source clock/pause/timestep/RNG; no new semantics decided yet.
+
 ## GODOT-P1-11 — 2026-09-12 UTC / catalog-backed residency closure
 
 - **Scope/status:** P1-A07 verified, closed foundation; P2-A01 selected `in_progress` RESEARCH ONLY (no implementation yet). Native `dca0185b` pushed; root companion containing this checkpoint based on `82c67e7`. Full detail in goal checkpoint/history; this entry links there and does not duplicate the plan. All six full-port axes + P0 target reflight stay open. No new physics/source automatic LOD/ENEX/time-visibility claim; no Fedora/original parity; no new tar.

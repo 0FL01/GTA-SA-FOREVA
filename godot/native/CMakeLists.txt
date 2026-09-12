@@ -92,3 +92,27 @@ set_target_properties(sa_legacy PROPERTIES
     OUTPUT_NAME "sa_legacy"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../bin"
 )
+
+# P2-A01 owned startup core: existing session + POSIX OS adapter only.
+# sa_legacy above is unchanged; this core is not linked into the extension yet.
+set(SA_CORE_SOURCES
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/os_file_posix.cpp"
+)
+add_library(sa_core STATIC ${SA_CORE_SOURCES})
+target_include_directories(sa_core PUBLIC
+    "${CMAKE_CURRENT_LIST_DIR}"
+    "${NATIVE_SOURCE_DIR}"
+)
+target_compile_features(sa_core PUBLIC cxx_std_20)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_core PRIVATE -Wall -Wextra -Wpedantic)
+    set_source_files_properties(
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
+        PROPERTIES COMPILE_OPTIONS "-fexceptions"
+    )
+endif()
+target_link_libraries(sa_core PUBLIC Threads::Threads)
+
+add_executable(sa_core_startup sa_core_startup.cpp)
+target_link_libraries(sa_core_startup PRIVATE sa_core)
