@@ -4,9 +4,14 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-06 — 2026-09-12, DIRECT; retail ped collision-step planner
+
+- Native `c3bea960`: source vtable slot16/0x5FFBD0 and CRT ceil/sqrt branch verified from the read-only retail reference. Planner preserves player minimum2/4, NPC distance/elasticity policy, pre-check flags and low-byte narrowing rather than clamping.
+- `p3-ped-steps-probe.log` and `p3-ped-steps-sanitized.log`44 checks pass (31 prior +13 new), model26/contact315 and coherent build pass. Extension remains `d35fe301e59cd40a367ab74eea3bb60ca6f36cf6ef9ca3c28827393b89de0f48`; fresh metadata-round rendered evidence remains applicable. P3-A02/world route still open, verified atom count17/68 unchanged.
+
 ### GODOT-P3-05 — 2026-09-12, DIRECT agent; integrated tasks and initial contact arithmetic
 
-- Working tree based on native `96b8b7e2` / root `0c2a9a3`; no new commit yet. A01 ordinary on-foot/jump task/marker fixture294, task manager57 and real IFP bank107/13 clips pass, including inactive task callbacks and clump-safe teardown. Full relevant task/manager sanitizers and primitive/frame/session regressions pass; bounded A01 fixture verified,17/68 atoms, not readiness.
+- Integrated at native `45f192a4` / root `6163cf1`. A01 ordinary on-foot/jump task/marker fixture294, task manager57 and real IFP bank107/13 clips pass, including inactive task callbacks and clump-safe teardown. Full relevant task/manager sanitizers and primitive/frame/session regressions pass; bounded A01 fixture verified,17/68 atoms, not readiness.
 - A02 remains in progress: physical31, contact315 (all122 real3991 COL triangles and exact four-group metadata) and ped preparation16 checks pass. New arithmetic/probes sanitized; asset archive not fully instrumented. Retail RE maps inside-box helper0x410850 and ped constructor0x6044A0/vtable0x8B6FBC/ProcessEntityCollision0x5FE210; ties fall through to z, ordinary support line extends with prior standing/timestep, above-head mode uses a second line. No source model-pair/world sector/curb route completion claimed.
 - Follow-up `p3-ped-model-probe.log`/`p3-ped-model-sanitized.log`26 checks verify isolated source model-pair traversal and real grouped3991 support-line hit, including matrix transforms, authored ordering, caps and atomic rejection. Core20 TUs; extension unchanged from fresh metadata gates. World coverage and ped standing/physical-response integration remain open; no A02 completion claim.
 - Latest `artifacts/build-runs/p3-contact-metadata-*.log` covers fresh task/manager/contact/physical/ped sanitizers, world79, unchanged27-row diagnostic actor trace, full coherent build, native sweep33/0 and clean packaged Wayland/Vulkan actor/region_chain/region_async. Existing COL reader exposes already validated face groups; core19 TUs, NEW extension SHA256 `d35fe301e59cd40a367ab74eea3bb60ca6f36cf6ef9ca3c28827393b89de0f48`. Actor screenshot reviewed; server software evidence is not target reflight. Owned game stays external/read-only; no user config/TGA/cache edits.

@@ -87,8 +87,10 @@ each clump update and before `Manage`, even when the jump slot is inactive.
 Static RE used the local owned `Grand-Theft-Auto-San-Andreas/gta-sa.exe` read-only;
 neither native nor Godot runtime reads that executable.
 
-P3-A02 is in progress. `sa_core_physical_probe` verifies31 force/gravity/dynamic-ped
-pair checks. `sa_core_contact_probe /game` verifies315 upstream-model sphere/line
+P3-A02 is in progress. `sa_core_physical_probe` verifies44 checks:31 force/gravity/
+dynamic-ped pair cases plus13 retail collision-step planning cases. This preserves
+player minimum steps, NPC elasticity and source uint8 narrowing, not a new cap.
+`sa_core_contact_probe /game` verifies315 upstream-model sphere/line
 contact and broadphase checks, including122 real COL triangles and four authored
 face groups using the existing reader.
 `sa_core_ped_model_probe /game` verifies26 source model-pair checks: ordered groups,
