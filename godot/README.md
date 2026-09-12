@@ -68,7 +68,7 @@ Current extension SHA256 after the adapter is
 docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_source_automobile_probe /game
 ```
 
-Require `sa-core-automobile-ok checks=107` and `sa_core_model_contact_probe`
+Require `sa-core-automobile-ok checks=111` and `sa_core_model_contact_probe`
 `checks=11`. The read-only fixture binds actual
 model400 `landstal`, DFF/TXD/embedded COL and the `LANDSTAL` handling row into
 immutable constructor/occupant state, then exercises ordinary keyboard control,
@@ -81,8 +81,24 @@ general query preserves two-sided sphere/box/triangle/line provenance and source
 discovery, dynamic vehicle/object response, damage/effects, all vehicle families
 or Godot driving. Evidence: `artifacts/build-runs/p3-a05-final-*`.
 
-Current extension SHA256 after the expanded Handling layout is
-`1272aeca12ae5fb0cc952603e291664b3fb01af3d2da2beed5a288be3d2401bd`.
+### Source vehicle lifecycle (P3-A06)
+
+```sh
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_source_vehicle_lifecycle_probe /game
+```
+
+Require `source-vehicle-lifecycle-ok checks=76`. The fixture requests actual
+model400 from the existing sole parser worker, then feeds Mode0 Triangle/Cross/
+Square/left-X through phased source camera/task handoffs, Automobile control,
+source COL, vehicle-pool updates and destruction. Exit consumes an explicit
+task-resolved nearby `SetPedOut` position, never a Godot transform. World eviction
+is blocked until the pool/resource owner is released; generation11 migration and
+ref1-to-ref2 stale-reference rejection are verified. This is the bounded lifecycle
+gate, not full door animation, vehicle discovery, general world/vehicle support or
+a Godot gameplay scene. Evidence: `artifacts/build-runs/p3-a06-final-*`.
+
+Current extension SHA256 after this fresh closure build is
+`6d00c0bef914a5d805c0ab6189b3036f3ea13e1342a17715a02a3f08d8f0c1ca`.
 The fresh package passes camera, labelled diagnostic actor, region-chain and
 region-async routes under Wayland/software Vulkan with PID1 reaping and no
 zombie growth.

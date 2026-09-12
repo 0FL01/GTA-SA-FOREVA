@@ -4,6 +4,14 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-13 — 2026-09-12, DIRECT; source vehicle lifecycle and eviction
+
+- Native `b2cc5cc9` owns the checkpoint implementation; root companion contains this journal/CMake update.
+- `NativeSourceVehicleLifecycle` composes the current Pad/camera/ped-world/Automobile/vehicle-pool owners. Its normal Mode0 trace phases EnterCar701, CarDrive710 and LeaveCar704 without instant input warps; final entry/exit handoffs wait for camera completion, and exit requires a task-resolved nearby SetPedOut value rather than a Godot transform or invented door result.
+- The76-check `/game` route consumes actual model400 `landstal` from the sole parser worker at generation10, drives through the retained source-COL target, then detaches the player, updates/removes/releases pool ref1, evicts only after cleanup, migrates the player to generation11 and proves respawn ref2/stale-ref rejection. Pool journals now retain fixed value provenance instead of shared resource owners.
+- Full new-source ASan+UBSan/leak passes. Automobile111, model11, physical65, contact315, ped-model26, ped-world84, tasks294, camera72, input497, frame104, exact actor trace and pool/worker queue regressions pass. Native smoke+sweep33/0 and read-only/no-EXE trace pass.
+- Fresh package camera/actor/region Wayland/software-Vulkan routes pass; extension/package `6d00c0bef914a5d805c0ab6189b3036f3ea13e1342a17715a02a3f08d8f0c1ca`, docker-init/zombies0. A06 is22/68=32.4% by equal atom count, not readiness; P3-A07 authoritative action/HUD/basic-SFX events is next. Evidence: `artifacts/build-runs/p3-a06-final-*`.
+
 ### GODOT-P3-12 — 2026-09-12, DIRECT; common Automobile control and real-COL response
 
 - Native `872cab94`: exact model400 owner now applies ordinary control, transmission/air resistance, DFF-derived suspension and wheel linear/angular transitions. New general model query preserves source two-sided sphere/box/triangle/line order, face groups, surface swap and128/64/600/31 caps. The decisive route uses actual read-only `landstal_col`18 spheres/10 faces against qualified isolated floor/wall targets, then applies the bounded static-building collision/friction branch; fixture targets are not whole-world publication.
