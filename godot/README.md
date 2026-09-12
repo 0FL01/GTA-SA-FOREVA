@@ -38,6 +38,29 @@ startup still commits14 instructions then reports Unsupported `04E4@56022`:
 fixture success is not completed boot. Evidence: `artifacts/build-runs/p2-a05-*`.
 The frame TU is core-only; A05 kept the extension byte-identical to P2-A04.
 
+### Source camera transitions (P3-A03 bounded owner)
+
+`NativeSourceCamera` owns the source `FollowPed` (`4`) / `CamOnAString` (`18`)
+target identities, direct-behind orientation, ordinary1350ms and bike-exit800ms
+transitions and an ordered immutable journal. The source active-camera front and
+sampled input sequence are explicit inputs; no Godot node transform can feed the
+owner. `ResolveView` remains `Unsupported` because the source `CCam` FollowPed/
+FollowCar eye solvers and camera-world collision are still unreversed; the
+diagnostic actor orbit is not promoted to gameplay authority.
+
+```sh
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_camera_probe
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-deps/godot-4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64 --headless --path godot --script res://tests/camera_transition.gd
+```
+
+Require `sa-core-camera-ok checks=72` and `camera-transition-ok`. The registered
+`SALegacyCamera` adapter exposes only value dictionaries and explicitly reports
+`presentation_feedback=false`, `view_status=unsupported`. This is the first A03
+checkpoint, not the completed atom: the decisive spawn/on-foot/vehicle trace still
+needs the owned source view solver. Evidence: `artifacts/build-runs/p3-camera-*`.
+Current extension SHA256 after the adapter is
+`de50c7832e75943827f00a97b2554fe0f561ec20ac749434ba17c1caf2b4e568`.
+
 ### Source ped tasks (P3-A01 bounded fixture verified)
 
 `NativeSourcePedControl` and `NativeSourceJump` add source input smoothing,
@@ -107,7 +130,7 @@ curb, transfers one dynamic-ped contact and stops before a wall; a separate
 real3991 target reaches standing through the same owner and real surface data.
 The owner requires complete, source-ordered normal-sector authority. This closes
 the stated P3-A02 route, not whole-world order/coverage, moving supports, fall/
-head effects or Godot gameplay hosting. Core24 TUs; ASan/UBSan and native33/0 pass.
+ head effects or Godot gameplay hosting. Core25 TUs; ASan/UBSan and native33/0 pass.
 `sa_core_contact_probe /game` verifies315 upstream-model sphere/line
 contact and broadphase checks, including122 real COL triangles and four authored
 face groups using the existing reader.

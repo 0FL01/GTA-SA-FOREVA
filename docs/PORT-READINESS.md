@@ -11,7 +11,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P0 | implemented; target reflight open | Finite UV/provenance/retained-world CPU and rendered clean-package gates pass; external Fedora reflight is not claimed |
 | P1 | A01–A07 verified | Qualified identities/catalog/chain, paired render/COL, sole-owner async parser, budgeted publication/retirement and catalog-backed exterior/interior residency verified |
 | P2 | A01–A06 verified | Owned core boundaries plus labelled CJ/car studio approximation;27-row CPU/Godot trace, interpolation/teardown, clean Vulkan and native33/0 verified, NOT source gameplay |
-| P3 | A01–A02 verified; A03 in_progress | Source task/marker boundary plus84-check qualified collision-world curb/wall/dynamic route and real3991 support. Next gameplay camera ownership; Godot gameplay hosting remains open |
+| P3 | A01–A02 verified; A03 in_progress | Camera mode/target/direct-behind/transition owner has a72-check core + matching Godot value trace; source FollowPed/FollowCar eye solver remains Unsupported, so diagnostic orbit cannot close A03 |
 | P4 | pending | Genuine SCM boot, first mission and portable save loop |
 | P5 | pending | Whole-world entities and all source vehicle families |
 | P6 | pending | Population/AI/combat/police/recovery/interactions |

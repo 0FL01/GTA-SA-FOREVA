@@ -4,6 +4,12 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-10 — 2026-09-12, DIRECT; source camera transition ownership
+
+- Native `0034e04d` adds the value-only source mode/target owner. It preserves FollowPed4/CamOnAString18, direct-behind source orientation, ordinary1350ms and bike-exit800ms profiles, exact completion, immutable reload epochs and ordered input-qualified events. Mode changes require an explicit source active-camera front; failures/overlap retain prior publication.
+- `p3-camera-core.log`72 checks and full new-source ASan/UBSan pass. The registered `SALegacyCamera` matches the spawn/direct-behind/enter/complete/exit trace under Godot and reports no presentation feedback. Ped-world84, integrated tasks294 and frame104 regressions pass. Core25 TUs; extension NEW `de50c7832e75943827f00a97b2554fe0f561ec20ac749434ba17c1caf2b4e568`.
+- This is not A03 closure: upstream FollowPed/FollowCar view bodies remain unreversed and `ResolveView` stays Unsupported. No diagnostic orbit or Godot Camera3D pose is accepted as source authority.18/68 verified unchanged; next recover the ordinary eye/world-collision solver and package the decisive route.
+
 ### GODOT-P3-09 — 2026-09-12, DIRECT; controlled source ped collision world
 
 - Native `1a1bc384` adds the ordinary CPed support/wall/pair response and a qualified normal-sector owner. One control prefix consumes friction, resets transient flags, applies gravity/air resistance, then the retail step count drives cumulative probes, support-Z carry and matrix rollback. Source `.95` support, prior-standing extension, HasHitWall, steep material, report/friction order and count0 behavior are preserved. Unowned head/height/fall-task/moving-support/blocked-position paths reject explicitly.
