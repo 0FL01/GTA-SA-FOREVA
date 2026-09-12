@@ -92,6 +92,9 @@ trap 'rm -rf "$STAGING_DIR"' EXIT
 copy_file "$PROJECT_DIR/project.godot" godot/project.godot
 copy_file "$PROJECT_DIR/lab.tscn" godot/lab.tscn
 copy_file "$PROJECT_DIR/lab.gd" godot/lab.gd
+copy_file "$PROJECT_DIR/actor_lab.tscn" godot/actor_lab.tscn
+copy_file "$PROJECT_DIR/actor_lab.gd" godot/actor_lab.gd
+copy_file "$PROJECT_DIR/diagnostic_actor_view.gd" godot/diagnostic_actor_view.gd
 copy_file "$PROJECT_DIR/materials/API.md" godot/materials/API.md
 copy_file "$PROJECT_DIR/materials/legacy_materials.gd" godot/materials/legacy_materials.gd
 copy_file "$PROJECT_DIR/materials/legacy_surface_common.gdshaderinc" godot/materials/legacy_surface_common.gdshaderinc

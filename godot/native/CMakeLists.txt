@@ -199,3 +199,20 @@ endif()
 # StatusName); Session/Clock/IO objects stay unreferenced. exports.map keeps
 # its single sa_legacy_library_init entry; bind/data/worker/.so APIs unchanged.
 target_link_libraries(sa_legacy PRIVATE sa_core)
+
+# P2-A06 diagnostic native controller reuse; kept OUT of pure sa_core.
+set(SA_DIAGNOSTIC_SOURCES)
+foreach(name NativeDiagnosticActors RealtimeGameplay NativePlayerActivity NativePlayerAssets
+    IfpAnim SkinPed CarPose Handling Collide ColLoad StreamPager TexSample)
+    list(APPEND SA_DIAGNOSTIC_SOURCES "${NATIVE_SOURCE_DIR}/app/platform/linux/${name}.cpp")
+endforeach()
+add_library(sa_diagnostic STATIC ${SA_DIAGNOSTIC_SOURCES})
+target_include_directories(sa_diagnostic PUBLIC "${NATIVE_SOURCE_DIR}")
+target_compile_features(sa_diagnostic PUBLIC cxx_std_20)
+target_link_libraries(sa_diagnostic PUBLIC sa_core librw::librw)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_diagnostic PRIVATE -fexceptions -fno-fast-math -ffp-contract=off)
+endif()
+add_executable(sa_diagnostic_actors_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeDiagnosticActorsProbe.cpp")
+target_link_libraries(sa_diagnostic_actors_probe PRIVATE sa_diagnostic)
+target_link_libraries(sa_legacy PRIVATE sa_diagnostic)

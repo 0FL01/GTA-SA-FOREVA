@@ -14,7 +14,7 @@ known visual limitations.
 Preset `4` uses the source `CLOUDY_LA` overcast state. `RAINY_LA` does not exist;
 it is not aliased to an invented rainy-LA environment.
 
-## Pinned Inputs
+## Core and diagnostic hosts
 
 ### Committed core frames (P2-A05)
 
@@ -38,7 +38,44 @@ startup still commits14 instructions then reports Unsupported `04E4@56022`:
 fixture success is not completed boot. Evidence: `artifacts/build-runs/p2-a05-*`.
 The frame TU is core-only; the extension remains byte-identical to P2-A04.
 
-### Runtime pins
+### Native actor studio (P2-A06)
+
+The separate `sa_diagnostic` archive reuses the existing native CJ startup
+outfit, IFP skinning and car controller. `actor_lab.tscn` is an opt-in **diagnostic
+approximation on a synthetic flat floor**, not source ped/Automobile gameplay,
+world collision, mission boot or visual parity. The main region lab is unchanged.
+The preview uses unlit textured materials, not a PBR/physics replacement.
+
+```sh
+# After tools/godot-build.sh and tools/godot-package.sh:
+./artifacts/godot/package/runtime/godot --path artifacts/godot/package/godot \
+  --display-driver wayland res://actor_lab.tscn -- --game-dir "/path/to/owned/GTA San Andreas"
+# Direct CPU fixture; prints 27 canonical state rows and its success marker:
+docker --context rootless exec -w /workspace mad-sa-graphics-build \
+  ./build/godot-native/sa_diagnostic_actors_probe /game
+```
+
+Studio controls: WASD move/steer, Shift sprint, Space jump, E enter/exit, B brake,
+Esc quit. This limited keyboard map is not P7 device/control completion. A stall
+over250ms pauses the studio approximation; it does not redefine the source clock.
+
+The optional fifth `open_game` argument enables actors before worker startup;
+default false preserves existing region callers. `tick_diagnostic_actors` drives
+only owned native CPU data; `diagnostic_actors(alpha, include_topology=false)`
+returns independent buffers with `diagnostic_approximation=true`,
+`synthetic_floor=true`, `source_gameplay=false`. Interpolation affects copied
+vertices only. Startup parsing is synchronous; mesh rebuilding is deliberately
+unbudgeted diagnostic work, not the P1 region publication performance contract.
+
+`tests/diagnostic_actors.gd` compares the full native trace through walking,
+running, car entry and steering, including while a region parses asynchronously.
+It checks mutation isolation, native/scene teardown, retained-buffer replay and
+actual rendered pixels. Clean Wayland/Vulkan package gates, wrapper ASan/UBSan,
+zero remaining RW texture/raster counts, and the native33/0 sweep pass. Logs are
+`artifacts/build-runs/p2-a06-*`; captures `artifacts/godot/p2-a06-actors.png` and
+`p2-a06-actors.png-walking.png`. RX780M target acceptance remains separate.
+
+## Pinned Inputs
 
 - Godot `4.6.1-stable`, official Linux x86_64 editor/runtime, engine commit
   `14d19694e0c88a3f9e82d899a0400f27a24c176e`.

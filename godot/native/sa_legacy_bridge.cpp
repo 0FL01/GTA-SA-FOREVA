@@ -1447,8 +1447,12 @@ Dictionary SALegacyBridge::BuildReadyPayloadLocked() {
 }
 
 void SALegacyBridge::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("open_game", "game_dir", "radius", "cap", "budget_items"),
-                         &SALegacyBridge::OpenGame, DEFVAL(64));
+    ClassDB::bind_method(D_METHOD("open_game", "game_dir", "radius", "cap", "budget_items", "diagnostic_actors"),
+                         &SALegacyBridge::OpenGame, DEFVAL(64), DEFVAL(false));
+    ClassDB::bind_method(D_METHOD("diagnostic_actors", "alpha", "include_topology"),
+                         &SALegacyBridge::DiagnosticActors, DEFVAL(false));
+    ClassDB::bind_method(D_METHOD("tick_diagnostic_actors", "seconds", "forward", "side", "sprint", "jump", "interact", "brake", "handbrake"),
+                         &SALegacyBridge::TickDiagnosticActors, DEFVAL(false), DEFVAL(false));
     ClassDB::bind_method(D_METHOD("load_region", "SA_position"), &SALegacyBridge::LoadRegion);
     ClassDB::bind_method(D_METHOD("submit_region", "SA_position"), &SALegacyBridge::SubmitRegion);
     ClassDB::bind_method(D_METHOD("submit_catalog_region", "SA_position", "area_id"),
@@ -1468,7 +1472,7 @@ SALegacyBridge::~SALegacyBridge() {
 }
 
 Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t cap,
-                                     int64_t budgetItems) {
+                                     int64_t budgetItems, bool diagnosticActors) {
     if (!IsMainThread()) {
         return Result(false, "open_game must run on Godot's main thread");
     }
@@ -1752,6 +1756,27 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
     }
     const uint64_t proposedEpoch = m_SessionEpoch + 1;
 
+    // All actor DFF/TXD/IFP parsing precedes worker startup. Subsequent actor
+    // ticks only consume owned CPU data, never touch the worker's RW globals.
+    std::unique_ptr<NativeDiagnosticActors> actors;
+    if (diagnosticActors) {
+        actors = std::make_unique<NativeDiagnosticActors>();
+        std::string error;
+        if (!actors->Initialize(path.c_str(), error)) {
+            actors.reset();
+            s_PagerOwner = nullptr;
+            StreamPager_Shutdown();
+            m_Catalog.reset();
+            m_Decision = NativeLodChainDecision{};
+            m_ChildPlacement = NativeCollisionPlacement{};
+            m_ParentPlacement = NativeCollisionPlacement{};
+            m_EffectiveCol.reset();
+            m_EffectiveColLibrary.clear();
+            m_HasLodPair = false;
+            return Result(false, SourceString(error));
+        }
+    }
+
     // Sole-owner parse: Window uses pure StreamPager_Update + Rendered + Frame
     // + Counters plus BuildRegionPlan at parse end (worker parse+plan timing
     // in ParseMs). Catalog lanes call the authoritative
@@ -1862,6 +1887,7 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
         // Factory failure cleans Init without deadlock (mutex already held,
         // CloseGame not called here) and without fake Ready.
         s_PagerOwner = nullptr;
+        actors.reset();
         StreamPager_Shutdown();
         m_Catalog.reset();
         m_Decision = NativeLodChainDecision{};
@@ -1875,6 +1901,7 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
     }
 
     m_SessionEpoch = proposedEpoch;
+    m_DiagnosticActors = std::move(actors);
     m_Worker = std::move(worker);
     m_BudgetItems = budgetItems;
     m_OpenRadius = radius;
@@ -1907,6 +1934,79 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
 }
 
 // P1-A06: atomic PreparePublication removed; Init/Advance/BuildReady stepper owns all conversion.
+
+Dictionary SALegacyBridge::TickDiagnosticActors(double seconds, double forward, double side,
+    bool sprint, bool jump, bool interact, bool brake, bool handbrake) {
+    if (!IsMainThread()) return Result(false, "diagnostic actors require main thread");
+    std::lock_guard lock(s_PagerMutex);
+    if (!m_Ready || !m_DiagnosticActors) return Result(false, "diagnostic actors not enabled");
+    if (!std::isfinite(forward) || !std::isfinite(side) || std::abs(forward) > 1 || std::abs(side) > 1)
+        return Result(false, "invalid diagnostic input");
+    RealtimeGameplayInput input;
+    input.Forward = float(forward); input.Side = float(side); input.Sprint = sprint;
+    input.Jump = jump; input.Interact = interact; input.Brake = brake; input.Handbrake = handbrake;
+    std::string error;
+    if (!m_DiagnosticActors->Tick(seconds, input, error)) return Result(false, SourceString(error));
+    Dictionary result = Result(true);
+    result["trace"] = SourceString(m_DiagnosticActors->Current().Trace);
+    result["diagnostic_approximation"] = true;
+    result["source_gameplay"] = false;
+    return result;
+}
+
+Dictionary SALegacyBridge::DiagnosticActors(double alpha, bool includeTopology) {
+    if (!IsMainThread()) return Result(false, "diagnostic actors require main thread");
+    std::lock_guard lock(s_PagerMutex);
+    if (!m_Ready || !m_DiagnosticActors) return Result(false, "diagnostic actors not enabled");
+    NativeDiagnosticActorPose pose; std::string error;
+    if (!m_DiagnosticActors->Present(alpha, pose, error)) return Result(false, SourceString(error));
+    Dictionary result = Result(true);
+    result["trace"] = SourceString(pose.Trace);
+    result["diagnostic_approximation"] = true;
+    result["synthetic_floor"] = true;
+    result["source_gameplay"] = false;
+    result["session_epoch"] = int64_t(m_SessionEpoch);
+    Array meshes;
+    const auto& topology = m_DiagnosticActors->Topology();
+    for (size_t i = 0; i < pose.Positions.size(); ++i) {
+        Dictionary mesh;
+        PackedVector3Array positions, normals;
+        const auto& p = pose.Positions[i]; const auto& n = pose.Normals[i];
+        for (size_t j = 0; j < p.size(); j += 3) positions.push_back(Vector3(p[j], p[j+2], -p[j+1]));
+        for (size_t j = 0; j < n.size(); j += 3) normals.push_back(Vector3(n[j], n[j+2], -n[j+1]));
+        mesh["positions"] = positions; mesh["normals"] = normals;
+        mesh["triangles"] = pose.Triangles[i];
+        if (includeTopology) {
+            const auto& source = topology.meshes[i];
+            PackedVector2Array uv; PackedInt32Array images; PackedColorArray colors;
+            for (size_t j = 0; j < source.uv.size(); j += 2) uv.push_back(Vector2(source.uv[j], source.uv[j+1]));
+            for (const auto image : source.triImg) images.push_back(image);
+            for (int t = 0; t < source.tris; ++t) {
+                const float alphaValue = source.surfaces.empty() ? 1.0f : source.surfaces[size_t(t)].color[3];
+                const Color color = !source.surfaces.empty() ?
+                    Color(source.surfaces[size_t(t)].color[0], source.surfaces[size_t(t)].color[1], source.surfaces[size_t(t)].color[2], alphaValue) :
+                    source.triCol.empty() ? Color(source.color[0], source.color[1], source.color[2], alphaValue) :
+                    Color(source.triCol[size_t(t)*3], source.triCol[size_t(t)*3+1], source.triCol[size_t(t)*3+2], alphaValue);
+                colors.push_back(color);
+            }
+            mesh["uv"] = uv; mesh["images"] = images; mesh["colors"] = colors;
+        }
+        meshes.push_back(mesh);
+    }
+    result["meshes"] = meshes;
+    if (includeTopology) {
+        Array images;
+        for (const auto& source : topology.images) {
+            Dictionary image; PackedByteArray bytes;
+            bytes.resize(int64_t(source.rgba.size()));
+            if (!source.rgba.empty()) std::memcpy(bytes.ptrw(), source.rgba.data(), source.rgba.size());
+            image["width"] = source.w; image["height"] = source.h; image["rgba"] = bytes;
+            image["filter"] = int64_t(source.filter); images.push_back(image);
+        }
+        result["images"] = images;
+    }
+    return result;
+}
 
 namespace {
 
@@ -2739,6 +2839,7 @@ void SALegacyBridge::CloseGame() {
             worker->Stop();
         }
         lock.lock();
+        m_DiagnosticActors.reset();
         if (s_PagerOwner == this) {
             StreamPager_Shutdown();
             s_PagerOwner = nullptr;

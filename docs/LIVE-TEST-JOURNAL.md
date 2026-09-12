@@ -4,6 +4,16 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P2-16 — 2026-09-12, DIRECT agent
+
+- Native `6bbebc48`; root containing this entry (base `f513b0f`); extension SHA256 `2c9dfb65f8179439c73966c9efcb3d8abed45ff9235bec28de424c62570be959`. P2-A05 previously `9db2a1aa`/`f513b0f`, core-only frame104/VM5451 verified.
+- Server rootless container, Godot4.6.1 Forward+, Wayland/Weston headless, llvmpipe LLVM20.1.2;960x540 captured viewport; scripted numeric inputs, not physical-device proof. Clean asset-free package, `/game:ro`, no executable read.
+- Result: **agent-image-reviewed** CJ startup outfit plus native car on explicitly synthetic studio floor; walking/running then entry/steering. Actual car paint uses resolved source surface color. Unlit preview, no original/GPU/source-gameplay parity claim.
+- Automatic:27-row headless/Godot trace equal while region parses; native interpolation endpoints/midpoint, rejected alpha/time, mutation isolation, weakref scene/mesh teardown and retained replay.3772 actor pixels; clean region_chain/region_async pass. Wrapper ASan/UBSan and RW texture/raster zero-count pass after name-only texture-linkage fix; shared native33/0 hashes unchanged.
+- Commands/evidence: `artifacts/build-runs/p2-a06-final-gates.py` / `.log`, `p2-a06-native-sweep.log`, `p2-a06-actor-package-runtime.log`; captures `artifacts/godot/p2-a06-actors.png` and `p2-a06-actors.png-walking.png`. Launch/control instructions in `godot/README.md`. Fedora/RX780M remains not-run; P3 source task/physics work remains open.
+
+### Recording format
+
 Each executed test records:
 
 ```text

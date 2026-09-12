@@ -13,6 +13,7 @@
 #include "app/platform/linux/NativeLodCatalog.h"
 #include "sa_region_plan.h"
 #include "sa_region_worker.h"
+#include "app/platform/linux/NativeDiagnosticActors.h"
 
 namespace godot {
 
@@ -23,7 +24,10 @@ public:
     SALegacyBridge();
     ~SALegacyBridge() override;
 
-    Dictionary OpenGame(const String& gameDir, float radius, int32_t cap, int64_t budgetItems = 64);
+    Dictionary OpenGame(const String& gameDir, float radius, int32_t cap, int64_t budgetItems = 64, bool diagnosticActors = false);
+    Dictionary DiagnosticActors(double alpha, bool includeTopology = false);
+    Dictionary TickDiagnosticActors(double seconds, double forward, double side, bool sprint,
+        bool jump, bool interact, bool brake = false, bool handbrake = false);
     Dictionary LoadRegion(const Vector3& saPosition);
     Dictionary SubmitRegion(const Vector3& saPosition);
     // P1-A07 opt-in catalog residency lane (area_id 0 = area0 XY disc with the
@@ -83,6 +87,7 @@ private:
 
     std::string m_GameDir;
     bool m_Ready = false;
+    std::unique_ptr<NativeDiagnosticActors> m_DiagnosticActors;
     // Object-lifetime sequence: close/reopen preserves it; only a published region advances it.
     int64_t m_PublicationRevision = 0;
     // P1-A04 single-chain LOD supplement: actual paired render + COL packet only.
