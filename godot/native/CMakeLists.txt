@@ -105,6 +105,10 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceRng.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceClock.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePad.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCollisionAssets.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceGround.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldGround.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/os_file_posix.cpp"
 )
 add_library(sa_core STATIC ${SA_CORE_SOURCES})
@@ -126,6 +130,17 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceRng.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePad.cpp"
         PROPERTIES COMPILE_OPTIONS "-fno-fast-math;-ffp-contract=off"
+    )
+    # P2-A04 isolated world authority: existing Assets/EntityInfo/SourceGround/
+    # WorldGround with strict source float semantics and throwing Require().
+    # Per-file properties are global, so reuse the same full flagset as
+    # NATIVE_LOD_SOURCES above; a subset would overwrite the extension flags.
+    set_source_files_properties(
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCollisionAssets.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceGround.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldGround.cpp"
+        PROPERTIES COMPILE_OPTIONS "-fexceptions;-fno-fast-math;-ffp-contract=off"
     )
 endif()
 target_link_libraries(sa_core PUBLIC Threads::Threads)
@@ -153,6 +168,16 @@ add_executable(sa_core_input_probe
 target_link_libraries(sa_core_input_probe PRIVATE sa_core)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_input_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+endif()
+
+# P2-A04 owned isolated world probe: links ONLY sa_core, never the extension.
+add_executable(sa_core_world_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCoreWorldProbe.cpp"
+)
+target_link_libraries(sa_core_world_probe PRIVATE sa_core)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_core_world_probe PRIVATE
         -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
 endif()
 

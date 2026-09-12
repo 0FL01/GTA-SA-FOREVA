@@ -215,7 +215,9 @@ session through `LoadMain`, pins the real header facts, advances the existing
 clock to123ms, commits14 pure instructions, then stops at the first honest
 unavailable frontier (`04E4` collision at `56022`, next `56034`). World, player
 and scene stay `Unsupported`; the original native `--headless` frontier stays
-separate. `sa_core` is not linked into `libsa_legacy.so` yet.
+separate. Since P2-A03 the extension links the core archive but extracts only the
+source-pad object for the input node; the session/clock/world owners are not yet
+hosted by the Godot runtime.
 
 ```bash
 ./tools/godot-build.sh
@@ -286,6 +288,41 @@ trunc(0.304*128); no keyboard/focus/hotplug/remap/pause/clock/auto-latch/
 inference/CJ/camera claims; no assets or game dir; the script only reads the
 explicit fixture and writes nothing. Full native sweep, rendered package, and
 regression gates are parent-run, not part of this lane.
+
+## Isolated world authority (P2-A04)
+
+Existing `NativeWorldGround` publication/generation matrix hosted in `sa_core`.
+Pure core link needs the unchanged `NativeCollisionContext::LoadBeforeWorker`
+pager composition moved from `NativeCollisionAssets.cpp` to existing
+`StreamPager.cpp` (public API unchanged, no callsite change); otherwise the
+static archive object keeps an unresolved pager reference. No weak stubs,
+`--allow-unresolved`, whole-archive RW or new broker/clock/commit/physics API.
+`sa_core` gains the existing Assets/EntityInfo/SourceGround/WorldGround TUs
+(strict `-fno-fast-math -ffp-contract=off` plus `-fexceptions`, same full set
+as the extension LOD sources) plus the POSIX adapter only; no
+StreamPager/GL/SDL/Godot/RW link into core. The extension already compiles
+Assets/EntityInfo plus StreamPager, so the moved function stays available.
+
+```bash
+./tools/godot-build.sh
+build/godot-native/sa_core_world_probe "/path/to/owned/GTA San Andreas"
+```
+
+Require `sa-core-world-ok` (bool/error checks, Release-active, no assert side
+effects, game dir required, no copies/writes/new parser). The fixture binds
+real `GSFreeway7_LAn` COL bytes (Ready, header 3991, validated, 122 faces;
+parent `LODGSFreeway7_LAn` KnownAbsent; pre-load/empty/NUL Unsupported) to an
+owned synthetic isolated population via `LoadSources` (revision 7, committed
+`LodMultiplier` 1.0, query derived from real face geometry, source math
+unchanged). It proves the real SourceCollision owner, retained 122-face bytes
+and same-owner snapshot across rollback/metadata-older/mismatch/same-gen
+owner-copy rejection (full prior Snapshot/SourceCollision/target list
+retained), next-gen adoption, StaleWorld with published generation, old
+publication still queryable, and invalid/coverage rejections retaining current.
+Whole-world Unsupported is not bypassed; no full census, pager dummy, async
+epoch (A05 later) or Godot consumer Ready. The rehome may change extension
+layout/hash (do not claim unchanged); `nm`/link-map, DLL-hash, native/
+extension regressions, docs and commit are parent-run.
 
 ## Sole-owner parser worker (P1-A05)
 
