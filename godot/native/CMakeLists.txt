@@ -107,6 +107,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptFrame.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptServiceTransaction.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptPortableSave.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceRng.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceClock.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePad.cpp"
@@ -148,6 +149,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptFrame.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptServiceTransaction.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptPortableSave.cpp"
         PROPERTIES COMPILE_OPTIONS "-fexceptions"
     )
     # Strict source float semantics for the clock, the reused RNG, and the
@@ -201,6 +203,9 @@ target_link_libraries(sa_core_scheduling_probe PRIVATE sa_core)
 add_executable(sa_core_service_transactions_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptServiceTransactionProbe.cpp")
 target_link_libraries(sa_core_service_transactions_probe PRIVATE sa_core)
+add_executable(sa_core_portable_save_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptPortableSaveProbe.cpp")
+target_link_libraries(sa_core_portable_save_probe PRIVATE sa_core)
 add_executable(sa_core_ped_control_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedControlProbe.cpp")
 target_link_libraries(sa_core_ped_control_probe PRIVATE sa_core)
 add_executable(sa_core_jump_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceJumpProbe.cpp")
@@ -236,6 +241,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_session_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_scheduling_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_service_transactions_probe PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(sa_core_portable_save_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_ped_control_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_jump_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_clump_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)

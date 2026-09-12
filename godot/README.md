@@ -103,6 +103,28 @@ actual parser-worker placement gate passes with explicit generator cleanup for
 the exact privately held packet. Original-save compatibility and genuine boot
 remain later P4 work.
 
+### Portable script owner envelope (P4-A04)
+
+`NativeScriptPortableSave` encodes one quiescent `NativeScriptSession` graph as
+canonical little-endian value fields under a strict v1 header, source/schema
+fingerprints and checksum. A restarted process must independently load the exact
+SCM and resident streamed payloads before restore. The envelope contains no
+pointers, raw C++ structs, script asset bytes, pending service transaction or
+process `SessionId`, and it is not the original PC save/settings format.
+
+```sh
+docker --context rootless exec -w /workspace mad-sa-graphics-build cmake --build build/godot-native --parallel 2 --target sa_core_portable_save_probe
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_portable_save_probe /workspace/artifacts/build-runs/p4-a04-portable-envelope.bin
+```
+
+Require writer/reader success and `sa-core-portable-save-ok restart=exec
+envelope=v1 owner=script-session asset-bytes=external`. The6863-byte fixture
+preserves main/mission/streamed stacks, globals and streamed users, re-encodes
+byte-identically and matches continuation passes `3,3,3,1`. Truncation, version,
+checksum and source/payload mismatches retain the destination graph. Evidence:
+`artifacts/build-runs/p4-a04-*`. Complete gameplay persistence and classic-PC
+save import/export remain later P4/P8 work.
+
 ### Source camera transitions (P3-A03 bounded owner)
 
 `NativeSourceCamera` owns the source `FollowPed` (`4`) / `CamOnAString` (`18`)

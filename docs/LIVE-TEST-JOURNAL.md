@@ -4,6 +4,12 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P4-04 — 2026-09-12, DIRECT; restarted-process portable script graph
+
+- Native `988ff5e9` adds a v1 canonical little-endian `NativeScriptPortableSave` envelope for one quiescent Session. It serializes mutable value owners explicitly, fingerprints independently loaded main/streamed assets and schema, excludes pointers/raw structs/asset bytes/process SessionId/pending transactions, and candidate-validates before atomic publication. This is not the original PC save format.
+- Separate writer/reader `exec` processes preserve a6863-byte main/mission/streamed graph with depth-1 stacks and live streamed user, re-encode byte-identically and match the unsaved continuation `3,3,3,1`/ten commits. Reader111 checks reject truncation/version/checksum/trailing/SCM/streamed mismatches with the destination unchanged; unloaded/open-pass/faulted encode also rejects. Strace touches only the explicit artifact envelope.
+- Full new-path ASan/UBSan, session5467, scheduling106, transactions71, frame104, startup04E4, full builds, smoke and native33/0 pass; zombies0. Extension/package remains `6d00c0bef914a5d805c0ab6189b3036f3ea13e1342a17715a02a3f08d8f0c1ca`, so no rendered rerun. P4-A04 verified:27/68=39.7%, not readiness; P4-A05 real startup owners/services next.
+
 ### GODOT-P4-03 — 2026-09-12, DIRECT; stable async script-service transactions
 
 - Native `3f81349c` adds a pure owner/attempt transaction and adopts it in realtime `04E4`/`03CB` services. Worker callbacks expose Pending/Prepared/Error only; Prepared becomes script Ready only after source-COL/ground/residency validation and one world/journal commit. Cancel is idempotent, acknowledgement is exact-ticket only, same-ID retry increments attempt, and stale/invalid/throwing results cannot publish.
