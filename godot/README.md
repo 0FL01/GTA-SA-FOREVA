@@ -55,9 +55,10 @@ docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot
 
 Require `sa-core-camera-ok checks=72` and `camera-transition-ok`. The registered
 `SALegacyCamera` adapter exposes only value dictionaries and explicitly reports
-`presentation_feedback=false`, `view_status=unsupported`. This is the first A03
-checkpoint, not the completed atom: the decisive spawn/on-foot/vehicle trace still
-needs the owned source view solver. Evidence: `artifacts/build-runs/p3-camera-*`.
+`presentation_feedback=false`, `view_status=unsupported`. This verifies P3-A03's
+ownership/transition gate. The full view solver and camera mode family remain the
+explicit P7-A03 work, not a diagnostic-orbit substitute. Evidence:
+`artifacts/build-runs/p3-camera-*`.
 Current extension SHA256 after the adapter is
 `de50c7832e75943827f00a97b2554fe0f561ec20ac749434ba17c1caf2b4e568`.
 
