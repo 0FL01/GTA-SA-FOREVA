@@ -4,6 +4,12 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-11 — 2026-09-12, DIRECT; exact common Automobile constructor
+
+- Native `8e5b1e3a`: actual model400 `landstal`, DFF/TXD/common TXD, embedded `landstal_col`, full `LANDSTAL` handling row and source constructor literals publish one immutable Automobile state. Passenger capacity comes from actual door-dummy topology; driver/passenger identities and failure atomicity are explicit. No400/476 substitution path.
+- `sa_source_automobile_probe /game`: `sa-core-automobile-ok checks=44 ... tris=2785 frames=52`; ASan+UBSan/leak run passes. Camera72, ped-world84, tasks294, real-clump107, diagnostic actor trace equality and rebuilt native smoke pass.
+- Boundary: no pool/world publication, suspension/control/collision or Godot driving; P3-A05 selected. Overall20/68=29.4% by equal atom count, not game readiness.
+
 ### GODOT-P3-10 — 2026-09-12, DIRECT; source camera transition ownership
 
 - Native `0034e04d` adds the value-only source mode/target owner. It preserves FollowPed4/CamOnAString18, direct-behind source orientation, ordinary1350ms and bike-exit800ms profiles, exact completion, immutable reload epochs and ordered input-qualified events. Mode changes require an explicit source active-camera front; failures/overlap retain prior publication.

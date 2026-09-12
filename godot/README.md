@@ -62,6 +62,17 @@ explicit P7-A03 work, not a diagnostic-orbit substitute. Evidence:
 Current extension SHA256 after the adapter is
 `de50c7832e75943827f00a97b2554fe0f561ec20ac749434ba17c1caf2b4e568`.
 
+### Exact common Automobile constructor (P3-A04)
+
+```sh
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_source_automobile_probe /game
+```
+
+Require `sa-core-automobile-ok checks=44`. This read-only fixture binds actual
+model400 `landstal`, DFF/TXD/embedded COL and the `LANDSTAL` handling row into
+immutable constructor/occupant state. It deliberately does not claim vehicle
+pool/world insertion, controls, collision, suspension or Godot driving.
+
 ### Source ped tasks (P3-A01 bounded fixture verified)
 
 `NativeSourcePedControl` and `NativeSourceJump` add source input smoothing,

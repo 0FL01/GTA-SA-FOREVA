@@ -86,8 +86,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P3-A01 | verified | Port source-informed ped task state, interruption and animation-marker flow, using focused RE where bodies are missing. | Integrated ordinary walk/run/jump/interruption fixture294, task-manager57 and real-bank107 checks pass; source task/marker boundary only, not full PlayerOnFoot/physics/Godot hosting. |
 | P3-A02 | verified | Port authoritative ped/world collision and dynamic pair/contact behavior. |84-check qualified-world driver crosses controlled loaded curb, stops at wall and transfers a dynamic-ped contact; real3991 support, response58, surface611 and physical65 checks pass. Bounded normal-sector slice, not whole-world parity. |
 | P3-A03 | verified | Port gameplay camera ownership and transitions for the slice. | Spawn/on-foot/vehicle camera transition trace has no Godot-node authority feedback. |
-| P3-A04 | in_progress | Construct a common Automobile from real model and handling identities with occupants. | One common source model constructs with exact handling/model/occupant identities, not `400/476` fallback. |
-| P3-A05 | pending | Port common Automobile control and applicable implemented `CPhysical`/Automobile algorithms. | Accelerate/brake/steer/contact fixture follows source state transitions. |
+| P3-A04 | verified | Construct a common Automobile from real model and handling identities with occupants. | One common source model constructs with exact handling/model/occupant identities, not `400/476` fallback. |
+| P3-A05 | in_progress | Port common Automobile control and applicable implemented `CPhysical`/Automobile algorithms. | Accelerate/brake/steer/contact fixture follows source state transitions. |
 | P3-A06 | pending | Complete spawn -> enter -> drive -> exit -> destroy lifetime across pools and streaming eviction. | Normal input E2E completes the lifecycle with coherent generation/pool cleanup. |
 | P3-A07 | pending | Connect action input, required HUD state and basic SFX to the real slice. | One normal-input route produces authoritative HUD/action/audio events; posed CJ or CPU Landstal alone cannot pass. |
 
@@ -168,6 +168,11 @@ P0 implementation and available server gates are verified; target reflight stays
 Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never renumbered or reused).
 
 ## Current checkpoint and evidence
+
+### 2026-09-12 — P3-A04 exact common Automobile constructor verified
+
+- **Versions/result:** native `8e5b1e3a` committed/pushed; root companion is the commit containing this checkpoint, based on `5e837e0`. `NativeSourceAutomobile` composes actual IDE model400 `landstal`/TXD `landstal`/handling `LANDSTAL`/Automobile identity, owned DFF/TXD/COL packet and complete constructor-used handling fields into immutable state. Driver and DFF-derived three passenger seats retain exact identities. Numeric/name/type/handling substitutions, including any400/476 fallback, reject atomically. This closes P3-A04's exact gate:20/68=29.4% equal-count atoms, not workload/game readiness.
+- **Evidence/boundary:** `sa_source_automobile_probe /game`44 checks actual212-definition catalog, model400,2785 triangles,52 frames, embedded `landstal_col`, full handling row, source constructor literals/wheel reset and exact occupant ownership. Full new/source asset path passes ASan+UBSan with leak detection. Camera72, controlled ped-world84, ped-tasks294 and real IFP107 regressions pass; diagnostic actor trace remains byte-identical; native rebuild/smoke passes. Constructor/occupant ownership only: no vehicle pool insertion, source suspension/control/collision or Godot driving authority. P3-A05 is now `in_progress` for common Automobile control/physical integration.
 
 ### 2026-09-12 — DIRECT; P3-A02 controlled collision-world route verified
 

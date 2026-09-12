@@ -291,4 +291,16 @@ add_executable(sa_diagnostic_actors_probe "${NATIVE_SOURCE_DIR}/app/platform/lin
 target_link_libraries(sa_diagnostic_actors_probe PRIVATE sa_diagnostic)
 add_executable(sa_source_clump_assets_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceClumpAssetsProbe.cpp")
 target_link_libraries(sa_source_clump_assets_probe PRIVATE sa_diagnostic)
+add_executable(sa_source_automobile_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceAutomobileProbe.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceAutomobile.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeGeneratedVehicleAssets.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCarGenerators.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeVehiclePool.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/Handling.cpp")
+target_link_libraries(sa_source_automobile_probe PRIVATE sa_diagnostic)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_source_automobile_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fexceptions -fno-fast-math -ffp-contract=off)
+endif()
 target_link_libraries(sa_legacy PRIVATE sa_diagnostic)
