@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE, resumed 2026-09-12. Latest user instruction selects DIRECT execution: parent performs RECON, implementation and verification without subagents. P2 and P3 are verified; P4-A01 shipped corpus/schema classification is next. No compress unless context becomes critical, per latest user instruction.
+Execution: ACTIVE, resumed 2026-09-12. Latest user instruction selects DIRECT execution: parent performs RECON, implementation and verification without subagents. P2, P3 and P4-A01 are verified; P4-A02 scheduling is next. No compress unless context becomes critical, per latest user instruction.
 Activated: 2026-09-11
 Last updated: 2026-09-12
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -95,8 +95,8 @@ P0 implementation and available server gates are verified; target reflight stays
 
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
-| P4-A01 | in_progress | Build the shipped corpus/schema manifest with complete required operand and thread forms, preserving strict main53/mission1234/0814 and CPU539/0570 history. | Corpus gate classifies every encountered startup form without unknown NOP substitution. |
-| P4-A02 | pending | Port wait, stack, mission and streamed/brain scheduling needed by startup. | Deterministic scheduler fixture reaches the same wait/resume/thread ordering twice. |
+| P4-A01 | verified | Build the shipped corpus/schema manifest with complete required operand and thread forms, preserving strict main53/mission1234/0814 and CPU539/0570 history. | Pinned schema plus owned manifest classify1288 shipped main/mission sites,43 opcodes and48 exact tag/array forms; full route remains strict0814, CPU route strict0570, unknown/known-unsupported forms never become NOPs. |
+| P4-A02 | in_progress | Port wait, stack, mission and streamed/brain scheduling needed by startup. | Deterministic scheduler fixture reaches the same wait/resume/thread ordering twice. |
 | P4-A03 | pending | Give asynchronous script services stable prepare/pending/commit/cancel semantics. | Cancel/retry fixture commits exactly once and never exposes fake readiness. |
 | P4-A04 | pending | Define owner serialization contracts and an early versioned portable save envelope outside original settings/saves. | Restarted-process envelope round trip preserves one owned graph and rejects truncation/version mismatch. |
 | P4-A05 | pending | Implement the real owner/service subset demanded by unmodified startup, including `0814` registration and separate runtime coverage. | Unmodified startup crosses each implemented site through a real owner; registration is not credited as update/reward/reset/save coverage. |
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-12 — P3-A07 source slice feedback and P3 stage gate verified
+### 2026-09-12 — P4-A01 shipped startup corpus/schema verified
+
+- **Versions/result:** native `9c1aede4` committed/pushed; root companion is the commit containing this checkpoint, based on `53b2ce6`. `NativeScriptSchema` moves the pinned Sanny default schema identity (`53ed1c2561bf6ca70dc16afca5d8f3a406066158`, SHA256 `797f32be6d3ebae87fd65b57ccc0c0b1cbc2e129c089668761e366740b5bd671`, version1.65) out of the VM dispatcher and explicitly separates bytecode form from owned semantic coverage. `NativeScriptCorpusManifest` records value-only site, exact raw operand tag/array metadata, main/mission/streamed thread form and visits; changed sites, mixed sessions and unknown forms reject without replacing the manifest.
+- **Shipped gate:** the real HUD-ready startup path classifies all1288 encountered sites (main53 + mission1234 + unexecuted frontier),43 raw opcodes and48 complete operand forms across two generation-qualified threads. Fingerprint `BC61CAB8953E4545`; strict frontier remains `0814@212669`, decoded through `next=212749` as15 float-tag6 operands plus one int16-tag5 operand, with `SemanticCoverage::Unsupported`. The CPU-negative route independently classifies593 sites (main53 + mission539 + blocked frontier),32 opcodes/36 forms, fingerprint `4C8A0CD97C3A3533`; `0570@205876` has implemented VM form but unavailable host readiness. Neither path advances an unsupported instruction or fabricates Ready/NOP.
+- **Evidence/boundary:** `sa_core_session_probe /game`5467 and its full schema/corpus/session ASan+UBSan build pass; standalone session probe5467 and generated car-generator VM4511 pass. Full pickup/corpus and car-generator CPU/GL routes pass, preserving exact1234/0814 and539/0570 history. Frame104, startup `04E4@56022`, full Godot-native/native builds, native smoke and sweep33/0 pass. Runtime remains an ELF with no Wine library. Extension and current asset-free package are byte-identical `6d00c0bef914a5d805c0ab6189b3036f3ea13e1342a17715a02a3f08d8f0c1ca`, so no rendered package rerun was required. This classifies only the actually encountered linear startup sites, not all shipped missions/streamed scripts or semantics; no asset bytes/manifests are committed.
+- **Progress/next:** P4-A01 is verified:24/68=35.3% by equal atom count, not workload/game readiness. P4-A02 is `in_progress`: port and decisively replay the wait/stack/mission/streamed scheduler forms needed by startup while retaining one scheduling authority and strict service boundaries. Genuine boot, `0814` owner/runtime, save loop and all six finish axes remain open.
+
+### Prior — P3-A07 source slice feedback and P3 stage gate verified
 
 - **Versions/result:** native `519e68e1` committed/pushed; root companion is the commit containing this checkpoint, based on `1061cc4`. `NativeSourceSliceFeedback` observes only committed A06 lifecycle publications. The decisive route now feeds real `NativeSourcePad` samples, a genuine parser-worker model400 Landstal completion and retained real3991 `gsfreeway7_lan`/122-face COL. Its14 lifecycle/action events cover spawn, Triangle enter, task-reported door crossings, driver attach, Cross/left-X accelerate/steer, Square brake, Triangle exit, detach, destroy and world eviction. It publishes source-initial CPed/CPlayerInfo/CPlayerPedData/CWanted HUD values (health100/max100, armour0/max100, money/display0, wanted0, unarmed0) and current source vehicle phase/speed with no Godot-node feedback.
 - **Audio ownership:** model400's actual audio setting is `DoorType::NEW`. Task-reported `CAutomobile::OpenDoor` crossings map through `CAEVehicleAudioEntity` to events80/86, GENRL vehicle bank138/slot19 and exact sounds40/33. New `SfxDecode_Sound` reads those exact global bank/sound identities from the owned install and retains PCM values; open is11220B/20000Hz/FNV12126532606915493261, close6120B/20000Hz/FNV17516698511130988286. There is no neighbouring-sample fallback, invented event-at-button-time or mixer/playback/full-audio-family claim.

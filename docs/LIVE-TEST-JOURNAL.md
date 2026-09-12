@@ -4,6 +4,12 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P4-01 — 2026-09-12, DIRECT; strict shipped startup corpus/schema
+
+- Native `9c1aede4` separates pinned schema forms from semantic ownership and adds a failure-atomic value-only corpus manifest with exact raw tags, array metadata and main/mission/streamed thread identity.
+- Real HUD-ready route classifies1288 sites/43 opcodes/48 forms, fingerprint `BC61CAB8953E4545`: main53, mission1234 and unexecuted `0814@212669` (`15*float-tag6 + int16-tag5`, next212749). CPU route classifies593/32/36, fingerprint `4C8A0CD97C3A3533`, preserving539 and host-unready `0570@205876`. No unknown/known-unsupported NOP or fake Ready.
+- Session5467 direct+ASan/UBSan, generated VM4511, full pickup/car-generator CPU+GL corpus routes, frame104, startup04E4, native build/smoke/sweep33/0 pass. Extension/package remains `6d00c0bef914a5d805c0ab6189b3036f3ea13e1342a17715a02a3f08d8f0c1ca`; no rendered rerun for byte-identical output. P4-A01 verified:24/68=35.3%, not readiness; P4-A02 scheduler forms next.
+
 ### GODOT-P3-14 — 2026-09-12, DIRECT; source HUD/action/exact door PCM and P3 closure
 
 - Native `519e68e1` adds a committed-lifecycle observer and exact SFX bank/sound decoder. The real A06 route now uses `NativeSourcePad`, model400 worker packet and real3991/122-face source COL, producing14 ordered action observations and source-initial HUD with no Godot/presentation feedback.

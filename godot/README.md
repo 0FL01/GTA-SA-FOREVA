@@ -38,6 +38,25 @@ startup still commits14 instructions then reports Unsupported `04E4@56022`:
 fixture success is not completed boot. Evidence: `artifacts/build-runs/p2-a05-*`.
 The frame TU is core-only; A05 kept the extension byte-identical to P2-A04.
 
+### Shipped SCM corpus/schema (P4-A01)
+
+`NativeScriptSchema` separates the pinned bytecode form from implemented VM
+semantics; a known form is never executed by the default switch as a NOP.
+`NativeScriptCorpusManifest` records exact raw tags/array metadata and owned
+main/mission/streamed thread forms without copying SCM bytes.
+
+```sh
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_session_probe /game
+docker --context rootless exec -w /workspace mad-sa-graphics-build python3 gta-reversed/source/app/platform/linux/NativePickupScriptProbe.py --run --game-dir /game
+```
+
+Require `checks=5467` and the `script-corpus` marker with `sites=1288`,
+`opcodes=43`, `forms=48`, `frontier=0814@212669`, `next=212749`,
+`fingerprint=BC61CAB8953E4545`, `nop-substitution=0`. The complementary CPU route
+is593 sites/32 opcodes/36 forms and stops at host-unready `0570@205876`. This
+classifies the encountered startup path only; `0814`, broader mission/streamed
+corpora and genuine boot remain later P4 work.
+
 ### Source camera transitions (P3-A03 bounded owner)
 
 `NativeSourceCamera` owns the source `FollowPed` (`4`) / `CamOnAString` (`18`)

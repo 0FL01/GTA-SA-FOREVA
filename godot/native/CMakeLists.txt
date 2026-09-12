@@ -102,6 +102,8 @@ set_target_properties(sa_legacy PROPERTIES
 # session/clock/IO dependency). sa_input_bridge.cpp above is the only
 # extension TU that uses it.
 set(SA_CORE_SOURCES
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSchema.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptCorpus.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptFrame.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceRng.cpp"
@@ -141,6 +143,7 @@ target_compile_features(sa_core PUBLIC cxx_std_20)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core PRIVATE -Wall -Wextra -Wpedantic)
     set_source_files_properties(
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptCorpus.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptFrame.cpp"
         PROPERTIES COMPILE_OPTIONS "-fexceptions"
