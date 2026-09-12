@@ -4,6 +4,12 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P4-03 — 2026-09-12, DIRECT; stable async script-service transactions
+
+- Native `3f81349c` adds a pure owner/attempt transaction and adopts it in realtime `04E4`/`03CB` services. Worker callbacks expose Pending/Prepared/Error only; Prepared becomes script Ready only after source-COL/ground/residency validation and one world/journal commit. Cancel is idempotent, acknowledgement is exact-ticket only, same-ID retry increments attempt, and stale/invalid/throwing results cannot publish.
+- `sa_core_service_transactions_probe`71 checks repeats the value trace twice and drives an actual Session barrier: stable ID, cancelled attempt1, attempt2 retry, one external effect/VM commit and `ready-before-commit=0`. Real host resident-world cancel/retry passes. Actual worker placement now supplies explicit cleanup authority for the host-retained exact source-COL; normal and pinned-offline gates pass.
+- Transaction+Session ASan/UBSan, frame104/session5467/scheduling106/startup, exact full/CPU corpus routes, full builds, native smoke and sweep33/0 pass; PID1=`docker-init`, zombies0. Extension/package stays `6d00c0bef914a5d805c0ab6189b3036f3ea13e1342a17715a02a3f08d8f0c1ca`, so no rendered rerun. P4-A03 verified:26/68=38.2%, not readiness; P4-A04 portable owned-graph envelope next.
+
 ### GODOT-P4-02 — 2026-09-12, DIRECT; deterministic main/mission/streamed scheduler
 
 - Native `86f7e38e` extends only the sole `NativeScriptSession`: source stack8, GOSUB/RETURN, tag0 child arguments, head-inserted main/streamed threads, mission/streamed BaseIP and generation-qualified streamed payload user lifetime. Committed frames retain value registry state, never script bytes.

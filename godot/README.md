@@ -78,6 +78,31 @@ mission/streamed base-relative returns; the real read-only registry verifies all
 streamed body, entity-attached brain behavior, genuine boot or save semantics.
 Evidence: `artifacts/build-runs/p4-a02-*`.
 
+### Asynchronous script-service transactions (P4-A03)
+
+`NativeScriptServiceTransaction` gives one exact SCM service identity a
+pointer-free owner/attempt ticket. Repeated Pending polls retain that ticket;
+cancel notifies once and must be acknowledged before the same instruction can
+retry with a newer attempt. A worker can report only Pending, Prepared or Error:
+Prepared is internal and is never script Ready before the host's actual effect
+and journal commit. The current realtime consumers are `04E4` and `03CB`; this
+does not create another scheduler, worker or generic fake service implementation.
+
+```sh
+docker --context rootless exec -w /workspace mad-sa-graphics-build cmake --build build/godot-native --parallel 2 --target sa_core_service_transactions_probe
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_service_transactions_probe
+docker --context rootless exec -w /workspace mad-sa-graphics-build python3 gta-reversed/source/app/platform/linux/RealtimeScriptHostProbe.py --run --game-dir /game
+```
+
+Require `sa-core-service-transactions-ok checks=71`, `attempts=2`,
+`session-stable-id=1`, `session-effect=once`, `ready-before-commit=0` and
+`deterministic=twice`. The real host fixture additionally validates the resident
+source-COL world, two-phase cancellation, attempt+1 retry, exactly one world
+revision/event, invalid Prepared retirement and worker exception handling. The
+actual parser-worker placement gate passes with explicit generator cleanup for
+the exact privately held packet. Original-save compatibility and genuine boot
+remain later P4 work.
+
 ### Source camera transitions (P3-A03 bounded owner)
 
 `NativeSourceCamera` owns the source `FollowPed` (`4`) / `CamOnAString` (`18`)
