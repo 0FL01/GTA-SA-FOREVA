@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution resumed; DIRECT at user request, no subagents.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records P3-A01's verified integrated ordinary on-foot/jump/interruption and marker fixture.17/68 verified atoms (25% by count) is not game readiness. P3-A02 is in progress: isolated source model contacts verified, ped/world support and the loaded-world route remain open; full-port scope remains active.
+**Execution resumed; DIRECT at user request, no subagents.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records P3-A02's verified controlled collision-world route.18/68 verified atoms (26.5% by count) is not game readiness. P3-A03 gameplay-camera ownership is in progress; full-port scope remains active.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -11,7 +11,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P0 | implemented; target reflight open | Finite UV/provenance/retained-world CPU and rendered clean-package gates pass; external Fedora reflight is not claimed |
 | P1 | A01–A07 verified | Qualified identities/catalog/chain, paired render/COL, sole-owner async parser, budgeted publication/retirement and catalog-backed exterior/interior residency verified |
 | P2 | A01–A06 verified | Owned core boundaries plus labelled CJ/car studio approximation;27-row CPU/Godot trace, interpolation/teardown, clean Vulkan and native33/0 verified, NOT source gameplay |
-| P3 | A01 bounded task/marker fixture verified; A02 in_progress |294 integrated/57 tasks/107 real-bank checks; A02 source contacts, step/friction and429-check material binding verified as components. Physical world/contact route and gameplay hosting remain open |
+| P3 | A01–A02 verified; A03 in_progress | Source task/marker boundary plus84-check qualified collision-world curb/wall/dynamic route and real3991 support. Next gameplay camera ownership; Godot gameplay hosting remains open |
 | P4 | pending | Genuine SCM boot, first mission and portable save loop |
 | P5 | pending | Whole-world entities and all source vehicle families |
 | P6 | pending | Population/AI/combat/police/recovery/interactions |

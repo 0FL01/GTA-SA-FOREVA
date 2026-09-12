@@ -4,6 +4,12 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-09 — 2026-09-12, DIRECT; controlled source ped collision world
+
+- Native `1a1bc384` adds the ordinary CPed support/wall/pair response and a qualified normal-sector owner. One control prefix consumes friction, resets transient flags, applies gravity/air resistance, then the retail step count drives cumulative probes, support-Z carry and matrix rollback. Source `.95` support, prior-standing extension, HasHitWall, steep material, report/friction order and count0 behavior are preserved. Unowned head/height/fall-task/moving-support/blocked-position paths reject explicitly.
+- `p3-ped-world-world.log`84 checks crosses a controlled loaded0.25 curb, transfers dynamic-ped velocity and stops/rolls back before a wall; separate read-only real3991 support runs through the same owner. Response58, physical65, surfaces611, preparation16/model26/contact315/world79/tasks294/frame104 pass. World/response source ASan/UBSan, no-write/no-EXE trace, pure closure, native build/smoke and native sweep33/0 pass. Existing parser/POSIX archive dependencies are not fully instrumented.
+- Core24 TUs; extension remains `d35fe301e59cd40a367ab74eea3bb60ca6f36cf6ef9ca3c28827393b89de0f48`, retaining the fresh packaged Vulkan evidence. Controlled complete-sector geometry plus actual isolated support closes P3-A02's explicit gate, not whole-world source order/coverage or Godot gameplay.18/68=26.5% equal-count atoms. P3-A03 camera ownership is next.
+
 ### GODOT-P3-08 — 2026-09-12, DIRECT; source material-bound friction
 
 - Native `30bb9b7a` reuses the canonical material-name implementation through a metadata-only compile mode and adds owned read-only surface/adhesion loading. Retail0x573F40 confirms ordered lower-triangle mirroring, ignored row labels and leading-minus zero; getter0x5772F0 uses B/A group order. Unknown group retention and default-name alias remain source-compatible; malformed/unsafe loads reject atomically. No game coefficients/assets are committed.

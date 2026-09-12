@@ -87,26 +87,36 @@ each clump update and before `Manage`, even when the jump slot is inactive.
 Static RE used the local owned `Grand-Theft-Auto-San-Andreas/gta-sa.exe` read-only;
 neither native nor Godot runtime reads that executable.
 
-P3-A02 is in progress. `sa_core_physical_probe` verifies61 checks:31 force/gravity/
-dynamic-ped pair cases,13 retail collision-step cases and17 friction cases. This
+P3-A02's bounded normal-sector gate is verified. `sa_core_physical_probe` verifies65 checks:31 force/gravity/
+dynamic-ped pair cases,13 retail collision-step cases,17 friction cases and4
+translational air-resistance cases. This
 preserves source minimum/narrowing and friction accumulation/consumption, including
-the unclamped second pair force. `sa_core_surfaces_probe /game` verifies429 checks
+the unclamped second pair force. `sa_core_surfaces_probe /game` verifies611 checks
 for the owned source adhesion/material binding: real179 material rows, generated
 matrix/order/parser cases, atomic reload rejection and the physical friction handoff.
 The existing canonical name table is shared through a metadata-only source build;
-coefficients stay in the external game files. Only adhesion is adopted, not all
-surface flags/effects. Direct/ASan/UBSan, read-only IO, pure link closure and Win32
-lookup syntax checks pass (`artifacts/build-runs/p3-surfaces-*.log`). Core22 TUs;
+coefficients stay in the external game files. Adhesion plus the soft/steep properties
+needed by the bounded response are adopted, not all surface flags/effects.
+Direct/ASan/UBSan, read-only IO, pure link closure and Win32 lookup syntax checks
+pass (`artifacts/build-runs/p3-surfaces-*.log`);
 the extension remains byte-identical to the latest clean rendered delivery.
+`sa_core_ped_response_probe /game` verifies58 ordinary support/wall/pair response
+checks. `sa_core_ped_world_probe /game` verifies84 ownership/substep/rollback
+checks and the decisive route: a controlled loaded snapshot steps onto a0.25
+curb, transfers one dynamic-ped contact and stops before a wall; a separate
+real3991 target reaches standing through the same owner and real surface data.
+The owner requires complete, source-ordered normal-sector authority. This closes
+the stated P3-A02 route, not whole-world order/coverage, moving supports, fall/
+head effects or Godot gameplay hosting. Core24 TUs; ASan/UBSan and native33/0 pass.
 `sa_core_contact_probe /game` verifies315 upstream-model sphere/line
 contact and broadphase checks, including122 real COL triangles and four authored
 face groups using the existing reader.
 `sa_core_ped_model_probe /game` verifies26 source model-pair checks: ordered groups,
 nearest/all contacts, transformed support/head lines, source caps and a real COL
 support-line hit. This is still an isolated query, not ped standing or world coverage.
-These are arithmetic/local-space probes, not a loaded-world ped route. Retail
-RE resolved box equal-face selection (ties fall through to z); sector coverage
-and full ped collision remain open.
+Retail RE resolved box equal-face selection (ties fall through to z). The
+controlled route is now composed, while retail sector-pool breadth and full ped
+collision families remain open beyond this vertical slice.
 
 ### Native actor studio (P2-A06)
 

@@ -117,6 +117,8 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedCollision.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedModelContact.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceSurfaces.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedResponse.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedWorld.cpp"
     "${NATIVE_SOURCE_DIR}/game_sa/SurfaceInfos_c.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCollisionAssets.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
@@ -167,6 +169,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceGround.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldGround.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceSurfaces.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedResponse.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedWorld.cpp"
         PROPERTIES COMPILE_OPTIONS "-fexceptions;-fno-fast-math;-ffp-contract=off"
     )
 endif()
@@ -203,6 +207,10 @@ add_executable(sa_core_ped_model_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/
 target_link_libraries(sa_core_ped_model_probe PRIVATE sa_core)
 add_executable(sa_core_surfaces_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceSurfacesProbe.cpp")
 target_link_libraries(sa_core_surfaces_probe PRIVATE sa_core)
+add_executable(sa_core_ped_response_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedResponseProbe.cpp")
+target_link_libraries(sa_core_ped_response_probe PRIVATE sa_core)
+add_executable(sa_core_ped_world_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedWorldProbe.cpp")
+target_link_libraries(sa_core_ped_world_probe PRIVATE sa_core)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_frame_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_session_probe PRIVATE -Wall -Wextra -Wpedantic)
@@ -217,6 +225,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_ped_collision_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_ped_model_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_surfaces_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+    target_compile_options(sa_core_ped_response_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+    target_compile_options(sa_core_ped_world_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
 endif()
 
 # P2-A02 owned source-clock probe: links ONLY sa_core, never the extension.
