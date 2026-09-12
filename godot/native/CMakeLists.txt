@@ -109,6 +109,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedControl.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceJump.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceAnimClump.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceTaskManager.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCollisionAssets.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceGround.cpp"
@@ -168,12 +169,15 @@ add_executable(sa_core_jump_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/Nativ
 target_link_libraries(sa_core_jump_probe PRIVATE sa_core)
 add_executable(sa_core_clump_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceAnimClumpProbe.cpp")
 target_link_libraries(sa_core_clump_probe PRIVATE sa_core)
+add_executable(sa_core_tasks_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceTaskManagerProbe.cpp")
+target_link_libraries(sa_core_tasks_probe PRIVATE sa_core)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_frame_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_session_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_ped_control_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_jump_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_clump_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+    target_compile_options(sa_core_tasks_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
 endif()
 
 # P2-A02 owned source-clock probe: links ONLY sa_core, never the extension.

@@ -4,6 +4,11 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-03 — 2026-09-12, DIRECT agent; source task-slot ownership, atom open
+
+- Native `6d47af4f`, root containing this checkpoint (base `3181d42`). Owned source five-primary/six-secondary task-tree flow: nested creation/unwinding, parent control, first active primary, ten primary transitions versus full secondary draining, timer/event clear/flush order. Executing-root destruction/reentrant Manage reject Busy; installing other slots during processing is supported. Existing reversed source's first-match FindActive bugfix is explicit.
+- `p3-tasks-probe.log`/`p3-tasks-sanitized.log`50 checks pass, including actual jump task destruction without clump animation destruction. Full coherent build, clump38/jump75/frame104/session5451 regressions pass. Core14 TUs; extension SHA256 unchanged `02b4434f095028c084351cb700a7f27cd9c3f591c0b7b21b6039b74ff7ad14b2`, retaining fresh previous-round rendered evidence. No complete player body/physics/Godot source host claim. A01 still open for normal idle/start/stop integration,16/68 count unchanged.
+
 ### GODOT-P3-02 — 2026-09-12, DIRECT agent; shared clump ownership, atom open
 
 - Native `0d1f78f5`, root containing this checkpoint (base `a2c4994`). Source association Add-first/Blend-last sync, ordered blend/step/time, finish/delete distinction and nonrecycled owner/serial identity verified. Jump tasks borrow the clump, receive its events once and detach callbacks on destruction without deleting animations. Real IFP metadata is provided by the existing reader; no new loader/physics authority.
