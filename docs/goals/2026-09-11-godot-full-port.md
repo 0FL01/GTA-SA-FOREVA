@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE, resumed 2026-09-12. Latest user instruction selects DIRECT execution: parent performs RECON, implementation and verification without subagents. P2-A01–A06 verified; P3-A01 is next. No compress unless context becomes critical, per latest user instruction.
+Execution: ACTIVE, resumed 2026-09-12. Latest user instruction selects DIRECT execution: parent performs RECON, implementation and verification without subagents. P2-A01–A06 verified; P3-A01 in_progress, source primitives verified but atom not closed. No compress unless context becomes critical, per latest user instruction.
 Activated: 2026-09-11
 Last updated: 2026-09-12
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -83,7 +83,7 @@ P0 implementation and available server gates are verified; target reflight stays
 
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
-| P3-A01 | pending | Port source-informed ped task state, interruption and animation-marker flow, using focused RE where bodies are missing. | Walk/run/jump/interruption fixture matches expected task and marker transitions. |
+| P3-A01 | in_progress | Port source-informed ped task state, interruption and animation-marker flow, using focused RE where bodies are missing. | Walk/run/jump/interruption fixture matches expected task and marker transitions. |
 | P3-A02 | pending | Port authoritative ped/world collision and dynamic pair/contact behavior. | Controlled curb/wall/dynamic-contact route crosses loaded world without lost collision. |
 | P3-A03 | pending | Port gameplay camera ownership and transitions for the slice. | Spawn/on-foot/vehicle camera transition trace has no Godot-node authority feedback. |
 | P3-A04 | pending | Construct a common Automobile from real model and handling identities with occupants. | One common source model constructs with exact handling/model/occupant identities, not `400/476` fallback. |
@@ -169,9 +169,15 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-12 — DIRECT; P2-A06 verified
+### 2026-09-12 — DIRECT; P3-A01 source primitives, atom still open
 
-- **Current result/versions:** native `6bbebc48` pushed; root companion is the containing commit (base `f513b0f`). Extension SHA256 `2c9dfb65f8179439c73966c9efcb3d8abed45ff9235bec28de424c62570be959`. P0 3/4 +P1 7/7 +P2 6/6 =16/68 verified atoms (23.5%, not workload or game readiness). All six full-port axes and target-GPU reflight remain open.
+- **RE evidence:** the owned install is `/home/opencode/ai/mad-sa/Grand-Theft-Auto-San-Andreas`, mounted `/game:ro`; no missing-copy blocker. Upstream `SetRealMoveAnim` is address-backed. Its compact0x60A9C0 is NOT the retail function: static `playidles` string0x8b7f5c → constructor0x6b23xx/vtable0x8bbbac → ProcessPed0x6b5570 → Zelda0x6b50f0 → actual SetRealMoveAnim0x627780..0x62826a establishes the mapping. Normal walk/run weights at0x628102..0x62819a use strict ratio<1, <2 thresholds (exact1 is RUN with walk weight1), source constants verified. Artifacts: `artifacts/build-runs/p3-a01-*`; EXE is static research input only, never native/Godot runtime input.
+- **Implemented/verified:** native `0216bb70` pushed, root companion containing this checkpoint based on `93ca421`. `NativeSourcePedControl` owns input-ratio/normal walk-run and source animation primitives; `NativeSourceJump` owns bounded launch/world-wait/land/hit-head/abort flow.107 control +52 jump checks and both full-source ASan/UBSan probes pass. Preserve single loop subtraction, late playing-bit clear, finish callback on blend deletion, exact0.1/0.2-second non-consuming foot predicates, callback-versus-ProcessPed separation, urgent-denied-but-fades behavior, fresh launch/landing stat and association reads, atomic missing-duration/stale/pending/unsupported/error guards. No default one-second authored clip. `sa_core` has12 TUs; extension remains exactly A06 SHA256 `2c9dfb65f8179439c73966c9efcb3d8abed45ff9235bec28de424c62570be959`, so rendered A06 evidence remains applicable. Frame104/session5451 regressions pass; no native runtime/bridge/diagnostic-controller behavior changed.
+- **Not closed / next:** A01 remains in_progress, verified atom count stays16/68. Complete actual task-slot/clump association ownership and ordinary idle/start/stop transitions, using authoritative clip metadata; do not mistake per-task association projections or fixture-supplied world predicates for a hosted source ped. Source physics/world contacts remain P3-A02, and the separate full-port axes remain open. The diagnostic A06 controller must not be relabelled source gameplay.
+
+### Preserved P2 delivery evidence
+
+- **P2 result/versions:** native `6bbebc48`, root `93ca421`, both pushed. Extension SHA256 `2c9dfb65f8179439c73966c9efcb3d8abed45ff9235bec28de424c62570be959`. P0 3/4 +P1 7/7 +P2 6/6 =16/68 verified atoms (23.5%, not workload or game readiness). All six full-port axes and target-GPU reflight remain open.
 - **A06 evidence:** `artifacts/build-runs/p2-a06-final-gates.log` ends `p2-a06-final-gates-ok`; native27-row trace, wrapper-ASan/UBSan, IO read-only/no-EXE, frame104/session5451, package studio launch, actual actor3772 pixels, retained/mutation-safe buffers and concurrent region parse, clean packaged region_chain/region_async. `p2-a06-native-sweep.log`33/0 after shared texture-linkage fix. PNGs `artifacts/godot/p2-a06-actors.png` (driving) and `p2-a06-actors.png-walking.png` (CJ+car) reviewed; server llvmpipe is not RX780M/source parity. Commands and controls are in `godot/README.md`.
 - **A06 resolved experiments:** Godot API has no exposed ARRAY_FLAG_FORMAT_VERSION_2, use the established flags0 path; source resolved vehicle paint comes from surface.color, not legacy marker triCol. Pixel presence compares against the background rather than assuming saturated paint. ASan found48 orphaned zero-size rasters (13824B) in old TexSample_LinkedParse's NULL-driver dummy path; a name-only read callback retains the same texture-reference semantics without allocating rasters. Final sanitizer and RW allocation-count checks pass, no suppressions; all native raster hashes remain unchanged.
 

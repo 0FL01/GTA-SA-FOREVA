@@ -36,7 +36,27 @@ docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot
 The 104-check frame test and existing 5451-check session regression pass. Real
 startup still commits14 instructions then reports Unsupported `04E4@56022`:
 fixture success is not completed boot. Evidence: `artifacts/build-runs/p2-a05-*`.
-The frame TU is core-only; the extension remains byte-identical to P2-A04.
+The frame TU is core-only; A05 kept the extension byte-identical to P2-A04.
+
+### Source ped primitives (P3-A01 in progress)
+
+`NativeSourcePedControl` and `NativeSourceJump` add source input smoothing,
+retail-mapped normal walk/run weights, animation timing and bounded jump/land/
+hit-head/interruption flow to the pure core. The107/52-check probes include
+source callback-on-fade deletion, literal foot markers, current launch/landing
+observations and failure-atomic unavailable-world/clip/stale guards.
+
+```sh
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_ped_control_probe
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_jump_probe
+```
+
+These probes use explicit synthetic clips/world predicates, not manufactured
+gameplay Ready. Full task-slot/clump association ownership and normal idle/start/
+stop transitions remain open. No physics or Godot source-ped host is claimed.
+The extension is byte-identical to A06; evidence is `artifacts/build-runs/p3-a01-*`.
+Static RE used the local owned `Grand-Theft-Auto-San-Andreas/gta-sa.exe` read-only;
+neither native nor Godot runtime reads that executable.
 
 ### Native actor studio (P2-A06)
 

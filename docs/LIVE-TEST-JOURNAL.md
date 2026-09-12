@@ -4,6 +4,12 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-01 — 2026-09-12, DIRECT agent; source primitives, atom open
+
+- Native `0216bb70`, root containing this checkpoint (base `93ca421`). Static owned-retail RE follows playidles/vtable/ProcessPed/Zelda to SetRealMoveAnim0x627780, not upstream0x60A9C0. Constants and strict ratio1/2 branch boundaries confirmed; no EXE runtime dependency or asset copying.
+- `p3-a01-control.log`107 checks and `p3-a01-jump.log`52 checks, corresponding full-source ASan/UBSan logs, coherent full Godot-native build, frame104 and session5451 regressions pass. Source association single-wrap/late-playing-clear, callback on fade deletion, real0.1/0.2-second foot predicates, current launch/landing input reads, task callback/process separation and typed atomic guards covered. Fixtures supply synthetic clip/world observations; no real physics/boot claim.
+- Extension SHA256 remains `2c9dfb65f8179439c73966c9efcb3d8abed45ff9235bec28de424c62570be959`; previous A06 clean Vulkan/actor/region evidence remains current by byte identity. Core12 TUs; new objects are not hosted by the extension. Task-slot/clump lifetime and idle/start/stop ownership still required: P3-A01 stays in_progress and verified count stays16/68.
+
 ### GODOT-P2-16 — 2026-09-12, DIRECT agent
 
 - Native `6bbebc48`; root containing this entry (base `f513b0f`); extension SHA256 `2c9dfb65f8179439c73966c9efcb3d8abed45ff9235bec28de424c62570be959`. P2-A05 previously `9db2a1aa`/`f513b0f`, core-only frame104/VM5451 verified.
