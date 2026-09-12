@@ -4,6 +4,13 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-05 — 2026-09-12, DIRECT agent; integrated tasks and initial contact arithmetic
+
+- Working tree based on native `96b8b7e2` / root `0c2a9a3`; no new commit yet. A01 ordinary on-foot/jump task/marker fixture294, task manager57 and real IFP bank107/13 clips pass, including inactive task callbacks and clump-safe teardown. Full relevant task/manager sanitizers and primitive/frame/session regressions pass; bounded A01 fixture verified,17/68 atoms, not readiness.
+- A02 remains in progress: physical31, contact315 (all122 real3991 COL triangles and exact four-group metadata) and ped preparation16 checks pass. New arithmetic/probes sanitized; asset archive not fully instrumented. Retail RE maps inside-box helper0x410850 and ped constructor0x6044A0/vtable0x8B6FBC/ProcessEntityCollision0x5FE210; ties fall through to z, ordinary support line extends with prior standing/timestep, above-head mode uses a second line. No source model-pair/world sector/curb route completion claimed.
+- Follow-up `p3-ped-model-probe.log`/`p3-ped-model-sanitized.log`26 checks verify isolated source model-pair traversal and real grouped3991 support-line hit, including matrix transforms, authored ordering, caps and atomic rejection. Core20 TUs; extension unchanged from fresh metadata gates. World coverage and ped standing/physical-response integration remain open; no A02 completion claim.
+- Latest `artifacts/build-runs/p3-contact-metadata-*.log` covers fresh task/manager/contact/physical/ped sanitizers, world79, unchanged27-row diagnostic actor trace, full coherent build, native sweep33/0 and clean packaged Wayland/Vulkan actor/region_chain/region_async. Existing COL reader exposes already validated face groups; core19 TUs, NEW extension SHA256 `d35fe301e59cd40a367ab74eea3bb60ca6f36cf6ef9ca3c28827393b89de0f48`. Actor screenshot reviewed; server software evidence is not target reflight. Owned game stays external/read-only; no user config/TGA/cache edits.
+
 ### GODOT-P3-04 — 2026-09-12, DIRECT agent; ordinary locomotion, atom open
 
 - Native `96b8b7e2`, root containing this checkpoint (base `a39cbef`). Retail ordinary idle/start/walk/run/stop path uses source clump ownership, actual blend constants4/8 and WALK_start lookahead, not a fabricated finish marker. Reset bit affects phase, not Playing; running activity is an observation for the future stats owner. Sprint/exhaustion/turn/adrenaline remain Unsupported in this scoped primitive.

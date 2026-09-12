@@ -111,6 +111,11 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceAnimClump.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceTaskManager.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceWalkRun.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedTasks.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePhysical.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceContact.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedCollision.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedModelContact.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCollisionAssets.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceGround.cpp"
@@ -140,6 +145,11 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceJump.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceAnimClump.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceWalkRun.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedTasks.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePhysical.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceContact.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedCollision.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedModelContact.cpp"
         PROPERTIES COMPILE_OPTIONS "-fno-fast-math;-ffp-contract=off"
     )
     # P2-A04 isolated world authority: existing Assets/EntityInfo/SourceGround/
@@ -175,6 +185,16 @@ add_executable(sa_core_tasks_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/Nati
 target_link_libraries(sa_core_tasks_probe PRIVATE sa_core)
 add_executable(sa_core_walk_run_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceWalkRunProbe.cpp")
 target_link_libraries(sa_core_walk_run_probe PRIVATE sa_core)
+add_executable(sa_core_ped_tasks_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedTasksProbe.cpp")
+target_link_libraries(sa_core_ped_tasks_probe PRIVATE sa_core)
+add_executable(sa_core_physical_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePhysicalProbe.cpp")
+target_link_libraries(sa_core_physical_probe PRIVATE sa_core)
+add_executable(sa_core_contact_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceContactProbe.cpp")
+target_link_libraries(sa_core_contact_probe PRIVATE sa_core)
+add_executable(sa_core_ped_collision_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedCollisionProbe.cpp")
+target_link_libraries(sa_core_ped_collision_probe PRIVATE sa_core)
+add_executable(sa_core_ped_model_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedModelContactProbe.cpp")
+target_link_libraries(sa_core_ped_model_probe PRIVATE sa_core)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_frame_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_session_probe PRIVATE -Wall -Wextra -Wpedantic)
@@ -183,6 +203,11 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_clump_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_tasks_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_walk_run_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+    target_compile_options(sa_core_ped_tasks_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+    target_compile_options(sa_core_physical_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+    target_compile_options(sa_core_contact_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+    target_compile_options(sa_core_ped_collision_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+    target_compile_options(sa_core_ped_model_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
 endif()
 
 # P2-A02 owned source-clock probe: links ONLY sa_core, never the extension.

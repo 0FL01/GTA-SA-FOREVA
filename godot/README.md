@@ -38,7 +38,7 @@ startup still commits14 instructions then reports Unsupported `04E4@56022`:
 fixture success is not completed boot. Evidence: `artifacts/build-runs/p2-a05-*`.
 The frame TU is core-only; A05 kept the extension byte-identical to P2-A04.
 
-### Source ped primitives (P3-A01 in progress)
+### Source ped tasks (P3-A01 bounded fixture verified)
 
 `NativeSourcePedControl` and `NativeSourceJump` add source input smoothing,
 retail-mapped normal walk/run weights, animation timing and bounded jump/land/
@@ -62,23 +62,41 @@ docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot
 docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_source_clump_assets_probe /game
 docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_tasks_probe
 docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_walk_run_probe
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_ped_tasks_probe
 ```
 
-Current counts: control107/jump75/clump38/real-bank53 (13 real clips). The bank
-probe reuses `IfpAnimPlayerBank::Describe`, not a new parser. The50-check task
+Current counts: control107/jump75/clump38/real-bank107 (13 real clips). The bank
+probe reuses `IfpAnimPlayerBank::Describe`, not a new parser. The57-check task
 manager probe additionally verifies owned source primary/secondary slots, nested
 tree transitions, source scheduling limits, interruption and clump-safe teardown.
 The25-check ordinary locomotion probe additionally verifies idle/start/walk/run/
 stop, source start lookahead and phase reset. Sprint/exhaustion/turn/adrenaline
 remain unsupported here rather than silently becoming normal run. Integrated
-on-foot/jump task bodies remain open; no physics or Godot source-ped host is
-claimed. Fresh clean Vulkan actor/region/async regressions cover the changed
+ordinary on-foot/jump tasks now pass294 checks, including inactive callback
+delivery, typed death, air abort and hit-head. The real-bank fixture also executes
+the integrated route with authored timings. Contacts are explicitly synthetic;
+no physics or Godot source-ped host is claimed. Clean Vulkan actor/region/async regressions cover the changed
 extension; evidence is `artifacts/build-runs/p3-clump-*`.
 Task-manager direct/sanitizer evidence is `artifacts/build-runs/p3-tasks-*`;
 this later core-only TU leaves the rendered extension byte-identical.
 Ordinary locomotion evidence is `artifacts/build-runs/p3-walk-*`, also core-only.
+Integrated-task and manager sanitizer evidence is `artifacts/build-runs/p3-ped-final-*`;
+the full gate summary is `artifacts/build-runs/p3-ped-tasks-gates.log`. This core-only
+integration leaves the extension byte-identical. Call `NotifyAnimations` after
+each clump update and before `Manage`, even when the jump slot is inactive.
 Static RE used the local owned `Grand-Theft-Auto-San-Andreas/gta-sa.exe` read-only;
 neither native nor Godot runtime reads that executable.
+
+P3-A02 is in progress. `sa_core_physical_probe` verifies31 force/gravity/dynamic-ped
+pair checks. `sa_core_contact_probe /game` verifies315 upstream-model sphere/line
+contact and broadphase checks, including122 real COL triangles and four authored
+face groups using the existing reader.
+`sa_core_ped_model_probe /game` verifies26 source model-pair checks: ordered groups,
+nearest/all contacts, transformed support/head lines, source caps and a real COL
+support-line hit. This is still an isolated query, not ped standing or world coverage.
+These are arithmetic/local-space probes, not a loaded-world ped route. Retail
+RE resolved box equal-face selection (ties fall through to z); sector coverage
+and full ped collision remain open.
 
 ### Native actor studio (P2-A06)
 

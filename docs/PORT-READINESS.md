@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution resumed; DIRECT at user request, no subagents.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records P3-A01 ordinary locomotion (native `96b8b7e2`), task slots, shared animations and real clip timing. A01 remains open for integrated on-foot/jump flow;16/68 verified atoms is not game readiness. Full-port scope remains active.
+**Execution resumed; DIRECT at user request, no subagents.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records P3-A01's verified integrated ordinary on-foot/jump/interruption and marker fixture.17/68 verified atoms (25% by count) is not game readiness. P3-A02 is in progress: isolated source model contacts verified, ped/world support and the loaded-world route remain open; full-port scope remains active.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -11,7 +11,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P0 | implemented; target reflight open | Finite UV/provenance/retained-world CPU and rendered clean-package gates pass; external Fedora reflight is not claimed |
 | P1 | A01–A07 verified | Qualified identities/catalog/chain, paired render/COL, sole-owner async parser, budgeted publication/retirement and catalog-backed exterior/interior residency verified |
 | P2 | A01–A06 verified | Owned core boundaries plus labelled CJ/car studio approximation;27-row CPU/Godot trace, interpolation/teardown, clean Vulkan and native33/0 verified, NOT source gameplay |
-| P3 | A01 in_progress; ordinary locomotion/slots/clump verified |25 walk-run/50 tasks/107 control/75 jump/38 clump/53 real-bank checks; integrated on-foot/jump task body remains, no hosted source physics claim |
+| P3 | A01 bounded task/marker fixture verified; A02 next |294 integrated/57 tasks/107 real-bank checks plus source primitive regressions; physical world/contact route and gameplay hosting remain open |
 | P4 | pending | Genuine SCM boot, first mission and portable save loop |
 | P5 | pending | Whole-world entities and all source vehicle families |
 | P6 | pending | Population/AI/combat/police/recovery/interactions |
