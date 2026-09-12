@@ -62,19 +62,30 @@ explicit P7-A03 work, not a diagnostic-orbit substitute. Evidence:
 Current extension SHA256 after the adapter is
 `de50c7832e75943827f00a97b2554fe0f561ec20ac749434ba17c1caf2b4e568`.
 
-### Exact common Automobile constructor (P3-A04)
+### Exact common Automobile construction and control (P3-A04/A05)
 
 ```sh
 docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_source_automobile_probe /game
 ```
 
-Require `sa-core-automobile-ok checks=75`. This read-only fixture binds actual
+Require `sa-core-automobile-ok checks=107` and `sa_core_model_contact_probe`
+`checks=11`. The read-only fixture binds actual
 model400 `landstal`, DFF/TXD/embedded COL and the `LANDSTAL` handling row into
 immutable constructor/occupant state, then exercises ordinary keyboard control,
 the existing source transmission/air-resistance owner, suspension lines from
-actual wheel dummies, grounded wheel traction/forces and bounded ordered contact
-provenance. It deliberately does not claim vehicle pool/world insertion,
-real-COL contact detection/response or Godot driving.
+actual wheel dummies, grounded wheel traction/velocity and source-ordered model
+contacts. Actual `landstal_col`18 spheres/10 faces collide with qualified
+isolated floor/wall fixtures and drive bounded static-building response. The
+general query preserves two-sided sphere/box/triangle/line provenance and source
+128/64/600/31 limits. It deliberately does not claim vehicle pool/world
+discovery, dynamic vehicle/object response, damage/effects, all vehicle families
+or Godot driving. Evidence: `artifacts/build-runs/p3-a05-final-*`.
+
+Current extension SHA256 after the expanded Handling layout is
+`1272aeca12ae5fb0cc952603e291664b3fb01af3d2da2beed5a288be3d2401bd`.
+The fresh package passes camera, labelled diagnostic actor, region-chain and
+region-async routes under Wayland/software Vulkan with PID1 reaping and no
+zombie growth.
 
 ### Source ped tasks (P3-A01 bounded fixture verified)
 

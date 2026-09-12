@@ -4,6 +4,13 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P3-12 — 2026-09-12, DIRECT; common Automobile control and real-COL response
+
+- Native `872cab94`: exact model400 owner now applies ordinary control, transmission/air resistance, DFF-derived suspension and wheel linear/angular transitions. New general model query preserves source two-sided sphere/box/triangle/line order, face groups, surface swap and128/64/600/31 caps. The decisive route uses actual read-only `landstal_col`18 spheres/10 faces against qualified isolated floor/wall targets, then applies the bounded static-building collision/friction branch; fixture targets are not whole-world publication.
+- Automobile107 and model-query11 pass direct plus ASan/UBSan/leak. Physical65/contact315/ped-model26/ped-world84/tasks294/camera72/frame104 and diagnostic actor27 trace equality pass. After regenerating the stale Conan SDL cache with the documented pinned route, native smoke and sweep33/0 pass. `/game` strace is read-only/no-EXE.
+- Fresh asset-free package passes camera plus Wayland/software-Vulkan actor3772 pixels, region-chain and region-async. Inspected960x540 actor capture remains labelled diagnostic/synthetic; PID1=`docker-init`, zombies0. Extension `1272aeca12ae5fb0cc952603e291664b3fb01af3d2da2beed5a288be3d2401bd`.
+- P3-A05's exact gate is verified:21/68=30.9% equal atoms, not readiness. Dynamic vehicle/object response, world/pool discovery, damage/effects/audio/RNG, complete vehicle families and Godot driving remain pending. P3-A06 spawn/enter/drive/exit/destroy lifetime is next.
+
 ### GODOT-P3-11 — 2026-09-12, DIRECT; exact common Automobile constructor
 
 - Native `8e5b1e3a`: actual model400 `landstal`, DFF/TXD/common TXD, embedded `landstal_col`, full `LANDSTAL` handling row and source constructor literals publish one immutable Automobile state. Passenger capacity comes from actual door-dummy topology; driver/passenger identities and failure atomicity are explicit. No400/476 substitution path.

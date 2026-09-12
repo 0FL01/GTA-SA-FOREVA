@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution resumed; DIRECT at user request, no subagents.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records P3-A02's verified controlled collision-world route.18/68 verified atoms (26.5% by count) is not game readiness. P3-A03 gameplay-camera ownership is in progress; full-port scope remains active.
+**Execution resumed; DIRECT at user request, no subagents.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records P3-A05's verified common Automobile control/contact route.21/68 verified atoms (30.9% by count) is not game readiness. P3-A06 spawn/enter/drive/exit/destroy ownership is in progress; full-port scope remains active.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -11,7 +11,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P0 | implemented; target reflight open | Finite UV/provenance/retained-world CPU and rendered clean-package gates pass; external Fedora reflight is not claimed |
 | P1 | A01–A07 verified | Qualified identities/catalog/chain, paired render/COL, sole-owner async parser, budgeted publication/retirement and catalog-backed exterior/interior residency verified |
 | P2 | A01–A06 verified | Owned core boundaries plus labelled CJ/car studio approximation;27-row CPU/Godot trace, interpolation/teardown, clean Vulkan and native33/0 verified, NOT source gameplay |
-| P3 | A01–A04 verified; A05 in_progress | Exact source model400 Automobile/handling/occupant construction passes with no fallback. Current: common Automobile control and applicable Physical integration |
+| P3 | A01–A05 verified; A06 in_progress | Exact model400 construction plus source control/wheel/real-COL static response pass; current gate is coherent spawn/enter/drive/exit/destroy lifetime |
 | P4 | pending | Genuine SCM boot, first mission and portable save loop |
 | P5 | pending | Whole-world entities and all source vehicle families |
 | P6 | pending | Population/AI/combat/police/recovery/interactions |
