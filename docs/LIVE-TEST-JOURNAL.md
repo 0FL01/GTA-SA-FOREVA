@@ -6,6 +6,7 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ### GODOT-P3-06 — 2026-09-12, DIRECT; retail ped collision-step planner
 
+- Follow-up native `e7d7af08`: preparation directive corrected from HasContacted to CollisionProcessed (retail0x5FE3DE/Entity bit0x2, not0x8). Preparation16/model26 and query/preparation ASan/UBSan pass; binary identity retained. This prevents a future driver from incorrectly bypassing friction; no active runtime consumed the misnamed field.
 - Native `c3bea960`: source vtable slot16/0x5FFBD0 and CRT ceil/sqrt branch verified from the read-only retail reference. Planner preserves player minimum2/4, NPC distance/elasticity policy, pre-check flags and low-byte narrowing rather than clamping.
 - `p3-ped-steps-probe.log` and `p3-ped-steps-sanitized.log`44 checks pass (31 prior +13 new), model26/contact315 and coherent build pass. Extension remains `d35fe301e59cd40a367ab74eea3bb60ca6f36cf6ef9ca3c28827393b89de0f48`; fresh metadata-round rendered evidence remains applicable. P3-A02/world route still open, verified atom count17/68 unchanged.
 
