@@ -4,6 +4,12 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P4-02 — 2026-09-12, DIRECT; deterministic main/mission/streamed scheduler
+
+- Native `86f7e38e` extends only the sole `NativeScriptSession`: source stack8, GOSUB/RETURN, tag0 child arguments, head-inserted main/streamed threads, mission/streamed BaseIP and generation-qualified streamed payload user lifetime. Committed frames retain value registry state, never script bytes.
+- The real read-only main metadata and `script.img` form a strict79-name bijection independent of archive order. The106-check generated scheduling route repeats the exact31-commit normalized trace with passes18/9/1/1/1/1, next-pass mission→streamed→child order, independent waits and generation1→2 zero-user eviction/reload. All numeric vararg tags1–8 are covered; invalid stack/arity/load forms reject before commit.
+- Scheduling and Frame ASan+UBSan, frame104/session5467/startup, exact P4-A01 shipped fingerprints, full builds, smoke and native33/0 pass. Strace is read-only/no-EXE. Extension/package remains `6d00c0bef914a5d805c0ab6189b3036f3ea13e1342a17715a02a3f08d8f0c1ca`; no rendered rerun for byte-identical output. P4-A02 verified:25/68=36.8%, not readiness; P4-A03 service transactions next.
+
 ### GODOT-P4-01 — 2026-09-12, DIRECT; strict shipped startup corpus/schema
 
 - Native `9c1aede4` separates pinned schema forms from semantic ownership and adds a failure-atomic value-only corpus manifest with exact raw tags, array metadata and main/mission/streamed thread identity.

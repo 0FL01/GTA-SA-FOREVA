@@ -21,7 +21,8 @@ it is not aliased to an invented rainy-LA environment.
 `sa_core_frame_probe [owned-game-dir]` exercises `NativeScriptFrame`, which
 publishes `shared_ptr<const NativeScriptFrameSnapshot>` only after the existing
 SCM `RunPass` completes. Owned clock/pad samples, VM state/globals/threads and
-ordered post-commit clock/fade/output observations contain no Godot/RW pointers.
+ordered post-commit clock/fade/output observations and value-only streamed
+registry state contain no Godot/RW pointers or script payload bytes.
 Pending and quota continuation freeze the pass sample; no new scheduler, clock,
 service implementation or gameplay is introduced. Failed passes retain the
 previous presentation without rolling back already committed VM/host effects.
@@ -33,7 +34,7 @@ docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot
 docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_session_probe /game
 ```
 
-The 104-check frame test and existing 5451-check session regression pass. Real
+The 104-check frame test and existing 5467-check session regression pass. Real
 startup still commits14 instructions then reports Unsupported `04E4@56022`:
 fixture success is not completed boot. Evidence: `artifacts/build-runs/p2-a05-*`.
 The frame TU is core-only; A05 kept the extension byte-identical to P2-A04.
@@ -56,6 +57,26 @@ Require `checks=5467` and the `script-corpus` marker with `sites=1288`,
 is593 sites/32 opcodes/36 forms and stops at host-unready `0570@205876`. This
 classifies the encountered startup path only; `0814`, broader mission/streamed
 corpora and genuine boot remain later P4 work.
+
+### Deterministic script scheduling (P4-A02)
+
+`NativeScriptSession` remains the only scheduler. It owns the source depth-8
+GOSUB/RETURN stack, tag-zero main/streamed child parameters, next-pass head
+insertion, mission/streamed BaseIP and generation-qualified streamed payload
+users. `script.img` bytes stay private and can unload only at zero users.
+
+```sh
+docker --context rootless exec -w /workspace mad-sa-graphics-build cmake --build build/godot-native --parallel 2 --target sa_core_scheduling_probe
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_scheduling_probe /game
+```
+
+Require `sa-core-scheduling-ok checks=106 commits=31`,
+`passes=18,9,1,1,1,1`, `stack=8`, `streamed=79`, and
+`deterministic=twice`. The fixture covers all source numeric vararg tags and
+mission/streamed base-relative returns; the real read-only registry verifies all
+79 metadata↔VER2 names plus exact unpadded sizes. It does not claim every
+streamed body, entity-attached brain behavior, genuine boot or save semantics.
+Evidence: `artifacts/build-runs/p4-a02-*`.
 
 ### Source camera transitions (P3-A03 bounded owner)
 
