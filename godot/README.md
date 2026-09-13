@@ -148,6 +148,33 @@ frontier behavior, not genuine controllable play. Evidence:
 `artifacts/graphics/radar-ipl-boundary-boot-runtime.log` and
 `artifacts/build-runs/p4-a05-stunt-sanitized.log`.
 
+### Mission object/generator continuation (P4-A06 checkpoint)
+
+`NativeScriptObjects` owns the bounded source object identity/lifetime state used by
+the observed mission slice: generation-safe references, no-offset/regular creation,
+heading, cleanup, collision effect, freeze/dynamic, velocity, proofs, relative
+rotation, area, coordinates, heading and LOD links. `0400` uses the owned heading-only
+world transform; full 3D matrix input remains `Unsupported`. The existing generator
+owner now also accepts source `0A17` player-owned updates. Garage type19/type22 records
+outside the source interaction range are no-transition; near garage state remains
+strict. Nothing here creates render nodes, world object cleanup, plate-generator
+construction or vehicle-pool fulfillment.
+
+```sh
+docker --context rootless exec -w /workspace mad-sa-graphics-build cmake --build build/godot-native --parallel 2 --target sa_core_objects_probe
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_objects_probe /game
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_session_probe /game
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_scheduling_probe /game
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_frame_probe /game
+docker --context rootless exec -w /workspace mad-sa-graphics-build bash tools/etalon-sweep.sh
+```
+
+Current markers are `native-script-objects-ok checks=10`, session5472,
+scheduling106, frame104 and native sweep33/0. The real production continuation
+reaches `09E2@221414` after `014C@221407` with mission commands1612 and exits1 at
+the strict frontier. This is not genuine boot or controllable play; pause here and
+resume P4-A06 only after user direction.
+
 ### Source camera transitions (P3-A03 bounded owner)
 
 `NativeSourceCamera` owns the source `FollowPed` (`4`) / `CamOnAString` (`18`)

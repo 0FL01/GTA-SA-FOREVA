@@ -1,8 +1,15 @@
 # Live-test journal
 
-Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology](goals/2026-09-08-linux-native-opengl-port.md)
+Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology](goals/2026-09-08-linux-native-opengl-port.md)
 
 ## Entry contract
+
+### GODOT-P4-06 — 2026-09-13, DIRECT; bounded mission object/generator frontier and pause
+
+- Native `c1e74703` owns the observed mission object registry and routes the real `029B`/`0107` object lifecycle subset plus heading, cleanup, collision effect, freeze/dynamic, velocity, proofs, rotation, area, coordinates, heading, LOD and generator-owned transitions. The offset owner is intentionally heading-only; unsupported full 3D matrix input remains strict. `0A17` updates the existing generator state bit, with no new population or vehicle-pool authority.
+- The direct `/game` production route crosses the object/garage/generator slice and stops at strict `09E2@221414`, previous `014C@221407`, executed76, mission commands1612, runtimeUpdate0/save0. The old six-capture boot runner is not current evidence after A06 progressed beyond its hardcoded `029B` oracle. Genuine boot and controllable play remain unclaimed.
+- Focused markers: objects10, session5472, scheduling106, frame104. Native smoke and container `bash tools/etalon-sweep.sh` pass33/0; ELF64/no Wine, `/game:ro`, docker-init and zombies0. A host-side sweep invocation failed only because its hardcoded `/workspace` path is container-only; it was rerun correctly in the rootless container. No new ASan/UBSan claim.
+- Current strict boundaries are `09E2`, plate-generator construction, near garage source type/state, full object matrix/render/world cleanup, mission wait/termination and live control. Progress remains28/68=41.2%, not readiness. User requested commit/push and pause after this checkpoint.
 
 ### GODOT-P4-05 — 2026-09-13, DIRECT; source stunt-jump registration frontier
 
