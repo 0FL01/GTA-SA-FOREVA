@@ -1,9 +1,9 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE, resumed 2026-09-12. Latest user instruction selects DIRECT execution: parent performs RECON, implementation and verification without subagents. P2, P3 and P4-A01–A04 are verified; P4-A05 startup owner/service coverage is next. No compress unless context becomes critical, per latest user instruction.
+Execution: ACTIVE, resumed 2026-09-12. Latest user instruction selects DIRECT execution: parent performs RECON, implementation and verification without subagents. P2, P3 and P4-A01–A05 are verified; P4-A06 startup continuation is next. No compress unless context becomes critical, per latest user instruction.
 Activated: 2026-09-11
-Last updated: 2026-09-12
+Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
 Predecessor: [delivered Legacy Look Lab](2026-09-11-godot-legacy-look-lab.md)
 RECON evidence: [completed full-port RECON](../GODOT-FULL-PORT-RECON.md)
@@ -99,8 +99,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P4-A02 | verified | Port wait, stack, mission and streamed/brain scheduling needed by startup. | 106-check sole-session fixture repeats the exact31-commit wait/resume and main/mission/streamed head order twice; stack8, tag0 parameters, real79-entry IMG registry, generation/users and zero-user eviction pass. |
 | P4-A03 | verified | Give asynchronous script services stable prepare/pending/commit/cancel semantics. | 71-check value transaction/Session barrier plus actual resident-world host fixture cancel attempt1, acknowledge cleanup, retry attempt2 and commit exactly once; Prepared/late/invalid/throwing results never expose script Ready. |
 | P4-A04 | verified | Define owner serialization contracts and an early versioned portable save envelope outside original settings/saves. | A canonical6863-byte v1 envelope preserves a quiescent main/mission/streamed `NativeScriptSession` graph through a fresh executable process;111 reader checks reject truncation/version/checksum/SCM/streamed mismatches without changing the destination. |
-| P4-A05 | in_progress | Implement the real owner/service subset demanded by unmodified startup, including `0814` registration and separate runtime coverage. | Unmodified startup crosses each implemented site through a real owner; registration is not credited as update/reward/reset/save coverage. |
-| P4-A06 | pending | Reach mission0's real wait/termination, continue main scheduling, clear fade and return live player control. | Genuine new-game boot reaches controllable play with no startup-incomplete/unsupported fault or runtime exit `1`. |
+| P4-A05 | verified | Implement the real owner/service subset demanded by unmodified startup, including `0814` registration and separate runtime coverage. | Actual startup crosses all70 `0814` registrations through the source stunt-jump owner, then stops at classified `029B@218276` with no NOP substitution; runtime update/reward/reset/save remain separate. |
+| P4-A06 | in_progress | Reach mission0's real wait/termination, continue main scheduling, clear fade and return live player control. | Genuine new-game boot reaches controllable play with no startup-incomplete/unsupported fault or runtime exit `1`. |
 | P4-A07 | pending | Add the camera, text, audio, cutscene and cleanup owners required by the first source-reachable story mission. | Normal game-state launch reaches mission play without debug launch or dummy owner. |
 | P4-A08 | pending | Complete first-mission start/fail/retry/complete plus pre/post save, process restart and load semantics. | One E2E performs all four mission routes and matching pre/post restarted-process progression. |
 
@@ -168,6 +168,14 @@ P0 implementation and available server gates are verified; target reflight stays
 Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never renumbered or reused).
 
 ## Current checkpoint and evidence
+
+### 2026-09-13 — P4-A05 source stunt-jump registration verified
+
+- **Versions/result:** native `48484f9c` committed/pushed; root companion is the commit containing this checkpoint, based on `d4f0402`. `NativeStuntJumps` owns the source capacity-256 registration pool and exact start/end boxes, camera vectors, rewards and initial `Done=false`/`Found=false` state. `NativeScriptSession` decodes the complete 15-float-plus-integer `0814` form and routes it through the real `RealtimeScriptHost` owner; the default service path cannot turn a known form into NOP.
+- **Real startup evidence:** the unchanged `/game` startup route records `1359` sites, `44` opcodes, `49` operand forms, main53 and mission1306 sites, `1358` implemented sites and one classified unsupported site. It registers exactly70 stunt jumps, preserves the preceding `0004@218269` output write and stops at `029B@218276`, next `218298`, with `executed=25`, `runtimeUpdate=0` and `save=0`. The exact first registration uses source floats at the measured bit level; no SCM/asset bytes are committed.
+- **Decisive gates:** `sa_core_stunt_jumps_probe` -> `native-stunt-jumps-ok checks=261`; `sa_core_session_probe /game` -> checks5472; `NativePickupScriptProbe` -> failures0/actualCommands1305; CPU car-generator route remains539/0570 with fingerprint `4C8A0CD97C3A3533`; GL and GL-random routes stop at029B with 70 registrations. Coordinate and restart routes report9/15 actual records and the updated frontier. `RealtimeScriptBootProbe` through the Weston wrapper gives six PASS captures with mission quanta `0/256/512/768/1024/1280`, then terminal `029B@218276`; it intentionally reports `fullboot=0`.
+- **Safety/regression evidence:** strict ASan/UBSan passes for StuntJumps261 and Session5472; full Godot-native/native builds, smoke and `bash tools/etalon-sweep.sh` pass `33/0`; native is ELF64 with no Wine, `/game` remains read-only and PID1 is `docker-init` with zero zombies. Extension/current package remain byte-identical SHA256 `6d00c0bef914a5d805c0ab6189b3036f3ea13e1342a17715a02a3f08d8f0c1ca`, so no rendered rerun was required. Evidence includes `artifacts/build-runs/p4-a05-stunt-sanitized.log`, `p4-a05-session-sanitized.log` and `artifacts/graphics/radar-ipl-boundary-boot-runtime.log`.
+- **Boundary/next:** this closes registration only. Detection, camera activation, reward/stat/audio/money effects, reset, save/load and object `029B` construction remain unimplemented and must stay strict. P4-A06 now owns crossing the remaining startup frontier toward mission wait/termination and controllable play; genuine boot, original saves, all six finish axes and target-GPU reflight remain open. Progress is `28/68=41.2%` by equal atom count, not workload or game readiness.
 
 ### 2026-09-12 — P4-A04 portable script owner envelope verified
 

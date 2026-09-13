@@ -4,6 +4,12 @@ Updated: 2026-09-12. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P4-05 — 2026-09-13, DIRECT; source stunt-jump registration frontier
+
+- Native `48484f9c` owns the source `CStuntJumpManager` registration pool and adds the complete `0814` schema/service form to the sole script session/host path. The real `/game` route records mission1306 and registers70 exact entries with boxes, cameras and rewards, while runtime update/reward/reset/save remain explicit false coverage. The next encountered object form `029B` is classified and terminal; it is not a NOP.
+- The direct marker is `sa_core_stunt_jumps_probe checks=261`; the session probe is5472. Full startup corpus is1359 sites/44 opcodes/49 forms, implemented1358/unsupported1, with terminal `029B@218276`, next218298,25 final instructions, preceding `0004@218269`, and `stuntJumps=70`. The boot probe has six PASS captures at mission quanta `0/256/512/768/1024/1280`, then exits1 with `fullboot=0`.
+- Strict StuntJumps and Session ASan/UBSan, PickupScript failures0, CPU/GL/GL-random generator, coordinate/restart/pickup-feedback routes, full builds, smoke and native sweep33/0 pass. PID1=`docker-init`, zombies0; no EXE/runtime Wine and no game writes. Extension/package remains `6d00c0bef914a5d805c0ab6189b3036f3ea13e1342a17715a02a3f08d8f0c1ca`, so no rendered rerun. P4-A05 is verified at28/68=41.2%, not readiness; P4-A06 now owns the remaining startup frontier.
+
 ### GODOT-P4-04 — 2026-09-12, DIRECT; restarted-process portable script graph
 
 - Native `988ff5e9` adds a v1 canonical little-endian `NativeScriptPortableSave` envelope for one quiescent Session. It serializes mutable value owners explicitly, fingerprints independently loaded main/streamed assets and schema, excludes pointers/raw structs/asset bytes/process SessionId/pending transactions, and candidate-validates before atomic publication. This is not the original PC save format.

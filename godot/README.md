@@ -51,12 +51,13 @@ docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot
 docker --context rootless exec -w /workspace mad-sa-graphics-build python3 gta-reversed/source/app/platform/linux/NativePickupScriptProbe.py --run --game-dir /game
 ```
 
-Require `checks=5467` and the `script-corpus` marker with `sites=1288`,
-`opcodes=43`, `forms=48`, `frontier=0814@212669`, `next=212749`,
-`fingerprint=BC61CAB8953E4545`, `nop-substitution=0`. The complementary CPU route
+Require `checks=5472` and the current `script-corpus` marker with `sites=1359`,
+`opcodes=44`, `forms=49`, `frontier=029B@218276`, `next=218298`,
+`fingerprint=F2F1C258210742AD`, `nop-substitution=0`. The complementary CPU route
 is593 sites/32 opcodes/36 forms and stops at host-unready `0570@205876`. This
-classifies the encountered startup path only; `0814`, broader mission/streamed
-corpora and genuine boot remain later P4 work.
+classifies the encountered startup path only; 0814 registration is now owned by
+P4-A05, while 029B object construction, broader mission/streamed corpora and
+genuine boot remain later P4 work.
 
 ### Deterministic script scheduling (P4-A02)
 
@@ -124,6 +125,28 @@ byte-identically and matches continuation passes `3,3,3,1`. Truncation, version,
 checksum and source/payload mismatches retain the destination graph. Evidence:
 `artifacts/build-runs/p4-a04-*`. Complete gameplay persistence and classic-PC
 save import/export remain later P4/P8 work.
+
+### Source stunt-jump registration (P4-A05)
+
+`NativeStuntJumps` owns the source capacity-256 registration pool used by `0814`.
+The complete fifteen-float-plus-integer form is decoded by the sole script session
+and committed through the real host service; each entry retains exact start/end
+boxes, camera and reward values with source initial flags. Runtime stunt detection,
+camera activation, reward/stat/audio/money effects, reset and save/load are not
+claimed by this atom.
+
+```sh
+docker --context rootless exec -w /workspace mad-sa-graphics-build cmake --build build/godot-native --parallel 2 --target sa_core_stunt_jumps_probe
+docker --context rootless exec -w /workspace mad-sa-graphics-build ./build/godot-native/sa_core_stunt_jumps_probe
+docker --context rootless exec -w /workspace mad-sa-graphics-build python3 artifacts/build-runs/godot-wayland.py python3 gta-reversed/source/app/platform/linux/RealtimeScriptBootProbe.py --run --game-dir /game
+```
+
+Require `native-stunt-jumps-ok checks=261` and the boot marker with six captures,
+mission quanta `0/256/512/768/1024/1280`, `029B@218276`, `executed=25`,
+`stuntJumps=70` and `fullboot=0`. The route proves exact registration and strict
+frontier behavior, not genuine controllable play. Evidence:
+`artifacts/graphics/radar-ipl-boundary-boot-runtime.log` and
+`artifacts/build-runs/p4-a05-stunt-sanitized.log`.
 
 ### Source camera transitions (P3-A03 bounded owner)
 
