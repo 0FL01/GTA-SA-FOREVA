@@ -109,6 +109,18 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptServiceTransaction.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptPortableSave.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeStuntJumps.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSetPieces.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeZonePopulation.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePathPolicy.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeExternalScriptTriggers.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptModelAnims.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptIplRequests.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldObjectOverrides.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptWeather.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptClothes.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeMissionText.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCutscene.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/ZoneInfo.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptObjects.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceRng.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceClock.cpp"
@@ -211,6 +223,28 @@ target_link_libraries(sa_core_portable_save_probe PRIVATE sa_core)
 add_executable(sa_core_stunt_jumps_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeStuntJumpsProbe.cpp")
 target_link_libraries(sa_core_stunt_jumps_probe PRIVATE sa_core)
+add_executable(sa_core_set_pieces_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSetPiecesProbe.cpp")
+target_link_libraries(sa_core_set_pieces_probe PRIVATE sa_core)
+add_executable(sa_core_zone_population_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeZonePopulationProbe.cpp")
+target_link_libraries(sa_core_zone_population_probe PRIVATE sa_core)
+add_executable(sa_core_path_policy_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePathPolicyProbe.cpp")
+target_link_libraries(sa_core_path_policy_probe PRIVATE sa_core)
+add_executable(sa_core_external_triggers_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeExternalScriptTriggersProbe.cpp")
+target_link_libraries(sa_core_external_triggers_probe PRIVATE sa_core)
+add_executable(sa_core_model_anims_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptModelAnimsProbe.cpp")
+target_link_libraries(sa_core_model_anims_probe PRIVATE sa_core)
+add_executable(sa_core_ipl_requests_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptIplRequestsProbe.cpp")
+target_link_libraries(sa_core_ipl_requests_probe PRIVATE sa_core)
+add_executable(sa_core_world_object_overrides_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldObjectOverridesProbe.cpp")
+target_link_libraries(sa_core_world_object_overrides_probe PRIVATE sa_core)
+add_executable(sa_core_weather_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptWeatherProbe.cpp")
+target_link_libraries(sa_core_weather_probe PRIVATE sa_core)
+add_executable(sa_core_clothes_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptClothesProbe.cpp")
+target_link_libraries(sa_core_clothes_probe PRIVATE sa_core)
+add_executable(sa_core_mission_text_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeMissionTextProbe.cpp")
+target_link_libraries(sa_core_mission_text_probe PRIVATE sa_core)
 add_executable(sa_core_objects_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptObjectsProbe.cpp")
 target_link_libraries(sa_core_objects_probe PRIVATE sa_core)
@@ -251,6 +285,13 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_service_transactions_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_portable_save_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_stunt_jumps_probe PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(sa_core_set_pieces_probe PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(sa_core_zone_population_probe PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(sa_core_path_policy_probe PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(sa_core_external_triggers_probe PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(sa_core_model_anims_probe PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(sa_core_ipl_requests_probe PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(sa_core_world_object_overrides_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_objects_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_ped_control_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_jump_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)

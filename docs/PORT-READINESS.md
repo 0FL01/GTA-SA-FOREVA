@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution paused after a DIRECT P4-A06 checkpoint.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `c1e74703`, focused probes, the real `09E2` frontier and the exact pause boundary.28/68 verified atoms (41.2% by count) is not game readiness. Full-port scope remains active; resume explicitly before the next owner.
+**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `e318ef20`, mission0 termination, the source first-mission owner path and strict `07C0` frontier.28/68 verified atoms (41.2% by count) is not game readiness.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -12,7 +12,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P1 | A01–A07 verified | Qualified identities/catalog/chain, paired render/COL, sole-owner async parser, budgeted publication/retirement and catalog-backed exterior/interior residency verified |
 | P2 | A01–A06 verified | Owned core boundaries plus labelled CJ/car studio approximation;27-row CPU/Godot trace, interpolation/teardown, clean Vulkan and native33/0 verified, NOT source gameplay |
 | P3 | A01–A07 verified | Real source Pad/model400/COL route crosses enter/drive/exit/destroy/evict and emits authoritative initial HUD, action journal and exact NEW-door PCM identities |
-| P4 | A01–A05 verified; A06 in_progress, paused | Exact corpus/scheduling/async transactions, portable graph envelope,70 `0814` registrations and bounded object/generator service slice; strict `09E2` next frontier |
+| P4 | A01–A05 verified; A06 in_progress, A07 dependency active | Mission0 terminates and real mission2 reaches strict `07C0`; fade/live gate and first-mission presentation/cleanup remain open |
 | P5 | pending | Whole-world entities and all source vehicle families |
 | P6 | pending | Population/AI/combat/police/recovery/interactions |
 | P7 | pending, joins P3/P4 | Complete visual/audio/UI/input/video families |

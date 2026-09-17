@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P4-07 — 2026-09-13, DIRECT; mission0 termination and first-mission owner frontier
+
+- Native `e318ef20` terminates mission0 and continues the unchanged source schedule into CARMOD1 and mission2. Typed owners cover the startup registries plus GXT mission text, PROLOG1 cutscene archive/timing, parser-worker model residency and directional world publication; unowned presentation remains strict.
+- The real route reaches `07C0 REQUEST_CAR_RECORDING`. This is not an A06/A07 completion claim: fade/live exit0, `carrec.img`, playback, cutscene camera/audio/model rendering and cleanup remain open.
+- Direct new-owner markers pass; Session5472 and MissionText8 pass ASan/UBSan; scheduling106/frame104/transaction71/portable111, native sweep33/0 and fresh clean package actor/Forward+ region-chain/async pass. Extension/package SHA256 `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`; PID1 docker-init, zombies0.
+
 ### GODOT-P4-06 — 2026-09-13, DIRECT; bounded mission object/generator frontier and pause
 
 - Native `c1e74703` owns the observed mission object registry and routes the real `029B`/`0107` object lifecycle subset plus heading, cleanup, collision effect, freeze/dynamic, velocity, proofs, rotation, area, coordinates, heading, LOD and generator-owned transitions. The offset owner is intentionally heading-only; unsupported full 3D matrix input remains strict. `0A17` updates the existing generator state bit, with no new population or vehicle-pool authority.

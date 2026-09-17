@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE, resumed 2026-09-12. Latest user instruction selects DIRECT execution: parent performs RECON, implementation and verification without subagents. P2, P3 and P4-A01–A05 are verified; P4-A06 startup continuation is next. No compress unless context becomes critical, per latest user instruction.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3 and P4-A01–A05 are verified; P4-A06 remains in progress while its source startup path has entered the P4-A07 first-mission dependency.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -169,7 +169,15 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P4-A06 bounded mission-service frontier; paused
+### 2026-09-13 — P4-A06 mission0 complete; first-mission owner frontier active
+
+- **Versions/result:** native `e318ef20` is committed/pushed; root companion is the commit containing this checkpoint, based on `62b694b`. The unchanged `/game` startup now terminates mission0, continues main scheduling, starts real streamed CARMOD1 and source mission2, loads PROLOG1 from `cuts.img`, advances its authored22.333332-second DAT duration, publishes a generation-qualified directional world through the sole parser worker and processes mission cleanup through exact model residency.
+- **Owned services:** source value owners now cover plate generators, ENEX enable state,209 set pieces,378-zone population revision477,547 pickup registrations, path policies, external/code brains, model anim/IPL requests, weather, clothes, mission text/GXT style and draw records, cutscene archive/timing, object visibility and source model requests. Known forms remain strict unless a typed owner or VM implementation exists; registry `Runtime*` flags stay false where no consumer exists.
+- **Current strict frontier:** real mission2 reaches `07C0 REQUEST_CAR_RECORDING` after `023C` special-character loading; main and mission0 are no longer the barrier. This does **not** close P4-A06 because the approved gate still requires fade clear/live completion without runtime exit1, and it does not close P4-A07 because car-recording playback, cutscene camera/audio/model presentation and cleanup remain absent. Progress remains `28/68=41.2%`, not readiness.
+- **Evidence:** new owner probes pass (set pieces4, zones5, path3, external triggers8, model anims5, IPL5, weather6, object overrides5, clothes8, mission text8, objects10); Session5472 and its ASan/UBSan build, scheduling106, frame104, transaction71, portable restart111, native smoke and `tools/etalon-sweep.sh`33/0 pass. Native is ELF64/no Wine; `/game` is read-only. Fresh asset-free package/actor/Forward+ region-chain/region-async gates pass; extension/package SHA256 `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`; docker-init zombies0.
+- **Next:** implement the exact `carrec.img` request/residency and playback owner required by mission2, continue only through source-backed first-mission services, then rerun the bounded live gate and closure suite. Full cutscene presentation remains P4-A07/P7 work and must not be represented by timers or diagnostic camera state.
+
+### Prior — P4-A06 bounded mission-service frontier; paused
 
 - **Versions/result:** native `c1e74703` is committed and pushed; root checkpoint commit follows. `NativeScriptObjects` owns the source capacity-350 object identity/lifetime registry with generation-safe refs, no-offset/regular creation distinction, source heading/velocity/proof/static/area/LOD state and value-only journal integration. The session/host now routes the observed `029B`, `0107`, `0177`, `01C7`, `07F7`, `0550`, `0392`, `09CA`, `034D`, `02FA`, `0566`, `01BB`, `0176`, `0827`, `0381`, `0400`, `0453` forms; `0A17` updates the existing car-generator `PlayerHasAlreadyOwnedCar` owner exactly as source does.
 - **Production continuation:** the real `/game` route under the rootless Weston wrapper crosses the object/garage/generator slice and reaches strict `09E2@221414` (`CREATE_CAR_GENERATOR_WITH_PLATE`), previous `014C@221407`, `executed=76`, mission thread commands1612, `runtimeUpdate=0`, `save=0`, runtime exit1. The older six-capture `RealtimeScriptBootProbe` oracle is intentionally not reused as current A06 evidence because its fixed pre-A06 frame/frontier expectations stop before this continuation. This remains a strict frontier, not genuine boot or controllable play.
