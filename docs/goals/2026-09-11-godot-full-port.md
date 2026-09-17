@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3 and P4-A01–A05 are verified; P4-A06 remains in progress while its source startup path has entered the P4-A07 first-mission dependency.
+Execution: PAUSED at user request after a committed P4-A06/A07-dependency checkpoint. P2, P3 and P4-A01–A05 are verified; P4-A06 remains in progress.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -169,7 +169,15 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P4-A06 mission0 complete; first-mission owner frontier active
+### 2026-09-13 — P4-A06 first-mission world/asset/actor checkpoint; paused
+
+- **Versions/result:** native `1a6fa9a5` is committed/pushed; root companion is the commit containing this checkpoint, based on `26a94ee`. Mission0 remains terminated. The first mission now crosses exact `carrec.img` registration, beat metadata, source model residency, generation-qualified `04E4`/`03CB` world handoffs and real mission-vehicle construction from the parsed `copcarla` DFF's embedded COL.
+- **New bounded owners:** `NativeCarRecordings` validates all426 archive entries but explicitly has no playback; `NativeBeatTrack` maps script10 to source track184 and retains exact metadata hash; `NativeScriptPeds` owns capacity140 generation-safe mission-ped/vehicle occupancy with no pose/AI/render claim. The sole parser worker fulfils static/special/vehicle model requests and transfers source collision without racing normal publication.
+- **Measured continuation:** the latest full `/game` run reached `067F@202178` after source world generations7/8 and9/10, car model596 creation and heading. It correctly exposed light override value2; the committed fix accepts the source enum0..2 and focused builds/probes pass. Passenger warp `0430` and driver creation `0129` are now typed and compiled, but have not yet received the next long live reflight. Therefore P4-A06 remains `in_progress` at `28/68=41.2%`; no boot, fade-clear or first-mission completion claim is made.
+- **Focused evidence:** full native and Godot-native builds pass; native smoke passes; `NativeScriptPeds`6, car recordings4, beat track7, Session5472, scheduling106, frame104 and service transactions71 pass. Current extension SHA256 remains `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`; the package was not regenerated for this pause checkpoint. `/game` stays read-only; no EXE/Wine runtime path was added.
+- **Resume point:** rerun the long unchanged startup from `067F`, prove `0430/0129` against the real mission route, then continue only through typed source owners until fade clear/live exit0. Car-recording playback, cutscene camera/audio/model presentation, NPC AI/pose and cleanup remain P4-A07/P6/P7 work. Do not infer them from retained archive/value state.
+
+### Prior — P4-A06 mission0 complete; first-mission owner frontier active
 
 - **Versions/result:** native `e318ef20` is committed/pushed; root companion is the commit containing this checkpoint, based on `62b694b`. The unchanged `/game` startup now terminates mission0, continues main scheduling, starts real streamed CARMOD1 and source mission2, loads PROLOG1 from `cuts.img`, advances its authored22.333332-second DAT duration, publishes a generation-qualified directional world through the sole parser worker and processes mission cleanup through exact model residency.
 - **Owned services:** source value owners now cover plate generators, ENEX enable state,209 set pieces,378-zone population revision477,547 pickup registrations, path policies, external/code brains, model anim/IPL requests, weather, clothes, mission text/GXT style and draw records, cutscene archive/timing, object visibility and source model requests. Known forms remain strict unless a typed owner or VM implementation exists; registry `Runtime*` flags stay false where no consumer exists.

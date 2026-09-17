@@ -18,7 +18,7 @@ it is not aliased to an invented rainy-LA environment.
 
 ### Source boot/first-mission checkpoint (P4-A06/A07 dependency)
 
-`./build/mad-sa-linux --play --new-game --game-dir /game --seconds 360` now terminates mission0 and follows the unchanged source schedule through real streamed/static/special model residency, PROLOG1 cutscene archive/timing and directional world publication. The current strict frontier is `07C0 REQUEST_CAR_RECORDING`; fade/live closure and car-recording/cutscene presentation remain unimplemented, so this is not a genuine-boot or first-mission completion claim. Pure owner probes and Session5472/scheduling106/frame104/transaction71/portable111 pass; fresh package SHA256 is `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`.
+`./build/mad-sa-linux --play --new-game --game-dir /game --seconds 360` terminates mission0 and follows the unchanged source schedule through streamed/static/special model residency, PROLOG1 metadata/timing and exact script world publication. Native `1a6fa9a5` additionally validates car-recording/beat archives, builds the mission vehicle from embedded source COL and owns generation-safe mission occupancy. The latest measured runtime frontier is `067F@202178`; the source enum fix plus typed `0430/0129` path are committed but require the next long reflight. Fade/live closure, recording playback and cutscene actor/camera/audio presentation remain unimplemented. Focused peds6/carrec4/beat7 and Session5472/scheduling106/frame104/transaction71 pass; extension SHA256 remains `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c` and this pause checkpoint did not regenerate the package.
 
 ### Committed core frames (P2-A05)
 

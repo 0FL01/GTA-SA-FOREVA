@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P4-08 — 2026-09-13, DIRECT; first-mission world/asset/occupancy checkpoint and pause
+
+- Native `1a6fa9a5` transfers exact script world requests through the sole parser worker, validates426 car recordings and beat track184 metadata, parses embedded vehicle COL and constructs mission model596 with source ownership. `NativeScriptPeds` adds a capacity140 generation-safe value owner for mission driver/passenger occupancy; playback, pose, AI and rendering remain false coverage.
+- The latest long real route crosses world generations7/8 and9/10, model residency, vehicle creation and heading, then stops at `067F@202178` because source uses light override2 rather than Boolean. The committed enum fix and typed `0430/0129` path build and pass focused probes; their real long-route reflight is the next action, so A06 remains open at28/68.
+- Full native/Godot-native builds and smoke pass. Focused markers: peds6, car recordings4, beat track7, Session5472, scheduling106, frame104, transactions71. Extension hash remains `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`; package was not regenerated. User requested documentation, commit/push and pause.
+
 ### GODOT-P4-07 — 2026-09-13, DIRECT; mission0 termination and first-mission owner frontier
 
 - Native `e318ef20` terminates mission0 and continues the unchanged source schedule into CARMOD1 and mission2. Typed owners cover the startup registries plus GXT mission text, PROLOG1 cutscene archive/timing, parser-worker model residency and directional world publication; unowned presentation remains strict.

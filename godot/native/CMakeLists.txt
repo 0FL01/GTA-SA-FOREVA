@@ -120,6 +120,9 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptClothes.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeMissionText.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCutscene.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCarRecordings.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeBeatTrack.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptPeds.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/ZoneInfo.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptObjects.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceRng.cpp"
@@ -245,6 +248,12 @@ add_executable(sa_core_clothes_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/Na
 target_link_libraries(sa_core_clothes_probe PRIVATE sa_core)
 add_executable(sa_core_mission_text_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeMissionTextProbe.cpp")
 target_link_libraries(sa_core_mission_text_probe PRIVATE sa_core)
+add_executable(sa_core_car_recordings_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCarRecordingsProbe.cpp")
+target_link_libraries(sa_core_car_recordings_probe PRIVATE sa_core)
+add_executable(sa_core_beat_track_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeBeatTrackProbe.cpp")
+target_link_libraries(sa_core_beat_track_probe PRIVATE sa_core)
+add_executable(sa_core_script_peds_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptPedsProbe.cpp")
+target_link_libraries(sa_core_script_peds_probe PRIVATE sa_core)
 add_executable(sa_core_objects_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptObjectsProbe.cpp")
 target_link_libraries(sa_core_objects_probe PRIVATE sa_core)
