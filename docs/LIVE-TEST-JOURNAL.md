@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P4-09 — 2026-09-13, DIRECT; bounded source new-game boot closure
+
+- Native `6dd454b7` follows the real SCM through mission0 and mission2 using the sole parser worker, exact world generations/COL, mission actors, source car recording, GXT and source-duration mission audio metadata. The dedicated `--boot-gate` changes only the scheduler quota at the final mission2 range and exits0 after its real termination; marker records control1, fade0 and no fault.
+- Direct markers: peds9, mission audio source clock, car recordings7, beat8, trains5, Session5482, scheduling106, frame104, transactions71 and portable reader111. New pure owners pass ASan/UBSan; full builds, smoke and native sweep33/0 pass. Owner IO is read-only/no EXE; ELF64/no Wine; docker-init/zombies0.
+- P4-A06 is verified at29/68. P4-A07 remains active: retained/value-only camera, cutscene, actor and audio state is not presentation, playback output, NPC AI/pose or complete first-mission delivery.
+
 ### GODOT-P4-08 — 2026-09-13, DIRECT; first-mission world/asset/occupancy checkpoint and pause
 
 - Native `1a6fa9a5` transfers exact script world requests through the sole parser worker, validates426 car recordings and beat track184 metadata, parses embedded vehicle COL and constructs mission model596 with source ownership. `NativeScriptPeds` adds a capacity140 generation-safe value owner for mission driver/passenger occupancy; playback, pose, AI and rendering remain false coverage.

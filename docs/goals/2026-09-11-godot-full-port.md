@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: PAUSED at user request after a committed P4-A06/A07-dependency checkpoint. P2, P3 and P4-A01–A05 are verified; P4-A06 remains in progress.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3 and P4-A01–A06 are verified; P4-A07 is in progress.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -100,8 +100,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P4-A03 | verified | Give asynchronous script services stable prepare/pending/commit/cancel semantics. | 71-check value transaction/Session barrier plus actual resident-world host fixture cancel attempt1, acknowledge cleanup, retry attempt2 and commit exactly once; Prepared/late/invalid/throwing results never expose script Ready. |
 | P4-A04 | verified | Define owner serialization contracts and an early versioned portable save envelope outside original settings/saves. | A canonical6863-byte v1 envelope preserves a quiescent main/mission/streamed `NativeScriptSession` graph through a fresh executable process;111 reader checks reject truncation/version/checksum/SCM/streamed mismatches without changing the destination. |
 | P4-A05 | verified | Implement the real owner/service subset demanded by unmodified startup, including `0814` registration and separate runtime coverage. | Actual startup crosses all70 `0814` registrations through the source stunt-jump owner, then stops at classified `029B@218276` with no NOP substitution; runtime update/reward/reset/save remain separate. |
-| P4-A06 | in_progress | Reach mission0's real wait/termination, continue main scheduling, clear fade and return live player control. | Genuine new-game boot reaches controllable play with no startup-incomplete/unsupported fault or runtime exit `1`. |
-| P4-A07 | pending | Add the camera, text, audio, cutscene and cleanup owners required by the first source-reachable story mission. | Normal game-state launch reaches mission play without debug launch or dummy owner. |
+| P4-A06 | verified | Reach mission0's real wait/termination, continue main scheduling, clear fade and return live player control. | `--new-game --boot-gate` follows the unchanged source route through mission2 and exits0 at its termination with control1, fade0 and no fault. |
+| P4-A07 | in_progress | Add the camera, text, audio, cutscene and cleanup owners required by the first source-reachable story mission. | Normal game-state launch reaches mission play without debug launch or dummy owner. |
 | P4-A08 | pending | Complete first-mission start/fail/retry/complete plus pre/post save, process restart and load semantics. | One E2E performs all four mission routes and matching pre/post restarted-process progression. |
 
 ### P5 - Whole-world entities and all vehicle classes (`pending`)
@@ -169,7 +169,15 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P4-A06 first-mission world/asset/actor checkpoint; paused
+### 2026-09-13 — P4-A06 bounded source new-game boot verified
+
+- **Versions/result:** native `6dd454b7` is committed/pushed; root companion is the commit containing this checkpoint, based on `c7adb69`. The unchanged `/game` script route terminates mission0, schedules real main/streamed/mission threads, completes source mission2 and reaches a live player state at `2232.000,-1382.251,23.554` with player control enabled and fade alpha0.
+- **Decisive gate:** `./build/mad-sa-linux --play --new-game --boot-gate --game-dir /game --seconds 700` switches to one-instruction scheduler continuation only after mission2 enters its final source range, then exits0 immediately after that source thread terminates. Marker: `play-boot-gate-ok mission0=done mission2=done control=1 fade=0 ... no-fault=1`. It neither skips mission work nor converts a later unsupported opcode into Ready; ordinary `--new-game` remains strict for post-gate content.
+- **Owned route:** sole-worker world/model handoff; exact world generations; real embedded vehicle COL; generation-safe mission peds/occupancy; source car-recording interpolation; train value owner; switch continuation and string arrays; GXT text; source-timed encrypted stream metadata for mission audio; mission cleanup, blips, health/score/weapons and player-position handoff. Explicit false boundaries remain for NPC AI/pose/render, train movement, beat/mission-audio output and Godot camera/cutscene presentation.
+- **Evidence:** peds9, mission-audio source-duration clock, car-recordings7, beat8, trains5, Session5482, scheduling106, frame104, transactions71 and portable restart111 pass. All five new pure-owner sanitizer builds pass. Full native/Godot-native builds, smoke and native sweep33/0 pass; owner strace is read-only/no EXE. Native is ELF64/no Wine; PID1 docker-init/zombies0. Extension remains `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`, so prior clean package/render evidence remains applicable.
+- **Boundary/next:** P4-A06 is verified at `29/68=42.6%` equal-count atoms, not game readiness. P4-A07 now owns actual first-mission camera/text/audio/cutscene/actor presentation and cleanup. Post-gate mission3 (`DUAL`) and broad story progression remain strict P4-A07/P4-A08 content, not part of the A06 exit0 milestone.
+
+### Prior — P4-A06 first-mission world/asset/actor checkpoint; paused
 
 - **Versions/result:** native `1a6fa9a5` is committed/pushed; root companion is the commit containing this checkpoint, based on `26a94ee`. Mission0 remains terminated. The first mission now crosses exact `carrec.img` registration, beat metadata, source model residency, generation-qualified `04E4`/`03CB` world handoffs and real mission-vehicle construction from the parsed `copcarla` DFF's embedded COL.
 - **New bounded owners:** `NativeCarRecordings` validates all426 archive entries but explicitly has no playback; `NativeBeatTrack` maps script10 to source track184 and retains exact metadata hash; `NativeScriptPeds` owns capacity140 generation-safe mission-ped/vehicle occupancy with no pose/AI/render claim. The sole parser worker fulfils static/special/vehicle model requests and transfers source collision without racing normal publication.
