@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P4-10 — 2026-09-13, DIRECT; strict mission3 texture dependency
+
+- Native `f7281394` continues the normal post-first-mission schedule into source mission3 `DUAL`, owns global speech suppression and authoritative script-ped coordinates, and safely clears an absent script TXD owner.
+- The next command is strict `0390 LOAD_TEXTURE_DICTIONARY LD_NONE`, followed by24 sprite loads. The real TXD exists, but no sole-worker TXD/sprite residency owner exists, so P4-A08 remains dependency-open rather than receiving fake Ready. Full native/Godot builds, Session5482 and smoke pass; no closure percentage changes.
+- P5-A01 is selected as independent work: preserve full source placement identity and paired render/physics generation across exterior/interior/path residency. P4/P7 texture/presentation work remains explicit.
+
 ### GODOT-P4-10 — 2026-09-13, DIRECT; normal first-mission owner/cleanup gate
 
 - Native `3befe10a` adds `--first-mission-gate` over the unchanged new-game scheduler. It performs no debug mission launch: source mission2 creates and cleans its world/model/COL, actors, car recording, train, GXT, cutscene and source-duration audio owners before exit0.

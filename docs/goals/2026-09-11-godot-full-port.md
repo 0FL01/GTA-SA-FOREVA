@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3 and P4-A01–A07 are verified; P4-A08 is in progress.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3 and P4-A01–A07 are verified; P4-A08 remains dependency-open and P5-A01 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -108,7 +108,7 @@ P0 implementation and available server gates are verified; target reflight stays
 
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
-| P5-A01 | pending | Complete exterior/interior/path residency and dynamic-world service from P1 catalog authority. | Area-switch itinerary preserves entity identity and paired render/physics generation. |
+| P5-A01 | in_progress | Complete exterior/interior/path residency and dynamic-world service from P1 catalog authority. | Area-switch itinerary preserves entity identity and paired render/physics generation. |
 | P5-A02 | pending | Replace radius/cap fallback with source runtime LOD, time-object and interior visibility behavior. | Controlled time/area/LOD route records source-selection reasons with no silent omission. |
 | P5-A03 | pending | Map every shipped vehicle model to its real family and constructor. | Catalog matrix has no generic `400/476` representation and constructs one fixture per family. |
 | P5-A04 | pending | Port family control dependencies for road, water, rail, flight, towing and special vehicles. | One direct state-transition fixture passes for each family dependency. |
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P4-A07 first-mission owner route verified
+### 2026-09-13 — P4-A08 strict texture-residency dependency; P5-A01 selected
+
+- **Versions/result:** native `f7281394` is committed/pushed; root companion is the commit containing this checkpoint, based on `5febec1`. The unchanged post-gate schedule enters source mission3 `DUAL`, retains scripted speech suppression, returns authoritative script-ped coordinates and crosses `0391 REMOVE_TEXTURE_DICTIONARY` only while no script dictionary is resident.
+- **Strict frontier:** the next source command is `0390 LOAD_TEXTURE_DICTIONARY LD_NONE`, followed by24 `038F LOAD_SPRITE` entries and positional mission audio. `/game/models/txd/LD_NONE.txd` exists, but no sole-worker TXD/sprite residency or presentation owner exists. The implementation therefore does not return fake Ready. P4-A08 remains unresolved: start/fail/retry/complete and pre/post restarted save semantics are not claimed.
+- **Why P5 proceeds:** P5-A01 is independent and uses the already verified P1 catalog/paired-world authority. Its bounded deliverable is generation-qualified exterior/interior/path residency with complete placement identity and paired render/source-COL generation; path search remains P6-A01. Work may continue there without weakening the P4/P7 texture dependency.
+- **Evidence/boundary:** full native/Godot-native builds, Session5482 and native smoke pass for the new typed states. The P4-A06/A07 closure evidence and extension hash `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c` remain unchanged. Progress stays `30/68=44.1%`, not readiness.
+
+### Prior — P4-A07 first-mission owner route verified
 
 - **Versions/result:** native `3befe10a` is committed/pushed; root companion is the commit containing this checkpoint, based on `2a1558f`. `--first-mission-gate` follows the normal `/game` new-game schedule—no direct mission launch or dummy service—and stops only after source mission2 terminates.
 - **Decisive marker:** `play-first-mission-gate-ok launch=normal camera=9 text-revision=936 cutscene-cleared=1 audio-finished=1 beat-stopped=1 trains=0 peds=1 presentation-feedback=0`. The accompanying boot marker proves mission0/mission2 done, control1, fade0 and no script fault at source position2232.633,-1382.239,23.554.

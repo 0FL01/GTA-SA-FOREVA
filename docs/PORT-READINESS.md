@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `3befe10a` and the normal-schedule first-mission owner/cleanup gate.30/68 verified atoms (44.1% by count) is not game readiness.
+**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `f7281394`, strict P4 texture residency and P5-A01 as the next independent atom.30/68 verified atoms (44.1% by count) is not game readiness.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -12,8 +12,8 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P1 | A01–A07 verified | Qualified identities/catalog/chain, paired render/COL, sole-owner async parser, budgeted publication/retirement and catalog-backed exterior/interior residency verified |
 | P2 | A01–A06 verified | Owned core boundaries plus labelled CJ/car studio approximation;27-row CPU/Godot trace, interpolation/teardown, clean Vulkan and native33/0 verified, NOT source gameplay |
 | P3 | A01–A07 verified | Real source Pad/model400/COL route crosses enter/drive/exit/destroy/evict and emits authoritative initial HUD, action journal and exact NEW-door PCM identities |
-| P4 | A01–A07 verified; A08 in_progress | Source boot and first-mission camera/text/audio/cutscene/actor owner cleanup pass; fail/retry/complete plus restarted save semantics remain open |
-| P5 | pending | Whole-world entities and all source vehicle families |
+| P4 | A01–A07 verified; A08 dependency-open | Source boot/first mission pass; mission3 stops strictly before unowned TXD/sprite residency, and fail/retry/restarted-save semantics remain open |
+| P5 | A01 in_progress | Generation-qualified exterior/interior/path residency and paired identity itinerary from P1 authority |
 | P6 | pending | Population/AI/combat/police/recovery/interactions |
 | P7 | pending, joins P3/P4 | Complete visual/audio/UI/input/video families |
 | P8 | pending | Complete source progression/content and PC-save compatibility |
