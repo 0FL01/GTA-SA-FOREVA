@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P4-10 — 2026-09-13, DIRECT; normal first-mission owner/cleanup gate
+
+- Native `3befe10a` adds `--first-mission-gate` over the unchanged new-game scheduler. It performs no debug mission launch: source mission2 creates and cleans its world/model/COL, actors, car recording, train, GXT, cutscene and source-duration audio owners before exit0.
+- Marker reports camera9, text revision936, cutscene cleared, mission audio finished, beat stopped, trains0, control1/fade0/no-fault and `presentation-feedback=0`. This closes owner lifecycle only; final visual/audio presentation and NPC AI/pose remain explicitly outside P4-A07.
+- Native smoke and the current P4-A06 closure suite remain green; extension hash stays `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`. P4-A07 is verified at30/68; P4-A08 is active.
+
 ### GODOT-P4-09 — 2026-09-13, DIRECT; bounded source new-game boot closure
 
 - Native `6dd454b7` follows the real SCM through mission0 and mission2 using the sole parser worker, exact world generations/COL, mission actors, source car recording, GXT and source-duration mission audio metadata. The dedicated `--boot-gate` changes only the scheduler quota at the final mission2 range and exits0 after its real termination; marker records control1, fade0 and no fault.

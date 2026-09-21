@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3 and P4-A01–A06 are verified; P4-A07 is in progress.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3 and P4-A01–A07 are verified; P4-A08 is in progress.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -101,8 +101,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P4-A04 | verified | Define owner serialization contracts and an early versioned portable save envelope outside original settings/saves. | A canonical6863-byte v1 envelope preserves a quiescent main/mission/streamed `NativeScriptSession` graph through a fresh executable process;111 reader checks reject truncation/version/checksum/SCM/streamed mismatches without changing the destination. |
 | P4-A05 | verified | Implement the real owner/service subset demanded by unmodified startup, including `0814` registration and separate runtime coverage. | Actual startup crosses all70 `0814` registrations through the source stunt-jump owner, then stops at classified `029B@218276` with no NOP substitution; runtime update/reward/reset/save remain separate. |
 | P4-A06 | verified | Reach mission0's real wait/termination, continue main scheduling, clear fade and return live player control. | `--new-game --boot-gate` follows the unchanged source route through mission2 and exits0 at its termination with control1, fade0 and no fault. |
-| P4-A07 | in_progress | Add the camera, text, audio, cutscene and cleanup owners required by the first source-reachable story mission. | Normal game-state launch reaches mission play without debug launch or dummy owner. |
-| P4-A08 | pending | Complete first-mission start/fail/retry/complete plus pre/post save, process restart and load semantics. | One E2E performs all four mission routes and matching pre/post restarted-process progression. |
+| P4-A07 | verified | Add the camera, text, audio, cutscene and cleanup owners required by the first source-reachable story mission. | `--first-mission-gate` uses normal source scheduling and proves camera9, text revision, cleared cutscene, completed audio clock, stopped beat and deleted trains at mission2 completion. |
+| P4-A08 | in_progress | Complete first-mission start/fail/retry/complete plus pre/post save, process restart and load semantics. | One E2E performs all four mission routes and matching pre/post restarted-process progression. |
 
 ### P5 - Whole-world entities and all vehicle classes (`pending`)
 
@@ -169,7 +169,15 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P4-A06 bounded source new-game boot verified
+### 2026-09-13 — P4-A07 first-mission owner route verified
+
+- **Versions/result:** native `3befe10a` is committed/pushed; root companion is the commit containing this checkpoint, based on `2a1558f`. `--first-mission-gate` follows the normal `/game` new-game schedule—no direct mission launch or dummy service—and stops only after source mission2 terminates.
+- **Decisive marker:** `play-first-mission-gate-ok launch=normal camera=9 text-revision=936 cutscene-cleared=1 audio-finished=1 beat-stopped=1 trains=0 peds=1 presentation-feedback=0`. The accompanying boot marker proves mission0/mission2 done, control1, fade0 and no script fault at source position2232.633,-1382.239,23.554.
+- **Boundary:** this verifies the camera/text/audio/cutscene/actor **owners and cleanup contract**, not final audiovisual parity. `presentation-feedback=0` is deliberate: native retained values cannot be mutated by Godot/presentation. NPC AI/pose/render, train movement, decoded mission-audio/beat output and complete cutscene model/camera rendering remain P7/P6 work. Post-gate mission3 and broad story progression remain strict.
+- **Evidence:** the same A06 closure suite remains current—peds9, mission audio source clock, carrec7, beat8, trains5, Session5482, scheduling106, frame104, transactions71, portable111, owner sanitizers, full builds/smoke/native33/0/read-only IO. Native smoke passes after the A07 gate addition; extension remains `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`.
+- **Progress/next:** P4-A07 is verified at `30/68=44.1%` equal-count atoms, not readiness. P4-A08 now owns first-mission start/fail/retry/complete plus pre/post portable save and restarted-process load semantics.
+
+### Prior — P4-A06 bounded source new-game boot verified
 
 - **Versions/result:** native `6dd454b7` is committed/pushed; root companion is the commit containing this checkpoint, based on `c7adb69`. The unchanged `/game` script route terminates mission0, schedules real main/streamed/mission threads, completes source mission2 and reaches a live player state at `2232.000,-1382.251,23.554` with player control enabled and fade alpha0.
 - **Decisive gate:** `./build/mad-sa-linux --play --new-game --boot-gate --game-dir /game --seconds 700` switches to one-instruction scheduler continuation only after mission2 enters its final source range, then exits0 immediately after that source thread terminates. Marker: `play-boot-gate-ok mission0=done mission2=done control=1 fade=0 ... no-fault=1`. It neither skips mission work nor converts a later unsupported opcode into Ready; ordinary `--new-game` remains strict for post-gate content.

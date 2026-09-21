@@ -20,6 +20,8 @@ it is not aliased to an invented rainy-LA environment.
 
 `./build/mad-sa-linux --play --new-game --boot-gate --game-dir /game --seconds 700` follows the unchanged source route through mission0 and mission2 and exits0 only after the real mission2 thread terminates with control enabled and fade alpha0. Native `6dd454b7` owns exact world/model/COL handoff, mission actors, source car-recording interpolation, GXT and source-duration mission-audio clocks. Marker: `play-boot-gate-ok ... no-fault=1`. This verifies bounded P4-A06 boot, not cutscene/NPC/audio presentation or broad story progression. Focused peds9/audio/carrec7/beat8/trains5 and Session5482/scheduling106/frame104/transaction71/portable111 pass; extension SHA256 remains `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`.
 
+`./build/mad-sa-linux --play --new-game --first-mission-gate --game-dir /game --seconds 700` uses the same normal schedule and additionally requires first-mission camera/text/audio/cutscene/train owner cleanup. The marker records camera9, text revision936, cleared cutscene, completed audio clock, stopped beat and trains0 with `presentation-feedback=0`. Native `3befe10a` closes P4-A07 ownership, not final audiovisual presentation or broad story progression.
+
 ### Committed core frames (P2-A05)
 
 `sa_core_frame_probe [owned-game-dir]` exercises `NativeScriptFrame`, which
