@@ -49,6 +49,8 @@
 #include <thread>
 #include <vector>
 
+#include "app/platform/linux/NativeWorldResidency.h"
+
 // P1-A07 region selection lane (plain C++, no Godot). Window is the frozen
 // capped diagnostic path; CatalogDisc/CatalogArea are the opt-in catalog
 // residency mode (area0 XY disc with Open radius, or whole positive area).
@@ -131,6 +133,8 @@ struct RawRegionPacket {
     RegionPlanFailure PlanFailure;
     bool PlanReady = false;
     bool PlanOk = false;
+    NativeWorldResidencyCandidate Residency;
+    bool ResidencyReady = false;
 };
 
 enum class RegionWait { Pending, Ready, Superseded, Cancelled, Stopped };

@@ -16,6 +16,12 @@ it is not aliased to an invented rainy-LA environment.
 
 ## Core and diagnostic hosts
 
+### Generation-qualified world residency (P5-A01)
+
+`sa_world_residency_probe /game` validates the complete64-file source path-area corpus and an actual catalog itinerary from Grove R140 (`321` placements) to interior16 (`36`). `NativeWorldResidency` requires exact ordered render identities and source-COL subsets, publishes immutable generations, retains a stable dynamic reference across the area switch and rejects stale/altered candidates. It deliberately exposes `PathSearchAuthority=false`; route search remains P6-A01.
+
+The clean packaged `region_catalog.gd --catalog-route` gate compares full ordered `IPL/model/record/model-id/binary` placement identity and stable collision/path payloads, not only model sets. Direct19, strict ASan/UBSan, core-world79, native sweep33/0 and Forward+ catalog/chain/async gates pass. Extension/package SHA256: `9891d1b8a422c98b813266b5251fbfcc3e8867c1e039fcb546e0463fc412298c`.
+
 ### Source boot/first-mission checkpoint (P4-A06/A07 dependency)
 
 `./build/mad-sa-linux --play --new-game --boot-gate --game-dir /game --seconds 700` follows the unchanged source route through mission0 and mission2 and exits0 only after the real mission2 thread terminates with control enabled and fade alpha0. Native `6dd454b7` owns exact world/model/COL handoff, mission actors, source car-recording interpolation, GXT and source-duration mission-audio clocks. Marker: `play-boot-gate-ok ... no-fault=1`. This verifies bounded P4-A06 boot, not cutscene/NPC/audio presentation or broad story progression. Focused peds9/audio/carrec7/beat8/trains5 and Session5482/scheduling106/frame104/transaction71/portable111 pass; extension SHA256 remains `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`.

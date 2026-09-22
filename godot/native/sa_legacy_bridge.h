@@ -11,6 +11,7 @@
 
 #include "app/platform/linux/NativeCollisionAssets.h"
 #include "app/platform/linux/NativeLodCatalog.h"
+#include "app/platform/linux/NativeWorldResidency.h"
 #include "sa_region_plan.h"
 #include "sa_region_worker.h"
 #include "app/platform/linux/NativeDiagnosticActors.h"
@@ -94,6 +95,7 @@ private:
     // No gameplay physics, no general LOD. Retained across LoadRegion
     // calls; cleared on CloseGame without resetting m_PublicationRevision.
     std::shared_ptr<const NativeLodCatalog> m_Catalog;
+    NativeWorldResidency m_WorldResidency;
     // P1-A07 Open radius captured for catalog-disc selection (area0 XY disc).
     // Set on successful Open, cleared on Close. ParseFn captures it by value
     // alongside the shared catalog; positive areas ignore it (whole area).

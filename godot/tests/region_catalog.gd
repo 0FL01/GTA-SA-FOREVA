@@ -669,25 +669,31 @@ func _stable_payload_match(first: Dictionary, second: Dictionary, label: String)
 	if a_meshes.size() != b_meshes.size():
 		printerr("region-catalog-fail: ", label, " size")
 		return false
-	var a_ids := {}
-	for info in a_meshes:
-		a_ids["%s#%d" % [str((info as Dictionary).get("source_model", "")).to_lower(), int((info as Dictionary).get("source_model_id", -1))]] = true
-	var b_ids := {}
-	for info in b_meshes:
-		b_ids["%s#%d" % [str((info as Dictionary).get("source_model", "")).to_lower(), int((info as Dictionary).get("source_model_id", -1))]] = true
-	# Counts stable; placement identities stable as sets (order may differ).
-	# Strict per-placement deep equality would require identical ArrayMesh
-	# resources across publications, which new GPU resources never share.
-	if a_ids.size() != b_ids.size():
-		printerr("region-catalog-fail: ", label, " unique count")
-		return false
-	for key in a_ids:
-		if not b_ids.has(key):
-			printerr("region-catalog-fail: ", label, " identity ", key)
-			return false
+	# GPU resources are rebuilt, but complete source placement identity and
+	# source order are authoritative and must remain exactly stable.
+	for index in a_meshes.size():
+		var a: Dictionary = a_meshes[index]
+		var b: Dictionary = b_meshes[index]
+		for key in ["source_ipl", "source_model", "source_model_id", "source_record", "source_binary", "source_placement_id"]:
+			if a.get(key) != b.get(key):
+				printerr("region-catalog-fail: ", label, " identity/order index=", index, " key=", key)
+				return false
 	var a_sel: Dictionary = (first.get("stats", {}) as Dictionary).get("selection", {})
 	var b_sel: Dictionary = (second.get("stats", {}) as Dictionary).get("selection", {})
-	if not _deep_equal(a_sel, b_sel):
+	for key in ["collision_identities", "path_areas", "path_search_authority"]:
+		if not a_sel.has(key) or not b_sel.has(key):
+			printerr("region-catalog-fail: ", label, " missing residency key ", key)
+			return false
+		if not _deep_equal(a_sel[key], b_sel[key]):
+			printerr("region-catalog-fail: ", label, " residency mismatch ", key)
+			return false
+	var a_scalar := a_sel.duplicate(true)
+	var b_scalar := b_sel.duplicate(true)
+	# Request/publication generations must advance while the residency content
+	# remains stable; compare the rest exactly.
+	a_scalar.erase("paired_generation")
+	b_scalar.erase("paired_generation")
+	if not _deep_equal(a_scalar, b_scalar):
 		printerr("region-catalog-fail: ", label, " selection")
 		return false
 	return true

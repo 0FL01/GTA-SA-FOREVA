@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P5-01 — 2026-09-13, DIRECT; generation-qualified world residency
+
+- Native `ebb5c335` adds exact catalog-selected source-COL binding, validates all64 source `NODES*.DAT` payloads and publishes immutable exterior/interior generations with capacity256 stable dynamic references. The direct actual-data itinerary passes19 checks for Grove321→area16-36, prior-snapshot immutability and stale/identity mismatch rejection; path search authority remains false.
+- The clean packaged Forward+/Wayland catalog route now compares full ordered IPL/model/record/model-id/binary identities plus stable collision/path payloads. Catalog, region-chain and region-async routes pass; core-world79, strict residency ASan/UBSan, native smoke and sweep33/0 pass.
+- Extension/package SHA256 is `9891d1b8a422c98b813266b5251fbfcc3e8867c1e039fcb546e0463fc412298c`; PID1 docker-init, zombies0, `/game:ro`, no EXE/Wine. P5-A01 verified; count31/68, P5-A02 next.
+
 ### GODOT-P4-10 — 2026-09-13, DIRECT; strict mission3 texture dependency
 
 - Native `f7281394` continues the normal post-first-mission schedule into source mission3 `DUAL`, owns global speech suppression and authoritative script-ped coordinates, and safely clears an absent script TXD owner.

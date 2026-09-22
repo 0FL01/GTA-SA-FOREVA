@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3 and P4-A01–A07 are verified; P4-A08 remains dependency-open and P5-A01 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07 and P5-A01 are verified; P4-A08 remains dependency-open and P5-A02 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -104,12 +104,12 @@ P0 implementation and available server gates are verified; target reflight stays
 | P4-A07 | verified | Add the camera, text, audio, cutscene and cleanup owners required by the first source-reachable story mission. | `--first-mission-gate` uses normal source scheduling and proves camera9, text revision, cleared cutscene, completed audio clock, stopped beat and deleted trains at mission2 completion. |
 | P4-A08 | in_progress | Complete first-mission start/fail/retry/complete plus pre/post save, process restart and load semantics. | One E2E performs all four mission routes and matching pre/post restarted-process progression. |
 
-### P5 - Whole-world entities and all vehicle classes (`pending`)
+### P5 - Whole-world entities and all vehicle classes (`in_progress`)
 
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
-| P5-A01 | in_progress | Complete exterior/interior/path residency and dynamic-world service from P1 catalog authority. | Area-switch itinerary preserves entity identity and paired render/physics generation. |
-| P5-A02 | pending | Replace radius/cap fallback with source runtime LOD, time-object and interior visibility behavior. | Controlled time/area/LOD route records source-selection reasons with no silent omission. |
+| P5-A01 | verified | Complete exterior/interior/path residency and dynamic-world service from P1 catalog authority. | Actual Grove321→area16-36 itinerary retains full ordered placement identities, paired source-COL/request generation, source path-area metadata and one stable dynamic ref; stale/mismatched publications reject atomically. |
+| P5-A02 | in_progress | Replace radius/cap fallback with source runtime LOD, time-object and interior visibility behavior. | Controlled time/area/LOD route records source-selection reasons with no silent omission. |
 | P5-A03 | pending | Map every shipped vehicle model to its real family and constructor. | Catalog matrix has no generic `400/476` representation and constructs one fixture per family. |
 | P5-A04 | pending | Port family control dependencies for road, water, rail, flight, towing and special vehicles. | One direct state-transition fixture passes for each family dependency. |
 | P5-A05 | pending | Complete vehicle collision, occupants, damage, destruction and reload across classes. | Per-class lifecycle matrix preserves identities and cleans all owners on reload. |
@@ -169,7 +169,15 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P4-A08 strict texture-residency dependency; P5-A01 selected
+### 2026-09-13 — P5-A01 generation-qualified world residency verified
+
+- **Versions/result:** native `ebb5c335` is committed/pushed; root companion is the commit containing this checkpoint, based on `8854611`. `NativeWorldResidency` binds the existing disk-validated P1 catalog to exact ordered render identities, selected source-COL instances and source path-area metadata. Immutable publications are generation-qualified; stale or mismatched candidates retain the prior owner.
+- **Path/dynamic boundary:** all64 `data/Paths/NODES*.DAT` files are read-only validated against the source x86 payload layout and selected in source region order around the itinerary point. A capacity256 generation-safe dynamic value owner retains the same reference across exterior→interior adoption. It does not implement graph search (`PathSearchAuthority=false`); P6-A01 still owns that algorithm.
+- **Decisive route:** `sa_world_residency_probe /game` passes19 checks: actual Grove R140 `274+47=321` to complete interior16 `36`, paired source-COL identity subsets, immutable generation1 history, generation2 area adoption, stable dynamic ref, stale-generation and altered-render rejection. The packaged Forward+/Wayland catalog itinerary now compares complete ordered placement identity (`IPL/model/record/model-id/binary`) and stable collision/path payloads rather than model sets; it passes the existing Grove/roads/interior/rejection matrix.
+- **Gates:** strict ASan+UBSan residency probe passes; core-world79 and native sweep33/0 pass; full native/Godot-native builds and smoke pass; clean asset-free package catalog, region-chain and region-async routes pass. Extension and packaged copy SHA256 `9891d1b8a422c98b813266b5251fbfcc3e8867c1e039fcb546e0463fc412298c`; PID1 docker-init, zombies0. No EXE/Wine or game writes.
+- **Boundary/next:** P5-A01 is verified at `31/68=45.6%` equal-count atoms, not game readiness. This does not claim runtime LOD/time/interior visibility, path search, population, AI or broad dynamic object simulation. P5-A02 now owns source visibility decisions; P4-A08 remains dependency-open at strict `0390`.
+
+### Prior — P4-A08 strict texture-residency dependency; P5-A01 selected
 
 - **Versions/result:** native `f7281394` is committed/pushed; root companion is the commit containing this checkpoint, based on `5febec1`. The unchanged post-gate schedule enters source mission3 `DUAL`, retains scripted speech suppression, returns authoritative script-ped coordinates and crosses `0391 REMOVE_TEXTURE_DICTIONARY` only while no script dictionary is resident.
 - **Strict frontier:** the next source command is `0390 LOAD_TEXTURE_DICTIONARY LD_NONE`, followed by24 `038F LOAD_SPRITE` entries and positional mission audio. `/game/models/txd/LD_NONE.txd` exists, but no sole-worker TXD/sprite residency or presentation owner exists. The implementation therefore does not return fake Ready. P4-A08 remains unresolved: start/fail/retry/complete and pre/post restarted save semantics are not claimed.

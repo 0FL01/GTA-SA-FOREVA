@@ -410,6 +410,7 @@ bool AddPlannedSurface(const WorldShotMesh& source, const RegionPlanSurface& pla
 // One mesh-metadata finish unit: bounded outer checks + mesh dict. No pixel
 // or triangle rescans.
 bool FinishPlannedMeshMetadata(const WorldShotMesh& source, const Ref<ArrayMesh>& mesh,
+                               const NativePlacementIdentity* placement,
                                const TypedArray<Dictionary>& materials, Dictionary& output,
                                String& error) {
     if (mesh.is_null() || mesh->get_surface_count() <= 0 ||
@@ -424,6 +425,11 @@ bool FinishPlannedMeshMetadata(const WorldShotMesh& source, const Ref<ArrayMesh>
     output["source_txd"] = SourceString(source.sourceTxdName);
     output["source_archive"] = SourceString(source.sourceArchiveName);
     output["source_placement_id"] = static_cast<int64_t>(source.sourcePlacementId);
+    if (placement) {
+        output["source_ipl"] = SourceString(placement->Ipl);
+        output["source_record"] = static_cast<int64_t>(placement->Record);
+        output["source_binary"] = placement->Binary;
+    }
     return true;
 }
 
@@ -1086,7 +1092,9 @@ SALegacyBridge::AdvanceOutcome SALegacyBridge::AdvanceConversionLocked(int64_t q
         Dictionary out;
         String metaError;
         const bool ok =
-            FinishPlannedMeshMetadata(sourceMesh, state.mesh, state.materials, out, metaError);
+            FinishPlannedMeshMetadata(sourceMesh, state.mesh,
+                srcIdx < conv.raw->Rendered.size() ? &conv.raw->Rendered[srcIdx] : nullptr,
+                state.materials, out, metaError);
         noteTime(startMs);
         --quota;
         if (!ok) {
@@ -1431,7 +1439,46 @@ Dictionary SALegacyBridge::BuildReadyPayloadLocked() {
         selection["time_models"] = static_cast<int64_t>(raw.Catalog.TimeModels);
         selection["lod_visibility_authority"] = "unknown-pending-P5-A02";
         selection["time_visibility_authority"] = "unknown-pending-P5-A02";
+        if (raw.ResidencyReady && raw.Residency.Collision) {
+            TypedArray<Dictionary> collisionIdentities;
+            for (const auto& instance : raw.Residency.Collision->Instances) {
+                const auto identity = NativePlacementIdentity::From(instance.Placement);
+                Dictionary value;
+                value["ipl"] = SourceString(identity.Ipl);
+                value["model"] = SourceString(identity.Model);
+                value["record"] = static_cast<int64_t>(identity.Record);
+                value["model_id"] = identity.ModelId;
+                value["binary"] = identity.Binary;
+                collisionIdentities.push_back(value);
+            }
+            selection["collision_identities"] = collisionIdentities;
+            TypedArray<Dictionary> pathAreas;
+            for (const auto& path : raw.Residency.Paths) {
+                Dictionary value;
+                value["area"] = path.Area;
+                value["nodes"] = static_cast<int64_t>(path.Nodes);
+                value["vehicle_nodes"] = static_cast<int64_t>(path.VehicleNodes);
+                value["ped_nodes"] = static_cast<int64_t>(path.PedNodes);
+                value["bytes"] = static_cast<int64_t>(path.Bytes);
+                value["fingerprint"] = static_cast<int64_t>(path.Fingerprint & 0x7FFF'FFFF'FFFF'FFFFull);
+                pathAreas.push_back(value);
+            }
+            selection["path_areas"] = pathAreas;
+            selection["paired_generation"] = static_cast<int64_t>(raw.Residency.Generation);
+            selection["path_search_authority"] = false;
+        }
         stats["selection"] = selection;
+    }
+    if (raw.HasCatalog) {
+        std::string residencyError;
+        if (!raw.ResidencyReady || !m_WorldResidency.Adopt(raw.Residency, residencyError)) {
+            Dictionary failed = Result(false, SourceString(residencyError.empty()
+                ? "world residency publication failed" : residencyError));
+            failed["code"] = kCatalogAccountingMismatch;
+            if (m_Worker) m_Worker->Retire(std::move(conv.raw));
+            m_Conversion.reset();
+            return failed;
+        }
     }
     Dictionary result = Result(true);
     result["meshes"] = meshes;
@@ -1549,15 +1596,25 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
         }
     }
 
-    NativeCollisionAssets collisionAssets;
+    auto collisionAssets = std::make_shared<NativeCollisionAssets>();
     {
         std::string colError;
-        if (!collisionAssets.Load(path.c_str(), fullPopulation, colError)) {
+        if (!collisionAssets->Load(path.c_str(), fullPopulation, colError)) {
             StreamPager_Shutdown();
             const String detail = String::utf8(colError.c_str());
             return Result(false, detail.is_empty() ? "collision assets load failed" : detail);
         }
     }
+    auto pathCatalog = std::make_shared<NativePathResidencyCatalog>();
+    {
+        std::string pathError;
+        if (!pathCatalog->LoadBeforeWorker(path.c_str(), pathError)) {
+            StreamPager_Shutdown();
+            const String detail = String::utf8(pathError.c_str());
+            return Result(false, detail.is_empty() ? "path residency load failed" : detail);
+        }
+    }
+    auto collisionPopulation = std::make_shared<const NativeCollisionPopulation>(fullPopulation);
 
     // EXPLICIT bounded real profile via the actual catalog: LAn text
     // record0/model3991 GSFreeway7_LAn -> record24/model4043 LODGSFreeway7_LAn.
@@ -1643,7 +1700,7 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
     {
         std::string evalError;
         const NativeLinkLodsInputs inputs(false, 1.0f);
-        if (!catalog->EvaluateLinkLodsChain(childNode->Identity, collisionAssets, inputs, decision,
+        if (!catalog->EvaluateLinkLodsChain(childNode->Identity, *collisionAssets, inputs, decision,
                                             evalError)) {
             StreamPager_Shutdown();
             const String detail = String::utf8(evalError.c_str());
@@ -1746,6 +1803,7 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
         s_PagerOwner = nullptr;
         StreamPager_Shutdown();
         m_Catalog.reset();
+        m_WorldResidency = NativeWorldResidency{};
         m_Decision = NativeLodChainDecision{};
         m_ChildPlacement = NativeCollisionPlacement{};
         m_ParentPlacement = NativeCollisionPlacement{};
@@ -1790,7 +1848,7 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
     // mismatch -> catalog_accounting_mismatch (code by stage, human
     // source-identity message, never parsed strings). Other P0 typed plan
     // failures preserved exact via RegionPlanFailure.
-    ParseFn parse = [catalog, radius](RawRegionPacket& packet) {
+    ParseFn parse = [catalog, collisionAssets, collisionPopulation, pathCatalog, radius](RawRegionPacket& packet) {
         if (packet.Request.Selection == RegionSelection::Window) {
             const std::shared_ptr<const NativePlacementOverrides> noOverrides;
             char err[256]{};
@@ -1877,6 +1935,15 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
         packet.Catalog.Resident = rendered.size();
         packet.Catalog.ExcludedOutside = residency.ExcludedOutside;
         packet.Catalog.TimeModels = residency.TimeModels;
+        std::string residencyError;
+        if (!NativeWorldResidency::Prepare(*catalog, *collisionAssets, *collisionPopulation,
+            *pathCatalog, packet.Request.RequestId, packet.Request.X, packet.Request.Y, radius,
+            areaId, rendered, packet.Residency, residencyError)) {
+            packet.ErrorCode = kCatalogAccountingMismatch;
+            packet.Error = residencyError.empty() ? "world residency pairing failed" : residencyError;
+            return;
+        }
+        packet.ResidencyReady = true;
         packet.PlanReady = true;
         packet.PlanOk = BuildRegionPlan(packet.Scene, packet.Plan, packet.PlanFailure);
     };
