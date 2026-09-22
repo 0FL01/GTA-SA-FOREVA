@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P8-03 — 2026-09-13, DIRECT; discovered activity-family lifecycle routes
+
+- Native `53f4d699` inventories17 activity families across service/race/school/minigame/other, including exact shipped streamed identities for Valet, Pool, Slot Machine, Arcade, Gym Bike and Dance.
+- Every family runs start→pass/result→cleanup; Taxi additionally fails, cleans and restarts. Direct marker has114 checks; strict sanitizer, full builds, smoke and native sweep33/0 pass. The owner records ordered lifecycle/stat state while source scripts/tasks remain gameplay-result authority.
+- P8-A03 verified at52/68; P8-A04 next. P4-A08 mission3 TXD and P7-A06 target audio remain open.
+
 ### GODOT-P8-02 — 2026-09-13, DIRECT; representative story lifecycle matrix
 
 - Native `32d5ef85` composes real PROLOG1 archive/timing and exact mission speech43200 into an immutable mission2 lifecycle. Attempt1 starts, skips, fails and cleans; attempt2 retries, reaches authored cutscene/audio completion, completes and clears all four registered resource families.

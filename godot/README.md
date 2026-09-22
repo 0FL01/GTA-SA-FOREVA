@@ -28,6 +28,14 @@ The radio gate owns all12 source station programming queues, interruption/resume
 
 The mission2 fixture composes actual PROLOG1 and mission speech43200 through normal start, skip, failure cleanup, retry, authored cutscene/audio completion and final cleanup. It publishes immutable value state with `presentation-feedback=0`; this is lifecycle ownership, not a claim that every strict script site or final cutscene presentation is complete.
 
+### Activity-family lifecycle matrix (P8-A03)
+
+```bash
+./build/godot-native/sa_core_activity_lifecycle_probe /game
+```
+
+The gate covers17 discovered service, race, school, minigame and other families with normal start/result/cleanup, exact shipped identities where the activity is streamed, and one failure/retry route. Family scripts/tasks remain gameplay-result authority; the lifecycle owner does not replace their rules.
+
 ### SFX, speech and environmental audio families (P7-A06 target-open)
 
 `SALegacyAudio` exposes copied source payloads for door SFX event80/bank138/sound40, mission speech43200 and rain bank105/sound0. Godot constructs WAV/Ogg streams and starts all three players; Dummy is structural CI only:

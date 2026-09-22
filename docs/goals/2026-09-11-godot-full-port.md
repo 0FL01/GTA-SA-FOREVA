@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6, P7-A01–A05/P7-A07 and P8-A01–A02 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, and P8-A03 is current.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6, P7-A01–A05/P7-A07 and P8-A01–A03 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, and P8-A04 is current.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -148,8 +148,8 @@ P0 implementation and available server gates are verified; target reflight stays
 |---|---|---|---|
 | P8-A01 | verified | Expand site-level semantics and owner coverage across all main, mission, streamed and brain scripts. | Corpus report classifies every shipped command site with no reachable unknown behavior. |
 | P8-A02 | verified | Complete story mission and cutscene start/fail/retry/skip/complete/cleanup routes. | Representative lifecycle matrix passes through normal progression entry points. |
-| P8-A03 | in_progress | Complete side jobs, races, schools, minigames and other activities. | Each discovered activity family has one normal start/result/cleanup E2E. |
-| P8-A04 | pending | Complete purchases, stats, rewards/unlocks, interiors and their persistent owners. | Restarted-process progression route preserves and reapplies each owner family. |
+| P8-A03 | verified | Complete side jobs, races, schools, minigames and other activities. | Each discovered activity family has one normal start/result/cleanup E2E. |
+| P8-A04 | in_progress | Complete purchases, stats, rewards/unlocks, interiors and their persistent owners. | Restarted-process progression route preserves and reapplies each owner family. |
 | P8-A05 | pending | Inventory and implement cheats, replay and special script-driven states rather than silently omitting them. | Manifest has a tested semantic route or explicit still-pending row for every discovered feature. |
 | P8-A06 | pending | Complete original-PC save block codecs, checksum and reference repair separately from port-native saves. | Source-format fixtures round-trip every block and reject corrupted checksum/references. |
 | P8-A07 | pending | Validate original-PC import/export against full progression semantics before compatibility is claimed. | Fresh-process import -> play/change -> export -> import route preserves semantic state. |
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P8-A02 representative story/cutscene lifecycle verified
+### 2026-09-13 — P8-A03 discovered activity-family lifecycles verified
+
+- **Versions/result:** native `53f4d699` is committed/pushed; root companion is the commit containing this checkpoint, based on `bc0d85d`. `NativeActivityLifecycle` owns ordered start/result/cleanup state and immutable per-family statistics for17 discovered families across service, race, school, minigame and other categories.
+- **Source identities:** normal routes cover Taxi, Vigilante, Paramedic, Firefighter, Courier, Trucking, Valet, Race, four Schools, Pool, Casino, Arcade, Gym and Dance. Stream-backed families are matched exactly to shipped definitions (`VALET`, `POOL_SCRIPT`, `SLOT_MACHINE`, `ARCADE`, `GYMBIKE`, `DANCE`) from the real79-entry metadata; other families retain their source category identities.
+- **Decisive gate:** all17 families execute one start→pass/result→cleanup route; Taxi also executes fail→cleanup→start retry. Marker: `native-activity-lifecycle-ok checks=114 families=17 categories=service,race,school,minigame,other routes=start,result,cleanup failure-retry=taxi gameplay-rules-complete=0`. The last flag is deliberate: family scripts/tasks produce gameplay results; this owner guarantees lifecycle/order/stat retention and does not replace those rules. Strict sanitizer, full builds, smoke and sweep33/0 pass.
+- **Progress/boundary:** P8-A03 verified: `52/68=76.5%` equal-count atoms, not readiness. P8-A04 is next. P4-A08 mission3 TXD and P7-A06 target audio remain open; strict corpus sites and family-specific gameplay rules remain explicit rather than silently successful.
+
+### Prior — P8-A02 representative story/cutscene lifecycle verified
 
 - **Versions/result:** native `32d5ef85` is committed/pushed; root companion is the commit containing this checkpoint, based on `991ab0d`. `NativeStoryLifecycle` composes the existing real PROLOG1 cutscene archive/timing and mission-audio event43200 owners into one immutable story state with ordered events and no presentation feedback.
 - **Lifecycle matrix:** normal mission2 start enters PROLOG1; premature non-skip completion rejects atomically; the first attempt takes the source skip path, registers mission resources, fails and cleans to retry-ready. Attempt2 runs the authored22.333332-second cutscene to completion, starts exact source-duration mission speech, blocks early completion, completes after audio and cleans all ped/vehicle/train/object counts. Held completion publication remains immutable.
