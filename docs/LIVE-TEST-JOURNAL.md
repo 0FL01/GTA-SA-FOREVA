@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P8-07 — 2026-09-13, DIRECT; original-PC semantic path round trip
+
+- Native `048af73d` adapts the exact source Paths block count plus0x1C switch records into the full original PC envelope. It writes explicit little-endian fields and canonical padding, never host structs.
+- A fresh `exec` reader imports two path switches, applies a representative switch-on change, exports and semantically reimports it. Direct12 and strict sanitizer pass; malformed Boolean/bounds/truncation retain state. Codec37, builds/smoke/sweep33 pass.
+- P8-A07 verified at58/68. Compatibility is representative for Paths, not every opaque block. P9-A01 audit is next with mission TXD, target audio, startup movies and Pending special-state rows still explicit.
+
 ### GODOT-P7-09 — 2026-09-13, DIRECT; explicit PC effect-family profiles
 
 - Native `e82af682` inventories four discovered PC representatives: ONE/ONE particle, DEFAULT alpha shadow, MatFX ENVMAP reflection and the additive two-pass PC colour filter. It exposes no presentation feedback or generic FX scheduler.

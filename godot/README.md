@@ -76,6 +76,14 @@ The value owner follows the source region rectangles and shipped timecycle rows 
 
 The pointer-free profile isolates the discovered ONE/ONE particle, DEFAULT alpha shadow, MatFX ENVMAP reflection and PC two-pass colour-filter formulas. Direct11 verifies exact pixel and blend/depth transitions; existing clean material/cloud gates provide actual asset-render evidence. Generic FX scheduling, projected/permanent/realtime shadow geometry, water reflection/refraction and PS2-only effects remain explicit differences rather than silent fallback.
 
+### Original-PC representative semantic import/export (P8-A07)
+
+```bash
+./build/godot-native/sa_core_pc_save_semantics_probe artifacts/build-runs/p8-a07-pc-semantics.bin
+```
+
+The probe writes the full202752-byte/28-block PC envelope, then `exec`s a fresh reader. The reader imports exact `CPathFind` switch records, applies a source path-state change, exports and semantically reimports it. Direct12 and strict ASan/UBSan pass. This proves the representative Paths adapter; other source blocks remain opaque until separately adapted.
+
 ### SFX, speech and environmental audio families (P7-A06 target-open)
 
 `SALegacyAudio` exposes copied source payloads for door SFX event80/bank138/sound40, mission speech43200 and rain bank105/sound0. Godot constructs WAV/Ogg streams and starts all three players; Dummy is structural CI only:

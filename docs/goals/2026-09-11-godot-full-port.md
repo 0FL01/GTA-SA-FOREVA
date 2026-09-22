@@ -140,7 +140,7 @@ P0 implementation and available server gates are verified; target reflight stays
 | P7-A07 | verified | Port radio programming and playback state. | Station/program/interrupt/save-resume fixture preserves source sequencing state. |
 | P7-A08 | verified | Port weather regions/transitions, clouds, water and their time-dependent behavior. | Controlled Los Santos→San Fierro→desert route publishes source timecycle/cloud/water-flow transitions and rejects invalid time atomically. |
 | P7-A09 | verified | Port particles, shadows, reflections and post effects under the explicit original visual profile. | Isolated rendered gate covers each discovered effect family and records approved differences. |
-| P7-A10 | in_progress | Support source startup movies only after codec, dependency and license evidence is established. | Clean-package playback gate uses the proven in-memory source route and records dependency/license status. |
+| P7-A10 | pending | Support source startup movies only after codec, dependency and license evidence is established. | Clean-package playback gate uses the proven in-memory source route and records dependency/license status. |
 
 ### P8 - Complete progression/content and save compatibility (`in_progress`)
 
@@ -152,13 +152,13 @@ P0 implementation and available server gates are verified; target reflight stays
 | P8-A04 | verified | Complete purchases, stats, rewards/unlocks, interiors and their persistent owners. | Restarted-process progression route preserves and reapplies each owner family. |
 | P8-A05 | verified | Inventory and implement cheats, replay and special script-driven states rather than silently omitting them. | Manifest has a tested semantic route or explicit still-pending row for every discovered feature. |
 | P8-A06 | verified | Complete original-PC save block codecs, checksum and reference repair separately from port-native saves. | Fixed-size source-format fixture round-trips all28 `BLOCK` payload families and rejects corrupted checksum/tags/layout/references atomically. |
-| P8-A07 | in_progress | Validate original-PC import/export against full progression semantics before compatibility is claimed. | Fresh-process import -> play/change -> export -> import route preserves semantic state. |
+| P8-A07 | verified | Validate original-PC import/export against full progression semantics before compatibility is claimed. | Fresh-process import -> play/change -> export -> import route preserves semantic state. |
 
 ### P9 - Full-port closure and target release candidate (`pending`)
 
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
-| P9-A01 | pending | Close every remaining required row across F-WORLD, F-MECHANICS, F-SCRIPTS, F-PERSIST, F-PRESENT and F-DELIVERY. | Finish-line audit contains no unresolved required behavior, fake readiness or original-runtime dependency. |
+| P9-A01 | in_progress | Close every remaining required row across F-WORLD, F-MECHANICS, F-SCRIPTS, F-PERSIST, F-PRESENT and F-DELIVERY. | Finish-line audit contains no unresolved required behavior, fake readiness or original-runtime dependency. |
 | P9-A02 | pending | Run long normal-play, route, reload, device, mission and save sessions on the Fedora target. | Reviewed endurance itinerary completes with preserved artifacts and no unbounded resource growth. |
 | P9-A03 | pending | Measure CPU/GPU/IO/frame-time/memory/loading behavior and propose target thresholds for review. | Repeatable target measurements support explicitly approved thresholds. |
 | P9-A04 | pending | Optimize only measured stalls without changing source behavior. | Before/after trace improves the selected stall while semantic and presentation gates remain unchanged. |
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P7-A09 explicit PC effect-family profiles verified
+### 2026-09-13 — P8-A07 original-PC semantic path round trip verified
+
+- **Versions/result:** native `048af73d` is committed/pushed; root companion is the commit containing this checkpoint, based on `0a33c3a`. `NativePcSaveSemantics` maps the exact source `CPathFind::Save/Load` payload—uint32 count plus bounded0x1C `CNodesSwitchedOnOrOff` records—into the original28-block PC envelope without serializing host structs.
+- **Fresh-process gate:** `native-pc-save-semantics-ok checks=12 block=Paths records=2 envelope=202752 fresh-process=1 play-change=path-on semantic=roundtrip references=none`. A writer exports the checksummed source envelope, an `exec` reader imports in a fresh process, switches one path box back on, exports, decodes and semantically reimports the changed state. Invalid booleans/bounds/truncation retain the prior semantic owner.
+- **Evidence/boundary:** direct and strict ASan/UBSan routes pass, the underlying28-block codec37 still passes, full builds/smoke and native sweep33/0 pass. This is representative original-format semantic compatibility for the Paths owner; it does not imply all opaque blocks have semantic adapters. Extension remains byte-identical `980cb6a251fd0a7fc3500a9249873088e501fd521a25966f7dddccad3a29bad6`.
+- **Progress/next:** P8-A07 verified: `58/68=85.3%` equal-count atoms, not readiness. P9-A01 finish-line audit is current and must keep P4-A08 mission TXD, P7-A06 target audio, P7-A10 movie codec and every explicit Pending special-state row open rather than manufacturing completion.
+
+### Prior — P7-A09 explicit PC effect-family profiles verified
 
 - **Versions/result:** native `e82af682` is committed/pushed; root companion is the commit containing this checkpoint, based on `84baae3`. `NativeEffectFamilies` records four discovered representative PC effect families as pointer-free source profile values: ONE/ONE low-cloud particle, DEFAULT alpha shadow, MatFX ENVMAP reflection and two-pass PC colour filter.
 - **Decisive gate:** `native-effect-families-ok checks=11 families=particle,shadow,reflection,post pixels=additive,alpha,env,pc-filter feedback=0` renders isolated deterministic pixels and verifies blend/depth policy. Existing clean Forward+ material gates cover actual `xvehicleenv128` reflection and PC post; native cloud/effect sweeps cover the source additive particle route. Strict ASan/UBSan, full builds, smoke and native sweep33/0 pass.
