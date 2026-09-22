@@ -139,8 +139,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P7-A06 | in_progress | Port SFX, speech and environmental audio with real target Godot audio; Dummy remains CI-only. | Target audio route emits and audibly/structurally validates one event from each family. |
 | P7-A07 | verified | Port radio programming and playback state. | Station/program/interrupt/save-resume fixture preserves source sequencing state. |
 | P7-A08 | verified | Port weather regions/transitions, clouds, water and their time-dependent behavior. | Controlled Los Santos→San Fierro→desert route publishes source timecycle/cloud/water-flow transitions and rejects invalid time atomically. |
-| P7-A09 | in_progress | Port particles, shadows, reflections and post effects under the explicit original visual profile. | Isolated rendered gate covers each discovered effect family and records approved differences. |
-| P7-A10 | pending | Support source startup movies only after codec, dependency and license evidence is established. | Clean-package playback gate uses the proven in-memory source route and records dependency/license status. |
+| P7-A09 | verified | Port particles, shadows, reflections and post effects under the explicit original visual profile. | Isolated rendered gate covers each discovered effect family and records approved differences. |
+| P7-A10 | in_progress | Support source startup movies only after codec, dependency and license evidence is established. | Clean-package playback gate uses the proven in-memory source route and records dependency/license status. |
 
 ### P8 - Complete progression/content and save compatibility (`in_progress`)
 
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P7-A08 weather region/cloud/water transitions verified
+### 2026-09-13 — P7-A09 explicit PC effect-family profiles verified
+
+- **Versions/result:** native `e82af682` is committed/pushed; root companion is the commit containing this checkpoint, based on `84baae3`. `NativeEffectFamilies` records four discovered representative PC effect families as pointer-free source profile values: ONE/ONE low-cloud particle, DEFAULT alpha shadow, MatFX ENVMAP reflection and two-pass PC colour filter.
+- **Decisive gate:** `native-effect-families-ok checks=11 families=particle,shadow,reflection,post pixels=additive,alpha,env,pc-filter feedback=0` renders isolated deterministic pixels and verifies blend/depth policy. Existing clean Forward+ material gates cover actual `xvehicleenv128` reflection and PC post; native cloud/effect sweeps cover the source additive particle route. Strict ASan/UBSan, full builds, smoke and native sweep33/0 pass.
+- **Approved differences/boundary:** this profile does not claim general FX-blueprint scheduling, collision-projected/permanent/realtime shadow geometry, water reflection/refraction or PS2 radiosity/heat haze. Those remain explicit differences rather than silent fallback. Extension stays byte-identical `980cb6a251fd0a7fc3500a9249873088e501fd521a25966f7dddccad3a29bad6`.
+- **Progress/next:** P7-A09 verified: `57/68=83.8%` equal-count atoms, not readiness. P7-A10 startup movies is current; P4-A08 mission TXD, P7-A06 target audio and P8-A07 semantic save compatibility remain open.
+
+### Prior — P7-A08 weather region/cloud/water transitions verified
 
 - **Versions/result:** native `dd025fad` is committed/pushed; root companion is the commit containing this checkpoint, based on `d6a2129`. `NativeEnvironmentLifecycle` classifies the exact source LA/SF/LV/desert region rectangles, reads shipped named timecycle rows and publishes immutable weather transitions with cloud colours, sky/ambient/directional/water colours, fog/far clip and source weather factors.
 - **Water/time ownership:** each transition retains explicit game time, old/new weather and interpolation; source wind drives `min(wind+0.3,1)` waviness and the original double-intermediate UV flow increments. Frustum, cloud geometry, water geometry and presentation feedback stay external rather than being fabricated by this value owner.

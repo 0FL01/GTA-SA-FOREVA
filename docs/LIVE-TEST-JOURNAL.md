@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P7-09 — 2026-09-13, DIRECT; explicit PC effect-family profiles
+
+- Native `e82af682` inventories four discovered PC representatives: ONE/ONE particle, DEFAULT alpha shadow, MatFX ENVMAP reflection and the additive two-pass PC colour filter. It exposes no presentation feedback or generic FX scheduler.
+- Direct11 renders exact isolated additive/alpha/environment/post pixels and verifies depth/blend policies; strict sanitizer, full builds, smoke and sweep33/0 pass. Existing clean material and cloud gates retain actual asset-render evidence.
+- P7-A09 verified at57/68. Collision-projected shadow geometry, generic FX blueprints, water reflections/refraction and PS2 heat haze/radiosity stay explicit approved differences. P7-A10 startup movies is next.
+
 ### GODOT-P7-08 — 2026-09-13, DIRECT; weather region/timecycle/cloud/water transitions
 
 - Native `dd025fad` owns source region classification, named timecycle interpolation, low-cloud colours, weather factors, water colour/waviness and source UV-flow state without taking geometry or presentation feedback authority.

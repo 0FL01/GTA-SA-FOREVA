@@ -68,6 +68,14 @@ The codec preserves all28 ordered `BLOCK` payload families inside the fixed20275
 
 The value owner follows the source region rectangles and shipped timecycle rows through a controlled Los Santos→San Fierro→desert route. It retains cloud colours, weather factors, water colour/waviness and source UV-flow state; frustum, cloud/water geometry and presentation feedback remain separate renderer authorities.
 
+### Explicit PC effect families (P7-A09)
+
+```bash
+./build/godot-native/sa_effect_families_probe
+```
+
+The pointer-free profile isolates the discovered ONE/ONE particle, DEFAULT alpha shadow, MatFX ENVMAP reflection and PC two-pass colour-filter formulas. Direct11 verifies exact pixel and blend/depth transitions; existing clean material/cloud gates provide actual asset-render evidence. Generic FX scheduling, projected/permanent/realtime shadow geometry, water reflection/refraction and PS2-only effects remain explicit differences rather than silent fallback.
+
 ### SFX, speech and environmental audio families (P7-A06 target-open)
 
 `SALegacyAudio` exposes copied source payloads for door SFX event80/bank138/sound40, mission speech43200 and rain bank105/sound0. Godot constructs WAV/Ogg streams and starts all three players; Dummy is structural CI only:
