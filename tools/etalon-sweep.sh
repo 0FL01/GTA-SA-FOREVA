@@ -30,6 +30,7 @@ chk menu 14347365074911296144 $B --shot-menu $O/menu.tga --lang english
 chk nav 'selected=1 chosen=1' env SDL_VIDEODRIVER=dummy $B --menu-nav down,enter --out $O/nav.tga --lang english
 chk coll 11598182692490058556 $B --coll-probe
 chk radio 14914820248825096026 $B --smoke-radio --station RE --seconds 5
+chk movies movie-smoke-ok $B --smoke-movies --game-dir /game
 chk ped 8661044579928738921 $B --shot-ped $O/ped.tga --model cj
 # Rebaselined after the independently audited inverse-bind/world matrix-order
 # fix (RealtimeGameplayPoseProbe). The former hashes encoded stretched limbs.

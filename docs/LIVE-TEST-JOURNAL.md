@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P7-10 — 2026-09-13, DIRECT; source startup movies and splash decode
+
+- Native `718bd57b` dynamically links system FFmpeg and decodes actual `Logo.mpg` and `GTAtitles.mpg` MPEG1 video/MP2 audio:640x480,44100Hz,durations15366/88791ms. The independent texture gate decodes `loadsc0` from the shipped splash TXD.
+- `--smoke-movies` and the direct movie probe emit matching identities; sweep now passes34/0, native is ELF64/no Wine, and all media stays under `/game:ro`. The first black video frames are not used as identity oracles; durations and audio hashes distinguish the clips.
+- FFmpeg remains a dynamically linked system dependency and is absent from the Godot package. The installed package's LGPL/GPL notice path and redistribution obligations are documented; no game movie redistribution is implied. P7-A10 verified at61/68 overall; P7-A06 target audio remains open.
+
 ### GODOT-P9-01 — 2026-09-13, DIRECT; clean asset-free package audit
 
 - `tools/godot-package.sh` regenerates an allowlisted transfer tree; `tools/godot-package-audit.py` verifies26 files, zero game assets/symlinks, ELF/export/dependency boundaries and required Godot/godot-cpp/librw notices.

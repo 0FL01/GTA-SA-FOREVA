@@ -11,6 +11,20 @@ Fedora 44 / Mesa / RX 780M and original-reference acceptance remain not-run. See
 [`docs/visual_contract.md`](../docs/visual_contract.md) for the evidence rules and
 known visual limitations.
 
+### Source startup movies and splash (P7-A10)
+
+```bash
+./build/godot-native/sa_movie_runtime_probe /game
+./build/mad-sa-linux --smoke-movies --game-dir /game
+./build/godot-native/sa_script_texture_probe /game
+```
+
+The native reference decodes the owned `Logo.mpg` and `GTAtitles.mpg` MPEG1
+video/MP2 audio through dynamically linked system FFmpeg, then the independent
+texture path verifies `loadsc0`. Media and codec libraries are not bundled in
+the asset-free Godot package. See [`docs/FFMPEG-RUNTIME.md`](../docs/FFMPEG-RUNTIME.md)
+for the dependency and LGPL redistribution boundary.
+
 ### Complete shipped script ledger and radio state (P7-A07 / P8-A01)
 
 ```bash

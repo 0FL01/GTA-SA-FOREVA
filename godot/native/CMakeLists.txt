@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.20)
 
 project(sa_legacy LANGUAGES C CXX)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
+    libavformat libavcodec libavutil libswscale libswresample)
+
 set(REPO_ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." CACHE PATH "mad-sa repository root")
 set(GODOT_CPP_DIR "${REPO_ROOT}/build/godot-deps/godot-cpp" CACHE PATH "Pinned godot-cpp checkout")
 set(SA_GODOT_CPP_TAG "godot-4.5-stable")
@@ -265,6 +269,14 @@ target_link_libraries(sa_core_story_lifecycle_probe PRIVATE sa_core)
 add_executable(sa_first_mission_save_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeFirstMissionSaveProbe.cpp")
 target_link_libraries(sa_first_mission_save_probe PRIVATE sa_core)
+add_executable(sa_movie_runtime_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeMovieRuntimeProbe.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeMovieRuntime.cpp")
+target_link_libraries(sa_movie_runtime_probe PRIVATE PkgConfig::FFMPEG)
+target_compile_features(sa_movie_runtime_probe PRIVATE cxx_std_20)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_movie_runtime_probe PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 add_executable(sa_core_activity_lifecycle_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeActivityLifecycleProbe.cpp")
 target_link_libraries(sa_core_activity_lifecycle_probe PRIVATE sa_core)

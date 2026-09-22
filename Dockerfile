@@ -46,6 +46,7 @@ RUN if [ -n "$UBUNTU_MIRROR" ]; then \
     libxcb-composite0-dev libxcb-ewmh-dev libxcb-res0-dev libxcb-util-dev \
     libwayland-dev libudev-dev libdbus-1-dev libibus-1.0-dev \
     libjpeg-turbo8-dev libogg-dev libvorbis-dev \
+    libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev \
     wine64 mingw-w64 binutils file strace weston mangohud \
     && rm -rf /var/lib/apt/lists/*
 

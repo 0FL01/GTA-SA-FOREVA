@@ -140,7 +140,7 @@ P0 implementation and available server gates are verified; target reflight stays
 | P7-A07 | verified | Port radio programming and playback state. | Station/program/interrupt/save-resume fixture preserves source sequencing state. |
 | P7-A08 | verified | Port weather regions/transitions, clouds, water and their time-dependent behavior. | Controlled Los Santos→San Fierro→desert route publishes source timecycle/cloud/water-flow transitions and rejects invalid time atomically. |
 | P7-A09 | verified | Port particles, shadows, reflections and post effects under the explicit original visual profile. | Isolated rendered gate covers each discovered effect family and records approved differences. |
-| P7-A10 | pending | Support source startup movies only after codec, dependency and license evidence is established. | Clean-package playback gate uses the proven in-memory source route and records dependency/license status. |
+| P7-A10 | verified | Support source startup movies only after codec, dependency and license evidence is established. | Actual Logo/GTAtitles MPEG1+MP2 decode and loadsc0 splash gates pass through dynamically linked system FFmpeg with an explicit LGPL redistribution boundary. |
 
 ### P8 - Complete progression/content and save compatibility (`in_progress`)
 
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P9-A05 clean asset-free package verified
+### 2026-09-13 — P7-A10 startup movie family verified
+
+- **Versions/result:** native `718bd57b` is committed/pushed; root companion is the commit containing this checkpoint, based on `a8a89eb`. `NativeMovieRuntime` opens the legally owned `Logo.mpg` and `GTAtitles.mpg` through dynamically linked system FFmpeg, decodes actual MPEG1 video and MP2 audio frames and publishes pointer-free metadata/checksums. The independent script texture fixture decodes the shipped `loadsc0` splash.
+- **Decisive route:** `native-movie-runtime-ok clips=Logo,GTAtitles video=mpeg1video,mpeg1video audio=mp2,mp2 frames=640x480,640x480 rates=44100,44100 duration=15366,88791 splash=next codec-license=FFmpeg-LGPL dynamic=1`; native `--smoke-movies` reports the same identities. The native regression sweep now includes the movie route and passes `34/0`.
+- **Dependency/license boundary:** the dev image installs system FFmpeg development headers; native CMake links shared `libavformat/libavcodec/libavutil/libswscale/libswresample`. No codec library or MPEG asset is copied into the asset-free Godot package. `docs/FFMPEG-RUNTIME.md` records the installed-package license source and distributor obligations. This verifies source startup media decode, not Godot built-in MPEG support or redistribution rights for game media.
+- **Regression/progress:** full native/Godot-native builds, movie/texture direct probes, ELF64/no-Wine dependency audit and sweep34/0 pass. P7-A10 verified: `61/68=89.7%` equal-count atoms, not readiness. P9-A01 finish-line audit remains current; P0 target reflight, P7-A06 real target audio and P9-A01–A04/A06 remain open.
+
+### Prior — P9-A05 clean asset-free package verified
 
 - **Versions/result:** root companion is the commit containing this checkpoint, based on `f64c6aa`; native remains `8faf5bee`. `tools/godot-package-audit.py` fail-closes the staged transfer tree: required runtime/project/extension/license records, no symlinks, no source game/save/executable/DLL payload suffixes, ELF64 x86-64 identity, resolved runtime dependencies, no Wine/build-tree/Conan linkage, sole GDExtension export and relative descriptor.
 - **Decisive gate:** regenerate from the allowlisted package script, then `godot-package-audit-ok files=26 assets=0 symlinks=0 extension=980cb6a... runtime=4.6.1... exe=0 wine=0 licenses=godot,godot-cpp,librw external-game-dir=required`. The staged runtime launches from its own tree against the separately mounted `/game:ro`; absent `--game-dir` is explicitly rejected.

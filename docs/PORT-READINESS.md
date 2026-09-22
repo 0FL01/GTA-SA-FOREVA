@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records a fail-closed clean package audit over native `8faf5bee`. P9-A01 finish-line audit remains current.60/68 verified atoms (88.2% by count) is not game readiness.
+**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records actual startup movie-family decode over native `718bd57b`. P9-A01 finish-line audit remains current.61/68 verified atoms (89.7% by count) is not game readiness.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -15,7 +15,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P4 | A01–A08 verified | Source boot, first-mission owner cleanup and fresh-process fail/retry/complete progression matrix verified |
 | P5 | A01–A06 verified | World residency/visibility plus complete vehicle-family and destructible-object value lifecycles verified |
 | P6 | A01–A07 verified | Paths, AI flow, population, combat, wanted/recovery and persistent interactions verified |
-| P7 | A01–A05/A07–A09 verified; A06 target-open; A10 dependency-open | PC effect profiles verified; non-Dummy target audio and startup movie codec/license path stay open |
+| P7 | A01–A05/A07–A10 verified; A06 target-open | Startup MPEG1/MP2 and splash decode use dynamic system FFmpeg; non-Dummy target audio remains open |
 | P8 | A01–A07 verified | Site/story/activity/progression inventory plus original-PC block and representative Paths semantic round trip verified |
 | P9 | A05 verified; A01 in_progress | Asset-free licensed transfer package verified; cross-axis unresolved target/release rows remain explicit |
 
