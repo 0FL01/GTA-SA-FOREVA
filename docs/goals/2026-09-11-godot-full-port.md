@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6, P7-A01–A05/P7-A07–A08 and P8-A01–A06 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, P8-A07 remains open, and P7-A09 is current.
+Execution: ACTIVE in DIRECT mode without subagents.58/68 atoms are verified; P4-A08 is advancing through its mission3 texture dependency, while P0 target reflight, P7-A06 target audio, P7-A10 movies and P9 closure remain open.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P8-A07 original-PC semantic path round trip verified
+### 2026-09-13 — P4-A08 mission3 texture residency dependency advanced
+
+- **Versions/result:** native `67bd2db6` is committed/pushed; root companion is the commit containing this checkpoint, based on `64abb74`. `0390 LOAD_TEXTURE_DICTIONARY` now enters an exact Pending service and the sole parser worker decodes `/game/models/txd/LD_NONE.txd` into a pointer-free owned packet. `038F LOAD_SPRITE` binds exact decoded names/slots; `0391` releases the owner. No synchronous parser or fake Ready was added.
+- **Direct gate:** `native-script-texture-ok checks=30 dictionary=LD_NONE images=24 required=24 worker=sole feedback=0` validates all mission3 sprites (`SHIP`, `TVCORN`, `SHOOT`, `LIGHT`, `EXPLM01..12`, `FORCE`, `WARP`, `THRUST`, `SHPNORM`, `SHPWARP`, `SHIP2`, `SHIP3`, `TITLE`) with nonempty source texels/mips. Session5482, scheduling106, native smoke and sweep33/0 pass; `/game` remains read-only.
+- **Regression fixed:** the native realtime uploader now accepts and uploads complete decoded mip chains with source filter modes. A short normal new-game run again publishes the initial4096-instance scene instead of rejecting `metatelepole1` solely because its RGBA packet contains lower mips.
+- **Boundary/progress:** P4-A08 remains unresolved at `58/68=85.3%`; this checkpoint owns TXD/sprite residency but does not claim the subsequent positional mission audio, mission3 fail/retry/complete route or matching pre/post restarted save. P9-A01 remains current and must keep target audio, startup MPEG and target release gates open.
+
+### Prior — P8-A07 original-PC semantic path round trip verified
 
 - **Versions/result:** native `048af73d` is committed/pushed; root companion is the commit containing this checkpoint, based on `0a33c3a`. `NativePcSaveSemantics` maps the exact source `CPathFind::Save/Load` payload—uint32 count plus bounded0x1C `CNodesSwitchedOnOrOff` records—into the original28-block PC envelope without serializing host structs.
 - **Fresh-process gate:** `native-pc-save-semantics-ok checks=12 block=Paths records=2 envelope=202752 fresh-process=1 play-change=path-on semantic=roundtrip references=none`. A writer exports the checksummed source envelope, an `exec` reader imports in a fresh process, switches one path box back on, exports, decodes and semantically reimports the changed state. Invalid booleans/bounds/truncation retain the prior semantic owner.

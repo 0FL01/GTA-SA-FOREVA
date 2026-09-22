@@ -495,6 +495,15 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_pose_families_probe PRIVATE
         -Wall -Wextra -Wpedantic -fexceptions -fno-fast-math -ffp-contract=off)
 endif()
+add_executable(sa_script_texture_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptTextureProbe.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptEntities.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/MenuShot.cpp")
+target_link_libraries(sa_script_texture_probe PRIVATE sa_diagnostic)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_script_texture_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fexceptions -fno-fast-math -ffp-contract=off)
+endif()
 add_executable(sa_vehicle_families_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeVehicleFamiliesProbe.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCarGenerators.cpp"
