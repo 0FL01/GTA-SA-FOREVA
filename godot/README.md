@@ -18,7 +18,9 @@ known visual limitations.
 ./build/godot-native/sa_core_script_content_probe /game
 ```
 
-The radio gate owns all12 source station programming queues, interruption/resume and canonical restart state. The corpus gate binds exact `main.scm` and `script.img` identities to416669 classified main/mission/streamed sites (`unknown-reachable=0`, fingerprint `54B67C3B1B6BD9E5`). Its69764 strict sites remain explicitly unsupported; the ledger never converts them to NOPs. P4-A08 now owns mission3 `LD_NONE`/24-sprite residency through the sole parser worker, but its later mission/restart route and P7-A06 target audio remain open.
+The radio gate owns all12 source station programming queues, interruption/resume and canonical restart state. The corpus gate binds exact `main.scm` and `script.img` identities to416669 classified main/mission/streamed sites (`unknown-reachable=0`, fingerprint `54B67C3B1B6BD9E5`). Its69764 strict sites remain explicitly unsupported; the ledger never converts them to NOPs. P4 also owns mission3 `LD_NONE`/24-sprite residency through the sole parser worker; P7-A06 target audio remains open.
+
+The P4 closure probe `sa_first_mission_save_probe /game PRE POST` performs first-mission skip/fail/cleanup/retry/complete/cleanup and verifies matching progression through two fresh `exec` readers. It complements the normal boot/owner gates; it does not claim every mission or target audiovisual parity.
 
 ### Representative story lifecycle matrix (P8-A02)
 

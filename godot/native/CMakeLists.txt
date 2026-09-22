@@ -262,6 +262,9 @@ target_link_libraries(sa_core_script_content_probe PRIVATE sa_core)
 add_executable(sa_core_story_lifecycle_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeStoryLifecycleProbe.cpp")
 target_link_libraries(sa_core_story_lifecycle_probe PRIVATE sa_core)
+add_executable(sa_first_mission_save_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeFirstMissionSaveProbe.cpp")
+target_link_libraries(sa_first_mission_save_probe PRIVATE sa_core)
 add_executable(sa_core_activity_lifecycle_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeActivityLifecycleProbe.cpp")
 target_link_libraries(sa_core_activity_lifecycle_probe PRIVATE sa_core)

@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents.58/68 atoms are verified; P4-A08 is advancing through its mission3 texture dependency, while P0 target reflight, P7-A06 target audio, P7-A10 movies and P9 closure remain open.
+Execution: ACTIVE in DIRECT mode without subagents.59/68 atoms are verified; P0 target reflight, P7-A06 target audio, P7-A10 movies and P9 closure remain open.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -102,7 +102,7 @@ P0 implementation and available server gates are verified; target reflight stays
 | P4-A05 | verified | Implement the real owner/service subset demanded by unmodified startup, including `0814` registration and separate runtime coverage. | Actual startup crosses all70 `0814` registrations through the source stunt-jump owner, then stops at classified `029B@218276` with no NOP substitution; runtime update/reward/reset/save remain separate. |
 | P4-A06 | verified | Reach mission0's real wait/termination, continue main scheduling, clear fade and return live player control. | `--new-game --boot-gate` follows the unchanged source route through mission2 and exits0 at its termination with control1, fade0 and no fault. |
 | P4-A07 | verified | Add the camera, text, audio, cutscene and cleanup owners required by the first source-reachable story mission. | `--first-mission-gate` uses normal source scheduling and proves camera9, text revision, cleared cutscene, completed audio clock, stopped beat and deleted trains at mission2 completion. |
-| P4-A08 | in_progress | Complete first-mission start/fail/retry/complete plus pre/post save, process restart and load semantics. | One E2E performs all four mission routes and matching pre/post restarted-process progression. |
+| P4-A08 | verified | Complete first-mission start/fail/retry/complete plus pre/post save, process restart and load semantics. | Fresh-process composition runs skip/fail/cleanup/retry/complete/cleanup and preserves matching pre/post progression. |
 
 ### P5 - Whole-world entities and all vehicle classes (`in_progress`)
 
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P4-A08 mission3 texture residency dependency advanced
+### 2026-09-13 — P4-A08 first-mission restart matrix verified
+
+- **Versions/result:** native `8faf5bee` is committed/pushed; root companion is the commit containing this checkpoint, based on `57ff58a`. `NativeFirstMissionSaveProbe` composes the real PROLOG1/cutscene and mission-audio owners with progression persistence across two separate `exec` readers.
+- **Decisive E2E:** pre-save restart enters mission2, performs source skip, registers resources, fails, cleans up, retries, runs the authored22.333332-second cutscene, waits for exact mission-audio duration, completes and cleans every resource family. It writes post-progress stat146=1; a second fresh process restores and verifies that state. Marker: `native-first-mission-save-ok mission=2 start=1 fail=1 retry=1 skip=1 complete=1 cleanup=2 pre-post-restart=2 progression=matched`.
+- **Regression evidence:** story lifecycle18, progression12, portable restarted session writer29/reader111 and mission-audio direct/source-ID routes pass. The mission3 sole-worker `LD_NONE`/24-sprite handoff and positional audio value checkpoint remain integrated; direct stream sample1829 is retained with explicit unknown playback duration rather than fake completion.
+- **Progress/boundary:** P4-A08 verified: `59/68=86.8%` equal-count atoms, not readiness. This closes the representative first-mission and restarted-progression contract, not every mission/site or target audiovisual output. P9-A01 remains current; target audio, startup movies, target reflight and release gates remain open.
+
+### Prior — P4-A08 mission3 texture residency dependency advanced
 
 - **Versions/result:** native `a4ce7be8` is committed/pushed; root companion is the commit containing this checkpoint, based on `64abb74`. `0390 LOAD_TEXTURE_DICTIONARY` now enters an exact Pending service and the sole parser worker decodes `/game/models/txd/LD_NONE.txd` into a pointer-free owned packet. `038F LOAD_SPRITE` binds exact decoded names/slots; `0391` releases the owner. Subsequent `097A` retains the exact positional audio event/coordinates without claiming target output. No synchronous parser or fake Ready was added.
 - **Direct gate:** `native-script-texture-ok checks=30 dictionary=LD_NONE images=24 required=24 worker=sole feedback=0` validates all mission3 sprites (`SHIP`, `TVCORN`, `SHOOT`, `LIGHT`, `EXPLM01..12`, `FORCE`, `WARP`, `THRUST`, `SHPNORM`, `SHPWARP`, `SHIP2`, `SHIP3`, `TITLE`) with nonempty source texels/mips. Session5482, scheduling106, native smoke and sweep33/0 pass; `/game` remains read-only.

@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P4-11 — 2026-09-13, DIRECT; first-mission fresh-process restart matrix
+
+- Native `8faf5bee` composes actual PROLOG1 and mission-audio owners with progression persistence. Attempt1 skips/fails/cleans; attempt2 retries, completes authored cutscene/audio barriers and cleans all resources.
+- Two `exec` readers verify pre-save state, apply completion progress and restore matching post-save state: `native-first-mission-save-ok ... pre-post-restart=2 progression=matched`. Story18, progression12, portable111 and mission-audio routes pass.
+- P4-A08 and P4 are verified at59/68 overall. This remains representative mission/progression semantics, not every content site or target presentation.
+
 ### GODOT-P4-10 — 2026-09-13, DIRECT; mission3 sole-worker TXD residency
 
 - Native `a4ce7be8` routes `0390/038F/0391` through an exact Pending parser-worker handoff and retains the following `097A` positional audio event. `LD_NONE.txd` publishes24 pointer-free decoded sprites; no RW pointer or synchronous parser escapes to the script host.

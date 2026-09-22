@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `a4ce7be8` and the sole-worker mission3 TXD/sprite plus positional-audio handoff. P9-A01 finish-line audit remains current.58/68 verified atoms (85.3% by count) is not game readiness.
+**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `8faf5bee` and the fresh-process first-mission fail/retry/complete progression matrix. P9-A01 finish-line audit remains current.59/68 verified atoms (86.8% by count) is not game readiness.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -12,7 +12,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P1 | A01–A07 verified | Qualified identities/catalog/chain, paired render/COL, sole-owner async parser, budgeted publication/retirement and catalog-backed exterior/interior residency verified |
 | P2 | A01–A06 verified | Owned core boundaries plus labelled CJ/car studio approximation;27-row CPU/Godot trace, interpolation/teardown, clean Vulkan and native33/0 verified, NOT source gameplay |
 | P3 | A01–A07 verified | Real source Pad/model400/COL route crosses enter/drive/exit/destroy/evict and emits authoritative initial HUD, action journal and exact NEW-door PCM identities |
-| P4 | A01–A07 verified; A08 in_progress | Source boot/first mission pass; mission3 TXD/sprite residency is owned, while subsequent fail/retry/restarted-save semantics remain open |
+| P4 | A01–A08 verified | Source boot, first-mission owner cleanup and fresh-process fail/retry/complete progression matrix verified |
 | P5 | A01–A06 verified | World residency/visibility plus complete vehicle-family and destructible-object value lifecycles verified |
 | P6 | A01–A07 verified | Paths, AI flow, population, combat, wanted/recovery and persistent interactions verified |
 | P7 | A01–A05/A07–A09 verified; A06 target-open; A10 dependency-open | PC effect profiles verified; non-Dummy target audio and startup movie codec/license path stay open |
