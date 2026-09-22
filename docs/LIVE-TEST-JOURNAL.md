@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-02 — 2026-09-13, DIRECT; external target closure blocker
+
+- All independently executable implementation/server work is complete at61/68 verified atoms. `tools/target-closure.sh` now fail-closes on Fedora44, Wayland and Radeon780M identity and runs real-audio, Forward+ family, catalog and first-mission gates while preserving timing artifacts.
+- This environment has no host Wayland session; forced preflight reports Debian13, not Fedora44. Godot CI exposes Dummy audio only. Therefore P0-A04, P7-A06 and P9-A02/A03 cannot be observed here; P9-A01/A04/A06 depend on them.
+- Smallest unlock: run the target script in the user's real Fedora44/Radeon780M session with a non-Dummy audio driver, preserve artifacts and approve measured thresholds/reference differences. Full goal status is BLOCKED, not complete.
+
 ### GODOT-P7-10 — 2026-09-13, DIRECT; source startup movies and splash decode
 
 - Native `718bd57b` dynamically links system FFmpeg and decodes actual `Logo.mpg` and `GTAtitles.mpg` MPEG1 video/MP2 audio:640x480,44100Hz,durations15366/88791ms. The independent texture gate decodes `loadsc0` from the shipped splash TXD.

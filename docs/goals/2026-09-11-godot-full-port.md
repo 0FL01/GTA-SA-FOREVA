@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
-Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents.60/68 atoms are verified; P0 target reflight, P7-A06 target audio, P7-A10 movies and the remaining P9 closure gates remain open.
+Status: BLOCKED
+Execution: all independently executable work is complete.61/68 atoms are verified; the remaining target/release atoms require the unavailable Fedora44/Wayland/Radeon780M session with real audio output and reviewed measurements.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -136,7 +136,7 @@ P0 implementation and available server gates are verified; target reflight stays
 | P7-A03 | verified | Complete camera modes, HUD, radar, map, frontend and settings lifecycle. | One frontend -> game -> map -> settings -> game route restores authoritative state. |
 | P7-A04 | verified | Complete MAIN/mission GXT, source fonts and substitutions. | Multilingual mission/UI fixture resolves all strings and expected glyph substitutions. |
 | P7-A05 | verified | Complete keyboard, mouse, controller, hotplug and rumble/feedback behavior. | Device lifecycle route covers bind/input/disconnect/reconnect/feedback deterministically. |
-| P7-A06 | in_progress | Port SFX, speech and environmental audio with real target Godot audio; Dummy remains CI-only. | Target audio route emits and audibly/structurally validates one event from each family. |
+| P7-A06 | blocked_external_target | Port SFX, speech and environmental audio with real target Godot audio; Dummy remains CI-only. | Structural SFX/speech/environment payload and Godot routes pass; the available driver is Dummy. Audible target acceptance requires the unavailable Fedora target session. |
 | P7-A07 | verified | Port radio programming and playback state. | Station/program/interrupt/save-resume fixture preserves source sequencing state. |
 | P7-A08 | verified | Port weather regions/transitions, clouds, water and their time-dependent behavior. | Controlled Los Santos→San Fierro→desert route publishes source timecycle/cloud/water-flow transitions and rejects invalid time atomically. |
 | P7-A09 | verified | Port particles, shadows, reflections and post effects under the explicit original visual profile. | Isolated rendered gate covers each discovered effect family and records approved differences. |
@@ -158,18 +158,25 @@ P0 implementation and available server gates are verified; target reflight stays
 
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
-| P9-A01 | in_progress | Close every remaining required row across F-WORLD, F-MECHANICS, F-SCRIPTS, F-PERSIST, F-PRESENT and F-DELIVERY. | Finish-line audit contains no unresolved required behavior, fake readiness or original-runtime dependency. |
-| P9-A02 | pending | Run long normal-play, route, reload, device, mission and save sessions on the Fedora target. | Reviewed endurance itinerary completes with preserved artifacts and no unbounded resource growth. |
-| P9-A03 | pending | Measure CPU/GPU/IO/frame-time/memory/loading behavior and propose target thresholds for review. | Repeatable target measurements support explicitly approved thresholds. |
-| P9-A04 | pending | Optimize only measured stalls without changing source behavior. | Before/after trace improves the selected stall while semantic and presentation gates remain unchanged. |
+| P9-A01 | blocked_dependency | Close every remaining required row across F-WORLD, F-MECHANICS, F-SCRIPTS, F-PERSIST, F-PRESENT and F-DELIVERY. | Blocked by P0-A04, P7-A06 and target-only P9-A02/A03; no unresolved row is treated as complete. |
+| P9-A02 | blocked_external_target | Run long normal-play, route, reload, device, mission and save sessions on the Fedora target. | `tools/target-closure.sh` is ready; the Fedora44/Wayland/Radeon780M session is unavailable here. |
+| P9-A03 | blocked_external_target | Measure CPU/GPU/IO/frame-time/memory/loading behavior and propose target thresholds for review. | Target hardware/session and reviewed threshold approval are unavailable here; server llvmpipe is not substituted. |
+| P9-A04 | blocked_dependency | Optimize only measured stalls without changing source behavior. | Requires the selected target stall and approved threshold from P9-A03; speculative optimization is forbidden. |
 | P9-A05 | verified | Prove asset-free reproducible clean packaging with external read-only data and private-test/public-distribution licensing separated. | Fail-closed package audit verifies dependencies, assets/symlinks, exports, licenses and external data boundary; clean package launches against `/game:ro`. |
-| P9-A06 | pending | Execute final catalog, route, mission, save, effects, device and native-regression closure. | Cross-axis release-candidate sweep and reviewed reference differences pass before any full-game declaration. |
+| P9-A06 | blocked_dependency | Execute final catalog, route, mission, save, effects, device and native-regression closure. | Server sweeps/package audit pass, but final release-candidate closure depends on the blocked target/audio/endurance rows. |
 
 Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never renumbered or reused).
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P7-A10 startup movie family verified
+### 2026-09-13 — external target closure blocker
+
+- **Completed independent work:** native `718bd57b` and the root companion containing this checkpoint are pushed.61/68 atoms are verified. Native sweep34/0, asset-free package audit, source movie decode, first-mission/restart, world/catalog, mechanics, presentation payload and save gates all pass on available server/container routes.
+- **Observed missing dependency:** `tools/target-closure.sh` fail-closes on Fedora44, Wayland and Radeon780M identity, then runs real non-Dummy audio, Forward+ materials/source assets/frontend/poses/catalog and the first-mission native gate while collecting `/usr/bin/time` artifacts and checking zombies. This environment has no host `WAYLAND_DISPLAY`; forcing the preflight onward identifies Debian13 rather than Fedora44. The user-target session/address is not available to the agent. Server llvmpipe and Godot Dummy audio are deliberately not substituted.
+- **Blocked rows:** P0-A04 target reflight; P7-A06 audible target acceptance; P9-A02 endurance, P9-A03 measurements/threshold review, dependent P9-A04 optimization, P9-A01 all-row closure and P9-A06 final release sweep. P9-A05 packaging and P7-A10 movie codec/license paths are already verified.
+- **Smallest unlock:** run `./tools/target-closure.sh "/path/to/owned/GTA San Andreas" artifacts/target-closure` in the Fedora44/Wayland/Radeon780M user session with a real Godot audio backend, preserve the output directory, and review measured thresholds/differences. Until that external evidence exists, the full-port goal is `BLOCKED`, not complete and not a release candidate.
+
+### Prior — P7-A10 startup movie family verified
 
 - **Versions/result:** native `718bd57b` is committed/pushed; root companion is the commit containing this checkpoint, based on `a8a89eb`. `NativeMovieRuntime` opens the legally owned `Logo.mpg` and `GTAtitles.mpg` through dynamically linked system FFmpeg, decodes actual MPEG1 video and MP2 audio frames and publishes pointer-free metadata/checksums. The independent script texture fixture decodes the shipped `loadsc0` splash.
 - **Decisive route:** `native-movie-runtime-ok clips=Logo,GTAtitles video=mpeg1video,mpeg1video audio=mp2,mp2 frames=640x480,640x480 rates=44100,44100 duration=15366,88791 splash=next codec-license=FFmpeg-LGPL dynamic=1`; native `--smoke-movies` reports the same identities. The native regression sweep now includes the movie route and passes `34/0`.

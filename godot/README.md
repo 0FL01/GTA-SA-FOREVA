@@ -25,6 +25,19 @@ texture path verifies `loadsc0`. Media and codec libraries are not bundled in
 the asset-free Godot package. See [`docs/FFMPEG-RUNTIME.md`](../docs/FFMPEG-RUNTIME.md)
 for the dependency and LGPL redistribution boundary.
 
+### Target closure runner
+
+The remaining acceptance evidence is target-only:
+
+```bash
+./tools/target-closure.sh "/path/to/owned/GTA San Andreas" artifacts/target-closure
+```
+
+It fail-closes unless it is running in the Fedora44/Wayland/Radeon780M session,
+requires a real non-Dummy Godot audio backend, runs the packaged Forward+ family
+and native first-mission routes, and preserves timing/log artifacts. Server
+llvmpipe and Dummy audio are not accepted substitutes.
+
 ### Complete shipped script ledger and radio state (P7-A07 / P8-A01)
 
 ```bash
