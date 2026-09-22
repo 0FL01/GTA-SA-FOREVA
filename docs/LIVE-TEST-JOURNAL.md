@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P5-05 — 2026-09-13, DIRECT; cross-family vehicle lifecycle
+
+- Native `f15d6672` composes exact constructor identity, source collision ownership and the shared vehicle pool into a twelve-family lifetime owner. Driver/passenger identities, source-health/resolved-damage state, destruction and epoch reload cleanup are value-owned and generation-safe.
+- Direct91 covers all ten shipped families plus the two recognized fake-family source defaults, half-matrix destruction, stale reload rejection, full remaining cleanup and immutable historical snapshots. Strict ASan+UBSan passes; damage formula authority remains the existing source response owner.
+- Full builds/smoke and native sweep33/0 pass. Extension stays `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`; no render rerun. P5-A05 verified at35/68=51.5%; P5-A06 next.
+
 ### GODOT-P5-04 — 2026-09-13, DIRECT; vehicle-family control dependencies
 
 - Native `d034dba5` ports bounded source value transitions for ordinary Automobile input, Boat brake/gas/steer, Train follower/free-carriage state, Trailer support extension and Quad's Automobile delegation. Helicopter/Plane use only their reversed common Abandoned-status dependency; full address-backed flight and Bike/BMX controls remain false coverage.

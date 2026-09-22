@@ -38,6 +38,10 @@ Direct1300 and strict ASan/UBSan pass; full builds, smoke, native sweep33/0 and 
 
 `sa_vehicle_family_control_probe` runs one direct source transition for ordinary road input, Boat controls, Train follower/free-carriage state, Trailer support and Quad delegation. It also pins the reversed common Abandoned-status transition used by Helicopter/Plane without claiming their address-backed flight bodies. Direct10 plus strict ASan/UBSan and native sweep33/0 pass; the marker explicitly reports `complete-flight=0 complete-bike=0`.
 
+### Cross-family vehicle lifecycle (P5-A05)
+
+`sa_vehicle_family_lifecycle_probe /game` runs the twelve recognized source families through exact constructor/collision binding, driver/passenger ownership, resolved collision damage, destruction and epoch reload. Direct91 and strict ASan/UBSan pass; held immutable history survives current-owner cleanup. The coordinator consumes source-resolved damage and does not invent family damage formulas or presentation effects.
+
 ### Source boot/first-mission checkpoint (P4-A06/A07 dependency)
 
 `./build/mad-sa-linux --play --new-game --boot-gate --game-dir /game --seconds 700` follows the unchanged source route through mission0 and mission2 and exits0 only after the real mission2 thread terminates with control enabled and fade alpha0. Native `6dd454b7` owns exact world/model/COL handoff, mission actors, source car-recording interpolation, GXT and source-duration mission-audio clocks. Marker: `play-boot-gate-ok ... no-fault=1`. This verifies bounded P4-A06 boot, not cutscene/NPC/audio presentation or broad story progression. Focused peds9/audio/carrec7/beat8/trains5 and Session5482/scheduling106/frame104/transaction71/portable111 pass; extension SHA256 remains `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`.

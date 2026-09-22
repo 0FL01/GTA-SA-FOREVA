@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07 and P5-A01–A04 are verified; P4-A08 remains dependency-open and P5-A05 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07 and P5-A01–A05 are verified; P4-A08 remains dependency-open and P5-A06 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -112,8 +112,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P5-A02 | verified | Replace radius/cap fallback with source runtime LOD, time-object and interior visibility behavior. | Actual roads326 noon/night route records a decision for every placement, changes authored time visibility (168→173 present), applies area and LOD-parent reasons, and rejects invalid hours without omission. |
 | P5-A03 | verified | Map every shipped vehicle model to its real family and constructor. | Actual212-definition matrix preserves every model/TXD/handling identity, covers all10 shipped families and10 source constructors (12 recognized types, two fake types absent), with no `400/476` fallback. |
 | P5-A04 | verified | Port family control dependencies for road, water, rail, flight, towing and special vehicles. | One direct state-transition fixture passes for each family dependency; address-backed full flight/bike controls remain explicitly outside this bounded dependency owner. |
-| P5-A05 | in_progress | Complete vehicle collision, occupants, damage, destruction and reload across classes. | Per-class lifecycle matrix preserves identities and cleans all owners on reload. |
-| P5-A06 | pending | Port general objects plus destructible/damage state into the dynamic world. | Object damage/destroy/reload fixture preserves source state and generation ownership. |
+| P5-A05 | verified | Complete vehicle collision ownership, occupants, resolved damage state, destruction and reload across classes. | Twelve-family lifecycle matrix preserves exact identities and collision owners, clears occupants on destruction and cleans all live owners on epoch reload. |
+| P5-A06 | in_progress | Port general objects plus destructible/damage state into the dynamic world. | Object damage/destroy/reload fixture preserves source state and generation ownership. |
 
 ### P6 - Population, AI, combat, police and recovery (`pending`)
 
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P5-A04 vehicle-family control dependencies verified
+### 2026-09-13 — P5-A05 cross-family vehicle lifecycle verified
+
+- **Versions/result:** native `f15d6672` is committed/pushed; root companion is the commit containing this checkpoint, based on `8ff5463`. `NativeVehicleFamilyLifecycle` composes the exact P5-A03 constructor identity, shared capacity110 source pool and an owned source-COL model for every recognized family under one reload epoch.
+- **Lifecycle ownership:** each record retains model/family/constructor and collision owner, source health1000, generation-safe pool reference, driver and bounded passenger identities, collision contact/damage revision, world/destroyed state. `ApplyResolvedCollision` commits a finite damage amount produced by the existing source collision/response authority; it deliberately does not invent class-specific damage formulas. Destroy marks Wrecked/out-of-world, releases occupants/collision and the pool slot; reload destroys every remaining live record before advancing epoch.
+- **Decisive gate:** `sa_vehicle_family_lifecycle_probe /game` passes91 checks across all12 recognized source types (the ten shipped families plus explicit fake-type default branches). It proves exact identities, owned collision, driver/passenger state, resolved damage, half-matrix destruction, stale reload rejection, full epoch cleanup and immutable held history. Strict ASan+UBSan passes.
+- **Regression/boundary:** full Godot-native/native builds, smoke and native sweep33/0 pass. Extension remains SHA256 `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`; no render/package rerun was needed. P5-A05 is verified at `35/68=51.5%`, not game readiness. Family-specific damage formula/effects remain their source response owners rather than this lifetime coordinator. P5-A06 now owns general object damage/destruction/reload; P4-A08 remains strict at `0390`.
+
+### Prior — P5-A04 vehicle-family control dependencies verified
 
 - **Versions/result:** native `d034dba5` is committed/pushed; root companion is the commit containing this checkpoint, based on `057efeb`. `NativeVehicleFamilyControl` owns the portable value transitions required to compose the already mapped constructor families without substituting a generic model or a new physics authority.
 - **Source transitions:** ordinary road input preserves the reversed Automobile keyboard smoothing/pedal direction branches; Boat preserves brake lerp, reverse gas and signed-square steer; Train preserves follower copy and detached-carriage decay/distance; Trailer preserves support retract/wait/extend rates; Quad explicitly delegates the common Automobile dependency. Helicopter/Plane retain the reversed common Abandoned-status brake/gas/steer transition while their address-backed family input/flight bodies stay unclaimed.
