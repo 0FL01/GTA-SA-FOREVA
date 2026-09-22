@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6 and P7-A01–A05 are verified; P4-A08 remains dependency-open and P7-A06 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6 and P7-A01–A05 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, and P7-A07 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -137,7 +137,7 @@ P0 implementation and available server gates are verified; target reflight stays
 | P7-A04 | verified | Complete MAIN/mission GXT, source fonts and substitutions. | Multilingual mission/UI fixture resolves all strings and expected glyph substitutions. |
 | P7-A05 | verified | Complete keyboard, mouse, controller, hotplug and rumble/feedback behavior. | Device lifecycle route covers bind/input/disconnect/reconnect/feedback deterministically. |
 | P7-A06 | in_progress | Port SFX, speech and environmental audio with real target Godot audio; Dummy remains CI-only. | Target audio route emits and audibly/structurally validates one event from each family. |
-| P7-A07 | pending | Port radio programming and playback state. | Station/program/interrupt/save-resume fixture preserves source sequencing state. |
+| P7-A07 | in_progress | Port radio programming and playback state. | Station/program/interrupt/save-resume fixture preserves source sequencing state. |
 | P7-A08 | pending | Port weather regions/transitions, clouds, water and their time-dependent behavior. | Controlled time/region capture sequence matches source-backed transition oracles. |
 | P7-A09 | pending | Port particles, shadows, reflections and post effects under the explicit original visual profile. | Isolated rendered gate covers each discovered effect family and records approved differences. |
 | P7-A10 | pending | Support source startup movies only after codec, dependency and license evidence is established. | Clean-package playback gate uses the proven in-memory source route and records dependency/license status. |
@@ -169,7 +169,15 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P7-A05 complete input device lifecycle verified
+### 2026-09-13 — P7-A06 source audio families implemented; target output gate open
+
+- **Versions/result:** native `88fdffcf` is committed/pushed; root companion is the commit containing this checkpoint, based on `33c9b22`. `NativeAudioFamilies` publishes exact source payloads for vehicle-door SFX event80/bank138/sound40, mission speech event43200 and environmental rain bank105/sound0. SFX/environment are owned PCM16 mono; speech is the validated/deobfuscated source Ogg/Vorbis payload retained by `NativeMissionAudio`.
+- **Godot output path:** registered `SALegacyAudio` copies these immutable payloads to Godot. Clean package constructs `AudioStreamWAV`/`AudioStreamOggVorbis`, starts all three `AudioStreamPlayer` families and reports lengths0.281/25.158/2.751 seconds. Structural CI marker is `audio-families-godot-ok ... driver=Dummy ... structural=1 target=0`; Dummy is explicitly not target acceptance.
+- **Direct/safety evidence:** native direct7 pins exact SFX hash12126532606915493261 and source identities; strict ASan/UBSan passes. Full builds, native smoke and sweep33/0 pass. Additive extension/package SHA256 `980cb6a251fd0a7fc3500a9249873088e501fd521a25966f7dddccad3a29bad6`; frontend regression passes; docker-init zombies0.
+- **External target gate:** the container has no non-Dummy Godot audio driver. Running the same route with `--require-real-audio` deterministically fails `target route requires a non-Dummy Godot audio driver`. Therefore P7-A06 remains `in_progress`; audible target validation on the user's Fedora/PipeWire hardware is still required and is not replaced by CI structure or native OpenAL smoke.
+- **Boundary/next:** verified count remains `48/68=70.6%`. P7-A07 proceeds independently with radio programming/playback state. P4-A08 remains strict/dependency-open at `0390`.
+
+### Prior — P7-A05 complete input device lifecycle verified
 
 - **Versions/result:** native `f735a739` is committed/pushed; root companion is the commit containing this checkpoint, based on `b399e4a`. `NativeInputLifecycle` owns generation-qualified keyboard, mouse and gamepad devices,34 source-default bindings, per-device digital/axis state, deterministic pad sampling and value-only feedback requests. Native Realtime routes SDL key/mouse/wheel/gamepad events through this owner; disconnect removes state and reconnect allocates a new generation.
 - **Decisive route:** direct17 covers W/F keyboard movement/entry, mouse fire/look/wheel, gamepad sticks/buttons, source pad edge masks, hot-unplug/stale rejection, same-hardware reconnect with neutral state, unsupported mouse feedback and exact25700/120 feedback request. Strict ASan/UBSan passes.

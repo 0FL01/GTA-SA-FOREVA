@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P7-06 — 2026-09-13, DIRECT; source audio payloads and structural Godot output
+
+- Native `88fdffcf` owns exact door SFX80/138/40, mission speech43200 and rain105/0 payloads. Direct7 pins PCM/Vorbis identities and strict sanitizer passes.
+- Clean package constructs and starts Godot WAV/Ogg streams for all three families under Dummy CI:0.281/25.158/2.751 seconds. Additive extension/package SHA is `980cb6a251fd0a7fc3500a9249873088e501fd521a25966f7dddccad3a29bad6`; full builds, smoke and sweep33/0 pass.
+- The target-required route rejects Dummy exactly. No non-Dummy driver exists in this container, so P7-A06 remains target-open and verified count stays48/68. P7-A07 proceeds independently; P4-A08 remains strict at0390.
+
 ### GODOT-P7-05 — 2026-09-13, DIRECT; keyboard/mouse/gamepad/hotplug/feedback lifecycle
 
 - Native `f735a739` routes SDL keyboard, mouse, wheel and gamepad events through a generation-qualified value owner with34 source-default bindings and `NativeSourcePad` sampling. Direct17 verifies bind/input/disconnect/stale/reconnect/feedback and strict sanitizer passes.

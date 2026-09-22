@@ -60,6 +60,7 @@ add_library(sa_legacy SHARED
     sa_input_bridge.cpp
     sa_camera_bridge.cpp
     sa_frontend_bridge.cpp
+    sa_audio_bridge.cpp
     sa_pose_bridge.cpp
     sa_region_plan.cpp
     sa_region_worker.cpp
@@ -127,6 +128,8 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCarRecordings.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeBeatTrack.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeMissionAudio.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/SfxDecode.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeAudioFamilies.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptPeds.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeVehicleFamilies.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeVehicleFamilyControl.cpp"
@@ -324,6 +327,9 @@ target_link_libraries(sa_core_text_families_probe PRIVATE sa_diagnostic sa_core)
 add_executable(sa_core_input_lifecycle_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeInputLifecycleProbe.cpp")
 target_link_libraries(sa_core_input_lifecycle_probe PRIVATE sa_core)
+add_executable(sa_core_audio_families_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeAudioFamiliesProbe.cpp")
+target_link_libraries(sa_core_audio_families_probe PRIVATE sa_core)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_frame_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_session_probe PRIVATE -Wall -Wextra -Wpedantic)

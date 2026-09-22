@@ -3,6 +3,7 @@
 #include "sa_frontend_bridge.h"
 #include "sa_legacy_bridge.h"
 #include "sa_pose_bridge.h"
+#include "sa_audio_bridge.h"
 
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/godot.hpp>
@@ -16,6 +17,7 @@ static void InitialiseSALegacy(ModuleInitializationLevel level) {
         ClassDB::register_class<SALegacyCamera>();
         ClassDB::register_class<SALegacyFrontend>();
         ClassDB::register_class<SALegacyPose>();
+        ClassDB::register_class<SALegacyAudio>();
     }
 }
 

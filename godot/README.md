@@ -11,6 +11,24 @@ Fedora 44 / Mesa / RX 780M and original-reference acceptance remain not-run. See
 [`docs/visual_contract.md`](../docs/visual_contract.md) for the evidence rules and
 known visual limitations.
 
+### SFX, speech and environmental audio families (P7-A06 target-open)
+
+`SALegacyAudio` exposes copied source payloads for door SFX event80/bank138/sound40, mission speech43200 and rain bank105/sound0. Godot constructs WAV/Ogg streams and starts all three players; Dummy is structural CI only:
+
+```sh
+./build/godot-native/sa_core_audio_families_probe /game
+./artifacts/godot/package/runtime/godot --headless \
+  --path artifacts/godot/package/godot --audio-driver Dummy \
+  --script /workspace/godot/tests/audio_families.gd -- --game-dir /game
+# Target hardware only; must not use --audio-driver Dummy:
+./artifacts/godot/package/runtime/godot --headless \
+  --path artifacts/godot/package/godot \
+  --script /workspace/godot/tests/audio_families.gd -- \
+  --game-dir /path/to/owned/game --require-real-audio
+```
+
+Require native `sfx=80/138/40 speech=43200 environment=105/0`; CI reports `structural=1 target=0`. P7-A06 is not verified until the same route reports a non-Dummy driver (`target=1`) on the target audio host. Current extension/package SHA256 is `980cb6a251fd0a7fc3500a9249873088e501fd521a25966f7dddccad3a29bad6`.
+
 ### Keyboard, mouse, controller, hotplug and feedback (P7-A05)
 
 `NativeInputLifecycle` owns generation-qualified devices and34 source-default keyboard/mouse/gamepad bindings, then commits complete samples through `NativeSourcePad`. The native Realtime loop forwards SDL key, mouse, wheel, gamepad button/axis and hotplug events. The direct lifecycle and actual SDL3 virtual-rumble gates are:
