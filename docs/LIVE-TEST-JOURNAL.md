@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P7-01 — 2026-09-13, DIRECT; source ped and cutscene pose families
+
+- Native `aa26ec24` publishes immutable source pose scenes: andre IDLE/JUMP, a five-frame IDLE→WALK skeletal blend and hi-poly cssmokevest/smoke1a/csplay. Direct12 reports ped mapped32/26, blend morph0.9375 and cutscene61/56; missing clips retain the last publication. Strict new-owner sanitizer and the existing independent132-pose CJ oracle pass.
+- Standalone `SALegacyPose` exposes copied values only; Godot mutation cannot feed native state. Clean packaged Forward+ capture renders ped2408 and cutscene637 sampled pixels with feedback0; catalog/chain/async/actor regressions and native sweep33/0 pass. PID1 docker-init, zombies0.
+- Extension/package SHA256 `9dee44117cb6f3a9a04d7903f4b58db1c3d6e88ae26020a75ab4fa3c53c8c505`. P7-A01 verified at44/68=64.7%; unshaded diagnostics do not claim material parity. P7-A02 next; P4-A08 remains strict at0390.
+
 ### GODOT-P6-07 — 2026-09-13, DIRECT; persistent normal-play interactions
 
 - Native `2d96815f` owns garage/property/shop records, money, ownership, use and purchase progression. SAFEHOUSE and AMMUNATION purchases leave money4000; GROVEGAR and property use persist.

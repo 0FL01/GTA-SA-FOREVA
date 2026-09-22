@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5 and P6 are verified; P4-A08 remains dependency-open and P7-A01 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6 and P7-A01 are verified; P4-A08 remains dependency-open and P7-A02 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -131,8 +131,8 @@ P0 implementation and available server gates are verified; target reflight stays
 
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
-| P7-A01 | in_progress | Port source skins, animation families and cutscene poses. | Controlled skinned animation/cutscene capture matches source data and pose transitions. |
-| P7-A02 | pending | Port material families, MatFX, mip selection and alpha behavior without PBR gap-covering. | Renderer pixel gate isolates each discovered material family and expected alpha/mip result. |
+| P7-A01 | verified | Port source skins, animation families and cutscene poses. | Controlled skinned animation/cutscene capture matches source data and pose transitions. |
+| P7-A02 | in_progress | Port material families, MatFX, mip selection and alpha behavior without PBR gap-covering. | Renderer pixel gate isolates each discovered material family and expected alpha/mip result. |
 | P7-A03 | pending | Complete camera modes, HUD, radar, map, frontend and settings lifecycle. | One frontend -> game -> map -> settings -> game route restores authoritative state. |
 | P7-A04 | pending | Complete MAIN/mission GXT, source fonts and substitutions. | Multilingual mission/UI fixture resolves all strings and expected glyph substitutions. |
 | P7-A05 | pending | Complete keyboard, mouse, controller, hotplug and rumble/feedback behavior. | Device lifecycle route covers bind/input/disconnect/reconnect/feedback deterministically. |
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P6-A07 persistent normal-play interactions verified
+### 2026-09-13 — P7-A01 source pose families verified
+
+- **Versions/result:** native `aa26ec24` is committed/pushed; root companion is the commit containing this checkpoint, based on `a98ed3f`. `NativePoseFamilies` publishes immutable pointer-free CPU scenes for source ped DFF/TXD + ped.ifp poses, five-frame skeletal blends and hi-poly cutscene DFF/TXD + cuts.img ANPK poses. Every parser-global owner is shut down before publication; held prior poses survive later family captures.
+- **Godot boundary:** registered standalone `SALegacyPose` accepts explicit external game path/model/bank/clip/fraction and returns copied mesh/image values. `pose_family_view.gd` builds diagnostic unshaded ArrayMeshes with no Skeleton/physics/node feedback. It is intentionally exclusive from an open pager bridge and reports `presentation_feedback=false`; complete material/lighting behavior remains P7-A02.
+- **Decisive gates:** native direct12 captures `andre` IDLE/JUMP (`32/26` mapped), source IDLE→WALK five-frame blend (`morph=0.9375`) and `cssmokevest/smoke1a/csplay` (`61` bones, `56` mapped,2704 triangles), with immutable prior state and missing-clip retention. Strict ASan+UBSan for the new owner passes. Existing independent CJ oracle validates132 poses/930468 vertices plus runtime walk/run/jump/vehicle hide/restore/streamed curb path. Clean packaged Forward+ Godot capture reports `ped-pixels=2408`, `cutscene-pixels=637`, feedback0; reviewed PNG is `artifacts/godot/p7-a01-pose-families.png`.
+- **Regression/boundary:** full Godot/native builds, smoke and native sweep33/0 pass; packaged catalog/chain/async and diagnostic actor routes pass sequentially, docker-init zombies0. Extension/package SHA256 is `9dee44117cb6f3a9a04d7903f4b58db1c3d6e88ae26020a75ab4fa3c53c8c505`. P7-A01 closes at `44/68=64.7%`, not readiness. P7-A02 now owns material/MatFX/mip/alpha pixel families; P4-A08 remains strict at `0390`.
+
+### Prior — P6-A07 persistent normal-play interactions verified
 
 - **Versions/result:** native `2d96815f` is committed/pushed; root companion is the commit containing this checkpoint, based on `0cb44df`. `NativeInteractionRuntime` owns a bounded64-record registry for garages, properties and shops plus nonnegative source money, ownership, use and purchase progression.
 - **Interaction/save lifecycle:** Garage use is available but not purchasable; Property use requires ownership and purchase is one-shot; Shop purchases deduct the registered price and accumulate progression. A canonical `MADSAINT` v1 little-endian envelope retains money, records, ownership/use/purchase counters and revision under FNV checksum; restore validates complete size/type/name uniqueness/checksum before replacing current state.

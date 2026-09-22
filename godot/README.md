@@ -11,6 +11,24 @@ Fedora 44 / Mesa / RX 780M and original-reference acceptance remain not-run. See
 [`docs/visual_contract.md`](../docs/visual_contract.md) for the evidence rules and
 known visual limitations.
 
+### Source pose families (P7-A01)
+
+`SALegacyPose` is a standalone, value-only adapter for authoritative CPU pose readers. It captures normal ped DFF/TXD + ped.ifp poses and hi-poly cutscene DFF/TXD + cuts.img ANPK poses, then releases parser-global RW state before publishing copied arrays. It must not be used while `SALegacyBridge` owns an open pager.
+
+Direct gate: `./build/godot-native/sa_pose_families_probe /game` → `native-pose-families-ok checks=12 ... ped=IDLE_stance jump-mapped=26 blend=5 morph=0.937500 cutscene=cssmokevest/csplay bones=61 mapped=56 ... feedback=0`.
+
+Clean packaged rendered gate:
+
+```sh
+python3 artifacts/build-runs/godot-wayland.py \
+  ./artifacts/godot/package/runtime/godot --path artifacts/godot/package/godot \
+  --display-driver wayland --audio-driver Dummy --rendering-method forward_plus \
+  --script /workspace/godot/tests/pose_families.gd -- \
+  --game-dir /game --screenshot /workspace/artifacts/godot/p7-a01-pose-families.png
+```
+
+The view is intentionally unshaded diagnostic presentation; no Skeleton3D, physics or node transform feeds back into source ownership. Material/MatFX/mip/alpha parity belongs to P7-A02.
+
 Preset `4` uses the source `CLOUDY_LA` overcast state. `RAINY_LA` does not exist;
 it is not aliased to an invented rainy-LA environment.
 

@@ -59,6 +59,7 @@ add_library(sa_legacy SHARED
     sa_legacy_bridge.cpp
     sa_input_bridge.cpp
     sa_camera_bridge.cpp
+    sa_pose_bridge.cpp
     sa_region_plan.cpp
     sa_region_worker.cpp
     os_file_posix.cpp
@@ -400,7 +401,7 @@ target_link_libraries(sa_legacy PRIVATE sa_core)
 # P2-A06 diagnostic native controller reuse; kept OUT of pure sa_core.
 set(SA_DIAGNOSTIC_SOURCES)
 foreach(name NativeDiagnosticActors RealtimeGameplay NativePlayerActivity NativePlayerAssets
-    IfpAnim SkinPed CarPose Handling Collide ColLoad StreamPager TexSample)
+    IfpAnim SkinPed CsAnim NativePoseFamilies CarPose Handling Collide ColLoad StreamPager TexSample)
     list(APPEND SA_DIAGNOSTIC_SOURCES "${NATIVE_SOURCE_DIR}/app/platform/linux/${name}.cpp")
 endforeach()
 add_library(sa_diagnostic STATIC ${SA_DIAGNOSTIC_SOURCES})
@@ -412,6 +413,13 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 add_executable(sa_diagnostic_actors_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeDiagnosticActorsProbe.cpp")
 target_link_libraries(sa_diagnostic_actors_probe PRIVATE sa_diagnostic)
+add_executable(sa_pose_families_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePoseFamiliesProbe.cpp")
+target_link_libraries(sa_pose_families_probe PRIVATE sa_diagnostic)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_pose_families_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fexceptions -fno-fast-math -ffp-contract=off)
+endif()
 add_executable(sa_vehicle_families_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeVehicleFamiliesProbe.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCarGenerators.cpp"
