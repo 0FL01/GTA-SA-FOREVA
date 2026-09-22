@@ -160,6 +160,8 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedWorld.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceCamera.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeFrontendLifecycle.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/GxtText.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeTextFamilies.cpp"
     "${NATIVE_SOURCE_DIR}/game_sa/SurfaceInfos_c.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCollisionAssets.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
@@ -314,6 +316,10 @@ add_executable(sa_core_camera_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/Nat
 target_link_libraries(sa_core_camera_probe PRIVATE sa_core)
 add_executable(sa_core_frontend_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeFrontendLifecycleProbe.cpp")
 target_link_libraries(sa_core_frontend_probe PRIVATE sa_core)
+add_executable(sa_core_text_families_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeTextFamiliesProbe.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/MenuShot.cpp")
+target_link_libraries(sa_core_text_families_probe PRIVATE sa_diagnostic sa_core)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_frame_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_session_probe PRIVATE -Wall -Wextra -Wpedantic)

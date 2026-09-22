@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P7-04 — 2026-09-13, DIRECT; multilingual GXT, substitutions and source fonts
+
+- Native `679336e0` loads every MAIN/mission table from american/french/german/italian/spanish GXT through `OS_File*`. Direct83,025 checks resolve all82,997 keyed strings, named MAIN/INTRO1 paths and source number/string/control substitutions while preserving failed-output atomicity.
+- Existing actual font path loads font1/font2 from `fonts.txd` plus `fonts.dat`. SDL-dummy MenuNav renders and selects translated Options in all five languages with distinct checksums; no hardcoded text or procedural glyphs.
+- Strict sanitizer, full builds, native smoke/sweep33/0, read-only/no-EXE strace and docker-init/zombies0 pass. Extension/package remains `afe27781b7e8161e0656c05a82581817b6da11d18891917bb503979adb1592da`. P7-A04 verified47/68; P7-A05 next, P4-A08 still strict at0390.
+
 ### GODOT-P7-03 — 2026-09-13, DIRECT; frontend/game/map/settings lifecycle
 
 - Native `308ffe90` owns source screen IDs, exact display defaults, map state and pause/resume while preserving source camera mode/target. Direct11 and strict sanitizer run13 ordered events through frontend→game→map→settings→game; invalid transitions retain state.

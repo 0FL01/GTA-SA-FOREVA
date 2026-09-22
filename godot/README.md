@@ -11,6 +11,18 @@ Fedora 44 / Mesa / RX 780M and original-reference acceptance remain not-run. See
 [`docs/visual_contract.md`](../docs/visual_contract.md) for the evidence rules and
 known visual limitations.
 
+### Multilingual MAIN/mission text and source fonts (P7-A04)
+
+The value-only `NativeTextFamilies` owner validates all127 tables in each shipped GXT language and resolves every keyed TDAT string by source CRC32-uppercase hash. It also applies the source number/string/control-key substitution order without inventing fallback strings. The decisive direct route includes actual font1/font2 TXD atlases and `fonts.dat` metrics:
+
+```sh
+./build/godot-native/sa_core_text_families_probe /game
+SDL_VIDEODRIVER=dummy ./build/mad-sa-linux --menu-nav down,enter \
+  --out artifacts/build-runs/p7-a04-menu-english.tga --lang english --game-dir /game
+```
+
+Require `native-text-families-ok checks=83025 ... keys=82997 ... fonts=font1,font2 feedback=0`; repeat MenuNav for french/german/italian/spanish and require the translated Options selection. The extension/package remains byte-identical SHA256 `afe27781b7e8161e0656c05a82581817b6da11d18891917bb503979adb1592da`.
+
 ### Frontend, map, HUD and settings lifecycle (P7-A03)
 
 `SALegacyFrontend` is a value-only adapter around source screen IDs, CMenuManager display defaults, map center/zoom and the existing source camera transition owner. The decisive route is frontend → game → map → settings → game; it restores map/camera state while retaining changed HUD/radar/subtitle preferences and never samples Godot node transforms.

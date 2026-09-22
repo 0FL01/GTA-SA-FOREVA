@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6 and P7-A01–A03 are verified; P4-A08 remains dependency-open and P7-A04 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6 and P7-A01–A04 are verified; P4-A08 remains dependency-open and P7-A05 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -134,8 +134,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P7-A01 | verified | Port source skins, animation families and cutscene poses. | Controlled skinned animation/cutscene capture matches source data and pose transitions. |
 | P7-A02 | verified | Port material families, MatFX, mip selection and alpha behavior without PBR gap-covering. | Renderer pixel gate isolates each discovered material family and expected alpha/mip result. |
 | P7-A03 | verified | Complete camera modes, HUD, radar, map, frontend and settings lifecycle. | One frontend -> game -> map -> settings -> game route restores authoritative state. |
-| P7-A04 | in_progress | Complete MAIN/mission GXT, source fonts and substitutions. | Multilingual mission/UI fixture resolves all strings and expected glyph substitutions. |
-| P7-A05 | pending | Complete keyboard, mouse, controller, hotplug and rumble/feedback behavior. | Device lifecycle route covers bind/input/disconnect/reconnect/feedback deterministically. |
+| P7-A04 | verified | Complete MAIN/mission GXT, source fonts and substitutions. | Multilingual mission/UI fixture resolves all strings and expected glyph substitutions. |
+| P7-A05 | in_progress | Complete keyboard, mouse, controller, hotplug and rumble/feedback behavior. | Device lifecycle route covers bind/input/disconnect/reconnect/feedback deterministically. |
 | P7-A06 | pending | Port SFX, speech and environmental audio with real target Godot audio; Dummy remains CI-only. | Target audio route emits and audibly/structurally validates one event from each family. |
 | P7-A07 | pending | Port radio programming and playback state. | Station/program/interrupt/save-resume fixture preserves source sequencing state. |
 | P7-A08 | pending | Port weather regions/transitions, clouds, water and their time-dependent behavior. | Controlled time/region capture sequence matches source-backed transition oracles. |
@@ -169,13 +169,21 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P7-A03 frontend/game/map/settings lifecycle verified
+### 2026-09-13 — P7-A04 multilingual MAIN/mission text and source fonts verified
+
+- **Versions/result:** native `679336e0` is committed/pushed; root companion is the commit containing this checkpoint, based on `070034f`. `NativeTextFamilies` loads every table from all five shipped GXT files (`american`, `french`, `german`, `italian`, `spanish`) through read-only `OS_File*`, validates identical127-table identities, sorted key arrays and every bounded TDAT string, and owns no presentation feedback.
+- **Decisive corpus:** direct probe resolves all82,997 table/key records by exact source hash, plus named MAIN `FEP_STG` and mission `INTRO1` coverage. It validates source-ordered number, string and `~k~~ACTION~` substitutions and rejects absent tables without changing prior output. Actual `models/fonts.txd` font1/font2 atlases and `data/fonts.dat` metrics load through the existing source glyph path.
+- **Multilingual presentation:** native SDL-dummy event-queue MenuNav independently renders MAIN text/font2 for every shipped language and chooses translated Options: English `Options`, French `Options`, German `Optionen`, Italian `Opzioni`, Spanish `Opciones`, each with a distinct rendered checksum. No hardcoded fallback string or procedural glyph is used.
+- **Safety/regression:** strict ASan/UBSan over the new parser/substitution owner plus actual font path passes all83,025 checks. Full Godot/native builds, smoke and native sweep33/0 pass; strace proves `/game` read-only and no EXE. Native is ELF64/no Wine, docker-init zombies0. Extension/package remain byte-identical SHA256 `afe27781b7e8161e0656c05a82581817b6da11d18891917bb503979adb1592da`, so no package/render rerun was required.
+- **Boundary/next:** P7-A04 closes at `47/68=69.1%`, not readiness or full localization typography parity. P7-A05 now owns keyboard/mouse/controller binding, hotplug and feedback lifecycle. P4-A08 remains strict/dependency-open at `0390`.
+
+### Prior — P7-A03 frontend/game/map/settings lifecycle verified
 
 - **Versions/result:** native `308ffe90` is committed/pushed; root companion is the commit containing this checkpoint, based on `e7ad364`. `NativeFrontendLifecycle` owns immutable CMenuManager screen IDs, exact display defaults, map center/zoom, pause/resume and display setting state while composing the existing source camera transition owner. `SALegacyFrontend` exposes value copies only; no Godot node/camera feedback exists.
 - **Decisive route:** direct11 and clean packaged Godot run `frontend → game → map → settings → game` with13 ordered events. Brightness changes256→300, HUD true→false, radar maps+blips→blips-only and subtitles true→false; map center/zoom and camera mode4/target/direct-behind state survive return to game. Invalid resume retains the complete prior publication.
 - **Family evidence:** source camera probe72 covers FollowPed4/CamOnAString18, ordinary1350ms and bike800ms transitions; clean Godot camera trace covers both modes. `RealtimeHudProbe` passes actual144-tile map, radar marker rotation and pricedown clock/font GPU oracles across six viewports. SDL event-queue MenuNav chooses real GXT `Options` from source font2; no hardcoded UI text.
 - **Safety/regression:** strict ASan/UBSan frontend route passes; full builds, native smoke and sweep33/0 pass. Clean package contains the additive adapter and passes matching frontend/camera routes. Extension/package SHA256 `afe27781b7e8161e0656c05a82581817b6da11d18891917bb503979adb1592da`; docker-init zombies0. The still-unreversed camera eye/collision solver remains explicitly unsupported rather than replaced by Godot state.
-- **Boundary/next:** P7-A03 closes at `46/68=67.6%`, not full visual parity/readiness. P7-A04 now owns complete MAIN/mission multilingual GXT, source fonts and substitutions. P4-A08 remains strict/dependency-open at `0390`.
+- **Boundary/next:** P7-A03 closes at `46/68=67.6%`, not full visual parity/readiness. P7-A04 owns complete MAIN/mission multilingual GXT, source fonts and substitutions. P4-A08 remains strict/dependency-open at `0390`.
 
 ### Prior — P7-A02 source material/MatFX/mip/alpha families verified
 
