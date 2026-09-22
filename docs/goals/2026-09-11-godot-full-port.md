@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07 and P5-A01–A03 are verified; P4-A08 remains dependency-open and P5-A04 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07 and P5-A01–A04 are verified; P4-A08 remains dependency-open and P5-A05 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -111,8 +111,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P5-A01 | verified | Complete exterior/interior/path residency and dynamic-world service from P1 catalog authority. | Actual Grove321→area16-36 itinerary retains full ordered placement identities, paired source-COL/request generation, source path-area metadata and one stable dynamic ref; stale/mismatched publications reject atomically. |
 | P5-A02 | verified | Replace radius/cap fallback with source runtime LOD, time-object and interior visibility behavior. | Actual roads326 noon/night route records a decision for every placement, changes authored time visibility (168→173 present), applies area and LOD-parent reasons, and rejects invalid hours without omission. |
 | P5-A03 | verified | Map every shipped vehicle model to its real family and constructor. | Actual212-definition matrix preserves every model/TXD/handling identity, covers all10 shipped families and10 source constructors (12 recognized types, two fake types absent), with no `400/476` fallback. |
-| P5-A04 | in_progress | Port family control dependencies for road, water, rail, flight, towing and special vehicles. | One direct state-transition fixture passes for each family dependency. |
-| P5-A05 | pending | Complete vehicle collision, occupants, damage, destruction and reload across classes. | Per-class lifecycle matrix preserves identities and cleans all owners on reload. |
+| P5-A04 | verified | Port family control dependencies for road, water, rail, flight, towing and special vehicles. | One direct state-transition fixture passes for each family dependency; address-backed full flight/bike controls remain explicitly outside this bounded dependency owner. |
+| P5-A05 | in_progress | Complete vehicle collision, occupants, damage, destruction and reload across classes. | Per-class lifecycle matrix preserves identities and cleans all owners on reload. |
 | P5-A06 | pending | Port general objects plus destructible/damage state into the dynamic world. | Object damage/destroy/reload fixture preserves source state and generation ownership. |
 
 ### P6 - Population, AI, combat, police and recovery (`pending`)
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P5-A03 shipped vehicle-family matrix verified
+### 2026-09-13 — P5-A04 vehicle-family control dependencies verified
+
+- **Versions/result:** native `d034dba5` is committed/pushed; root companion is the commit containing this checkpoint, based on `057efeb`. `NativeVehicleFamilyControl` owns the portable value transitions required to compose the already mapped constructor families without substituting a generic model or a new physics authority.
+- **Source transitions:** ordinary road input preserves the reversed Automobile keyboard smoothing/pedal direction branches; Boat preserves brake lerp, reverse gas and signed-square steer; Train preserves follower copy and detached-carriage decay/distance; Trailer preserves support retract/wait/extend rates; Quad explicitly delegates the common Automobile dependency. Helicopter/Plane retain the reversed common Abandoned-status brake/gas/steer transition while their address-backed family input/flight bodies stay unclaimed.
+- **Decisive gate:** `sa_vehicle_family_control_probe` passes10 checks with one direct transition for road, water, rail, flight-common, towing and special-delegated dependencies plus atomic invalid/mismatch rejection. Strict ASan+UBSan passes with the same marker. The result explicitly reports `complete-flight=0 complete-bike=0`; no address-backed code was guessed.
+- **Regression/boundary:** full Godot-native/native builds and smoke pass; native sweep remains33/0. The extension is byte-identical to the current packaged code SHA256 `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`, so no new render/package route was required. P5-A04 is verified at `34/68=50.0%`, not game readiness. P5-A05 now owns per-class collision/occupants/damage/destruction/reload; full flight/bike control remains a later reversed dependency, and P4-A08 remains strict at `0390`.
+
+### Prior — P5-A03 shipped vehicle-family matrix verified
 
 - **Versions/result:** native `40d3d656` is committed/pushed; root companion is the commit containing this checkpoint, based on `3cac23e`. `NativeVehicleFamilies` consumes the exact212 `vehicles.ide` definitions already owned by `NativeCarGenerators` and retains each model ID/name, TXD, handling name and source model family without substituting model400 or476.
 - **Constructor mapping:** the ten families actually shipped in this corpus map to the source constructor switch: Automobile, MonsterTruck, QuadBike, Helicopter, Plane, Boat, Train, Bike, BMX and Trailer. Runtime base/subtype, side-stand and trailer Abandoned defaults are explicit. The recognized fake-heli/fake-plane model-info types are absent from the shipped212 census; synthetic checks pin their source default Automobile branch rather than inventing fixtures.

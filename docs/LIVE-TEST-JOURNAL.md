@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P5-04 — 2026-09-13, DIRECT; vehicle-family control dependencies
+
+- Native `d034dba5` ports bounded source value transitions for ordinary Automobile input, Boat brake/gas/steer, Train follower/free-carriage state, Trailer support extension and Quad's Automobile delegation. Helicopter/Plane use only their reversed common Abandoned-status dependency; full address-backed flight and Bike/BMX controls remain false coverage.
+- Direct10 supplies one transition per required road/water/rail/flight/towing/special dependency plus atomic rejection; strict ASan+UBSan passes. Full builds/smoke and native sweep33/0 pass.
+- Extension code remains SHA256 `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`; no render/package rerun was needed. P5-A04 verified at34/68=50.0%; P5-A05 next.
+
 ### GODOT-P5-03 — 2026-09-13, DIRECT; shipped vehicle-family constructors
 
 - Native `40d3d656` preserves every identity in the actual212-definition vehicle catalog and maps all ten present model families to exact source constructor/runtime subtype defaults. Fake heli/plane types are recognized but absent in the shipped census; their source default Automobile branch is pinned synthetically, not counted as shipped fixtures.
