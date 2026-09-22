@@ -4,6 +4,12 @@ Updated: 2026-09-23. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-04 — 2026-09-23, DIRECT; source cargrp/popcycle classification
+
+- Native `fef2624b` reads complete cargrp/popcycle files and the original three-dimensional ELS1a zone. The explicit five-model input roster proves400 eligible at authored normal-class weight; bicycle481 and other retained special models do not become substitutes. Suppressed400 takes the source ten draws and returns no model.
+- `native-loaded-cars-ok checks=15 groups=34 cycle=480 zone=ELS1a eligible=1 selected=400 suppressed=ten-draw-no-model`; new-source ASan/UBSan clean, full native/Godot builds, Session5486/smoke and sweep34/0 pass. Extension/package hash unchanged `a9dddceb4497594b7739fc93ef1c44981d20c6603dd142fb3ad79028a90b4d91`.
+- The runtime reads this source data before its sole parser worker but cannot supply complete ordered loaded-model evidence or commit the downstream real COL/blockage/ground/pool transaction yet. No RNG is drawn there and no fake Ready is returned; unchanged long mission remains a strict failure, target Radeon not reflighted.
+
 ### GODOT-P9-03 — 2026-09-23, DIRECT; target 0340/CJ diagnosis and local generator frontier
 
 - User-reported Fedora44 Radeon780M route: real native world loads, but source player placeholder is two triangles and mission stops with `0340@210627 text colour outside bytes`. Individual audio (`target=1`), package and render checks passed, **not** the full target closure or Big Smoke. Target6.46fps is not attributable to streaming based only on maxWork179.6ms/maxStream0.04ms.

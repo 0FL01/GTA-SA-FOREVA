@@ -13,6 +13,14 @@ known visual limitations.
 
 ### Source new-game player visibility and mission ABI checkpoint
 
+The subsequent generator classification fixture is
+`./build/godot-native/sa_loaded_cars_probe /game`: it binds the shipped34 car
+groups and480 popcycle rows to an explicit ordered roster and source RNG,
+proving real ELS1a normal-car eligibility without treating model400 as a
+fallback. The runtime loads the data before its parser worker, but still
+rejects the unresolved model/COL/blockage/ground/world/pool demand. No first-
+mission or target closure is inferred from this fixture.
+
 The source SCM player starts from the base MODEL_PLAYER placeholder. In the
 native new-game host only, the source wardrobe prepares actual modular CJ
 before the parser worker starts, keeps the ped hidden until the four authored

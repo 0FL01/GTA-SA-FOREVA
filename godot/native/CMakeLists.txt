@@ -130,6 +130,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeStuntJumps.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSetPieces.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeZonePopulation.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCarGeneratorPopulation.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePathPolicy.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeExternalScriptTriggers.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptModelAnims.cpp"
@@ -530,6 +531,15 @@ add_executable(sa_vehicle_families_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCarGenerators.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeVehiclePool.cpp")
 target_link_libraries(sa_vehicle_families_probe PRIVATE sa_diagnostic)
+add_executable(sa_loaded_cars_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCarGeneratorPopulationProbe.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCarGenerators.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeVehiclePool.cpp")
+target_link_libraries(sa_loaded_cars_probe PRIVATE sa_diagnostic)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_loaded_cars_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fexceptions -fno-fast-math -ffp-contract=off)
+endif()
 add_executable(sa_vehicle_family_control_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeVehicleFamilyControlProbe.cpp")
 target_link_libraries(sa_vehicle_family_control_probe PRIVATE sa_core)

@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active DIRECT.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records61/68 verified atoms (89.7%, not game readiness), source CJ/text ABI corrections and a newly exposed local car-generator frontier. Fedora44/Wayland/Radeon780M/real-audio gates remain separately external; server evidence cannot close them.
+**Execution is active DIRECT.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records61/68 verified atoms (89.7%, not game readiness): source cargrp/popcycle/ELS1a membership is verified but the runtime car-generator publication is still strict. Fedora44/Wayland/Radeon780M/real-audio gates remain separately external; server evidence cannot close them.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
