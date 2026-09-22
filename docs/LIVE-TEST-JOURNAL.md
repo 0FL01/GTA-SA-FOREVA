@@ -6,7 +6,7 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ### GODOT-P4-10 — 2026-09-13, DIRECT; mission3 sole-worker TXD residency
 
-- Native `67bd2db6` routes `0390/038F/0391` through an exact Pending parser-worker handoff. `LD_NONE.txd` publishes24 pointer-free decoded sprites; no RW pointer or synchronous parser escapes to the script host.
+- Native `a4ce7be8` routes `0390/038F/0391` through an exact Pending parser-worker handoff and retains the following `097A` positional audio event. `LD_NONE.txd` publishes24 pointer-free decoded sprites; no RW pointer or synchronous parser escapes to the script host.
 - `native-script-texture-ok checks=30 dictionary=LD_NONE images=24 required=24 worker=sole feedback=0`; Session5482, scheduling106, native smoke and sweep33/0 pass. The native GL upload path now accepts complete source mip chains and the normal initial scene publishes again.
 - P4-A08 remains open: this is residency only, not mission3 completion or restarted progression. Overall verified count remains58/68; target audio/movies/release closure also remain explicit.
 
