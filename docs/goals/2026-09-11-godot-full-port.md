@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6 and P7-A01–A05 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, and P7-A07 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6, P7-A01–A05/P7-A07 and P8-A01 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, and P8-A02 is current.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -137,17 +137,17 @@ P0 implementation and available server gates are verified; target reflight stays
 | P7-A04 | verified | Complete MAIN/mission GXT, source fonts and substitutions. | Multilingual mission/UI fixture resolves all strings and expected glyph substitutions. |
 | P7-A05 | verified | Complete keyboard, mouse, controller, hotplug and rumble/feedback behavior. | Device lifecycle route covers bind/input/disconnect/reconnect/feedback deterministically. |
 | P7-A06 | in_progress | Port SFX, speech and environmental audio with real target Godot audio; Dummy remains CI-only. | Target audio route emits and audibly/structurally validates one event from each family. |
-| P7-A07 | in_progress | Port radio programming and playback state. | Station/program/interrupt/save-resume fixture preserves source sequencing state. |
+| P7-A07 | verified | Port radio programming and playback state. | Station/program/interrupt/save-resume fixture preserves source sequencing state. |
 | P7-A08 | pending | Port weather regions/transitions, clouds, water and their time-dependent behavior. | Controlled time/region capture sequence matches source-backed transition oracles. |
 | P7-A09 | pending | Port particles, shadows, reflections and post effects under the explicit original visual profile. | Isolated rendered gate covers each discovered effect family and records approved differences. |
 | P7-A10 | pending | Support source startup movies only after codec, dependency and license evidence is established. | Clean-package playback gate uses the proven in-memory source route and records dependency/license status. |
 
-### P8 - Complete progression/content and save compatibility (`pending`)
+### P8 - Complete progression/content and save compatibility (`in_progress`)
 
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
-| P8-A01 | pending | Expand site-level semantics and owner coverage across all main, mission, streamed and brain scripts. | Corpus report classifies every shipped command site with no reachable unknown behavior. |
-| P8-A02 | pending | Complete story mission and cutscene start/fail/retry/skip/complete/cleanup routes. | Representative lifecycle matrix passes through normal progression entry points. |
+| P8-A01 | verified | Expand site-level semantics and owner coverage across all main, mission, streamed and brain scripts. | Corpus report classifies every shipped command site with no reachable unknown behavior. |
+| P8-A02 | in_progress | Complete story mission and cutscene start/fail/retry/skip/complete/cleanup routes. | Representative lifecycle matrix passes through normal progression entry points. |
 | P8-A03 | pending | Complete side jobs, races, schools, minigames and other activities. | Each discovered activity family has one normal start/result/cleanup E2E. |
 | P8-A04 | pending | Complete purchases, stats, rewards/unlocks, interiors and their persistent owners. | Restarted-process progression route preserves and reapplies each owner family. |
 | P8-A05 | pending | Inventory and implement cheats, replay and special script-driven states rather than silently omitting them. | Manifest has a tested semantic route or explicit still-pending row for every discovered feature. |
@@ -169,7 +169,15 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P7-A06 source audio families implemented; target output gate open
+### 2026-09-13 — P7-A07 radio state and P8-A01 complete shipped corpus verified
+
+- **Versions/result:** native `78d4f78f` is committed/pushed; root companion is the commit containing this checkpoint, based on `25c2b81`. `NativeRadioRuntime` owns the literal source programming arrays for all12 stations, deterministic five-track queues, interruption/resume, listen histories and canonical checksummed restart state. `NativeScriptContentLedger` binds the exact shipped `main.scm`/`script.img` identities to a complete main/mission/streamed site manifest.
+- **Radio gate:** direct23 proves Radio X source track IDs1259/1266, retune245, exact interruption event43200 and byte-stable save/restore. Strict ASan/UBSan passes. Independent native `--smoke-radio --station RE --seconds 2` decodes actual track1490 at32000Hz stereo with checksum6887869399635200511. This is source sequencing/playback state plus existing decoder evidence, not the still-open non-Dummy Godot output gate in P7-A06.
+- **Complete corpus gate:** all215 shipped groups (main,135 missions,79 streamed members; AAA is the8-byte non-executable sentinel) parse under pinned Sanny revision `53ed1c...`/SHA `797f...`. The exact manifest has416669 sites,1570 opcodes,4388 operand forms and fingerprint `54B67C3B1B6BD9E5`:346905 sites are implemented,40882 runtime-schema strict Unsupported and28882 explicitly manifest-Unsupported. `unknown-reachable=0`; strict sites are never changed to NOP/Ready. Direct8, strict sanitizer, Session5482, scheduling106 and frame104 pass.
+- **Regression/safety:** full Godot/native builds, smoke and `tools/etalon-sweep.sh`33/0 pass; corpus IO opens only `/game/data/script/main.scm` and `script.img` read-only and never the EXE. Extension/package remain byte-identical SHA256 `980cb6a251fd0a7fc3500a9249873088e501fd521a25966f7dddccad3a29bad6`; PID1 docker-init, zombies0.
+- **Progress/boundary:** P7-A07 and P8-A01 are verified: `50/68=73.5%` equal-count atoms, not workload/readiness. Classification is not implementation of the69764 strict sites; story/side-content/progression atoms own their semantics. P8-A02 is next; P4-A08 still stops strictly before mission3 `0390`, and P7-A06 still needs the real target audio route.
+
+### Prior — P7-A06 source audio families implemented; target output gate open
 
 - **Versions/result:** native `88fdffcf` is committed/pushed; root companion is the commit containing this checkpoint, based on `33c9b22`. `NativeAudioFamilies` publishes exact source payloads for vehicle-door SFX event80/bank138/sound40, mission speech event43200 and environmental rain bank105/sound0. SFX/environment are owned PCM16 mono; speech is the validated/deobfuscated source Ogg/Vorbis payload retained by `NativeMissionAudio`.
 - **Godot output path:** registered `SALegacyAudio` copies these immutable payloads to Godot. Clean package constructs `AudioStreamWAV`/`AudioStreamOggVorbis`, starts all three `AudioStreamPlayer` families and reports lengths0.281/25.158/2.751 seconds. Structural CI marker is `audio-families-godot-ok ... driver=Dummy ... structural=1 target=0`; Dummy is explicitly not target acceptance.

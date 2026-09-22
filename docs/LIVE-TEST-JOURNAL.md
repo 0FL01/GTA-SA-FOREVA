@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P8-01 — 2026-09-13, DIRECT; complete shipped script-site classification
+
+- Native `78d4f78f` binds exact `main.scm`/`script.img` FNV identities to a pinned Sanny-derived manifest covering main,135 missions and79 streamed members. The8-byte AAA member is explicitly non-executable metadata.
+- Direct marker: `native-script-content-ok checks=8 groups=215 sites=416669 main=16587 missions=343852 streamed=56230 opcodes=1570 forms=4388 implemented-sites=346905 strict-sites=69764 unknown-reachable=0 fingerprint=54B67C3B1B6BD9E5`. Strict sites remain Unsupported; no NOP substitution. Sanitizer, Session5482, scheduling106, frame104, builds, smoke and native sweep33/0 pass; IO is read-only/no EXE.
+- P7-A07 closes alongside it: radio direct23 covers12 stations, exact interrupt43200 and save/resume; actual RE track1490 decoder/OpenAL smoke passes. P7-A06 target audio and P4-A08 mission3 TXD remain open. Count50/68; P8-A02 next.
+
 ### GODOT-P7-06 — 2026-09-13, DIRECT; source audio payloads and structural Godot output
 
 - Native `88fdffcf` owns exact door SFX80/138/40, mission speech43200 and rain105/0 payloads. Direct7 pins PCM/Vorbis identities and strict sanitizer passes.
