@@ -133,6 +133,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceEventFlow.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePopulationRuntime.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCombatRuntime.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWantedRuntime.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptTrains.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/ZoneInfo.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptObjects.cpp"
@@ -434,6 +435,9 @@ target_link_libraries(sa_population_runtime_probe PRIVATE sa_core)
 add_executable(sa_combat_runtime_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCombatRuntimeProbe.cpp")
 target_link_libraries(sa_combat_runtime_probe PRIVATE sa_core)
+add_executable(sa_wanted_runtime_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWantedRuntimeProbe.cpp")
+target_link_libraries(sa_wanted_runtime_probe PRIVATE sa_core)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_vehicle_families_probe PRIVATE
         -Wall -Wextra -Wpedantic -fexceptions -fno-fast-math -ffp-contract=off)
@@ -448,6 +452,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_population_runtime_probe PRIVATE
         -Wall -Wextra -Wpedantic -fexceptions -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_combat_runtime_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fexceptions -fno-fast-math -ffp-contract=off)
+    target_compile_options(sa_wanted_runtime_probe PRIVATE
         -Wall -Wextra -Wpedantic -fexceptions -fno-fast-math -ffp-contract=off)
 endif()
 add_executable(sa_source_clump_assets_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceClumpAssetsProbe.cpp")

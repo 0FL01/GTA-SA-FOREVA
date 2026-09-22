@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P6-05 — 2026-09-13, DIRECT; wanted pursuit and clean escape
+
+- Native `c41bf195` preserves source chaos thresholds, roadblock percentages, pursuit cop/car limits and timed escape decay. Offense600 reaches level3, accepts four cops and draws roadblock only below12.
+- Police presence/elusive vehicle rules hold chaos; no-police1001ms ticks reduce it by2 until clean and trim pursuit identities. The306-event scenario repeats identically; direct927 and strict ASan+UBSan pass.
+- Full builds/smoke and native sweep33/0 pass; extension remains `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`. P6-A05 verified at41/68=60.3%; P6-A06 next.
+
 ### GODOT-P6-04 — 2026-09-13, DIRECT; source weapon/projectile/fire damage
 
 - Native `f5e4d07f` reads71 shipped weapon rows and owns generation-safe ped/vehicle/object health plus ped armour. Instant hits, projectile movement/impact and area-fire ticks use source data; camera/use reject damage and melee combo amount stays a separate owner.
