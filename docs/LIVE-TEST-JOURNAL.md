@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P5-03 — 2026-09-13, DIRECT; shipped vehicle-family constructors
+
+- Native `40d3d656` preserves every identity in the actual212-definition vehicle catalog and maps all ten present model families to exact source constructor/runtime subtype defaults. Fake heli/plane types are recognized but absent in the shipped census; their source default Automobile branch is pinned synthetically, not counted as shipped fixtures.
+- Direct1300 verifies every model and constructor, no generic400/476 substitution and atomic unsupported rejection; strict ASan/UBSan passes. Full builds/smoke/native33/0 and clean Forward+ catalog/chain/async remain green.
+- Extension/package SHA256 `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`; PID1 docker-init, zombies0. P5-A03 verified; count33/68, P5-A04 next.
+
 ### GODOT-P5-02 — 2026-09-13, DIRECT; source area/time/LOD visibility
 
 - Native `0a465d60` publishes a complete visibility decision for every catalog resident from authored area, exact clock range, loaded model bounds, draw distance and LOD relation. Frustum/occlusion are explicitly external rather than silently approximated.

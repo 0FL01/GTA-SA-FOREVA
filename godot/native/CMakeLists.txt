@@ -126,6 +126,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeBeatTrack.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeMissionAudio.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptPeds.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeVehicleFamilies.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptTrains.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/ZoneInfo.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptObjects.cpp"
@@ -399,6 +400,15 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 add_executable(sa_diagnostic_actors_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeDiagnosticActorsProbe.cpp")
 target_link_libraries(sa_diagnostic_actors_probe PRIVATE sa_diagnostic)
+add_executable(sa_vehicle_families_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeVehicleFamiliesProbe.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCarGenerators.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeVehiclePool.cpp")
+target_link_libraries(sa_vehicle_families_probe PRIVATE sa_diagnostic)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_vehicle_families_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fexceptions -fno-fast-math -ffp-contract=off)
+endif()
 add_executable(sa_source_clump_assets_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceClumpAssetsProbe.cpp")
 target_link_libraries(sa_source_clump_assets_probe PRIVATE sa_diagnostic)
 add_executable(sa_source_automobile_probe

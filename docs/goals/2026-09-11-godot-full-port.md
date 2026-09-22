@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07 and P5-A01–A02 are verified; P4-A08 remains dependency-open and P5-A03 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07 and P5-A01–A03 are verified; P4-A08 remains dependency-open and P5-A04 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -110,8 +110,8 @@ P0 implementation and available server gates are verified; target reflight stays
 |---|---|---|---|
 | P5-A01 | verified | Complete exterior/interior/path residency and dynamic-world service from P1 catalog authority. | Actual Grove321→area16-36 itinerary retains full ordered placement identities, paired source-COL/request generation, source path-area metadata and one stable dynamic ref; stale/mismatched publications reject atomically. |
 | P5-A02 | verified | Replace radius/cap fallback with source runtime LOD, time-object and interior visibility behavior. | Actual roads326 noon/night route records a decision for every placement, changes authored time visibility (168→173 present), applies area and LOD-parent reasons, and rejects invalid hours without omission. |
-| P5-A03 | in_progress | Map every shipped vehicle model to its real family and constructor. | Catalog matrix has no generic `400/476` representation and constructs one fixture per family. |
-| P5-A04 | pending | Port family control dependencies for road, water, rail, flight, towing and special vehicles. | One direct state-transition fixture passes for each family dependency. |
+| P5-A03 | verified | Map every shipped vehicle model to its real family and constructor. | Actual212-definition matrix preserves every model/TXD/handling identity, covers all10 shipped families and10 source constructors (12 recognized types, two fake types absent), with no `400/476` fallback. |
+| P5-A04 | in_progress | Port family control dependencies for road, water, rail, flight, towing and special vehicles. | One direct state-transition fixture passes for each family dependency. |
 | P5-A05 | pending | Complete vehicle collision, occupants, damage, destruction and reload across classes. | Per-class lifecycle matrix preserves identities and cleans all owners on reload. |
 | P5-A06 | pending | Port general objects plus destructible/damage state into the dynamic world. | Object damage/destroy/reload fixture preserves source state and generation ownership. |
 
@@ -169,7 +169,15 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P5-A02 source world visibility verified
+### 2026-09-13 — P5-A03 shipped vehicle-family matrix verified
+
+- **Versions/result:** native `40d3d656` is committed/pushed; root companion is the commit containing this checkpoint, based on `3cac23e`. `NativeVehicleFamilies` consumes the exact212 `vehicles.ide` definitions already owned by `NativeCarGenerators` and retains each model ID/name, TXD, handling name and source model family without substituting model400 or476.
+- **Constructor mapping:** the ten families actually shipped in this corpus map to the source constructor switch: Automobile, MonsterTruck, QuadBike, Helicopter, Plane, Boat, Train, Bike, BMX and Trailer. Runtime base/subtype, side-stand and trailer Abandoned defaults are explicit. The recognized fake-heli/fake-plane model-info types are absent from the shipped212 census; synthetic checks pin their source default Automobile branch rather than inventing fixtures.
+- **Decisive gate:** `sa_vehicle_families_probe /game` passes1300 checks over every definition, every present family and every constructor. It rejects an unsupported type atomically and proves output model IDs never become generic400/476 unless those were the input identities. Strict ASan+UBSan of the family owner, definition parser and vehicle pool passes.
+- **Regression:** full native/Godot-native builds, smoke and native sweep33/0 pass. The clean package was regenerated; Forward+ catalog/chain/async routes remain green with extension/package SHA256 `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`; docker-init zombies0.
+- **Boundary/next:** P5-A03 is verified at `33/68=48.5%`, not game readiness. This maps constructor identity and source defaults, not each family's control, collision, damage, rendering or audio. P5-A04 now owns road/water/rail/flight/towing/special control dependencies; P4-A08 remains strict at `0390`.
+
+### Prior — P5-A02 source world visibility verified
 
 - **Versions/result:** native `0a465d60` is committed/pushed; root companion is the commit containing this checkpoint, based on `52e404b`. `NativeWorldVisibility` produces one value decision for every catalog-selected placement from exact authored area byte, `CTimeInfo` clock range, loaded source-COL or DFF model bound, source draw distance and authored LOD relation.
 - **Controlled route:** the real roads R190 selection keeps all326 resources resident while hour12 presents168 and hour23 presents173. Every mesh carries complete placement identity, `source_runtime_visible` and a typed reason (`area-mismatch`, `time-out-of-range`, `distance-out-of-range`, `lod-child-visible`, `lod-parent-fallback` or `source-visible`). Interior16 and exterior itineraries use the same source-area authority; invalid hours reject before worker admission.

@@ -28,6 +28,12 @@ The clean packaged `region_catalog.gd --catalog-route` gate compares full ordere
 
 Direct14 plus strict ASan/UBSan and clean packaged Forward+ catalog/chain/async routes pass. Extension/package SHA256: `ae2f240583d582d00ce3390780e02ae2bee55655474a1c27451a8098dea5beac`.
 
+### Shipped vehicle constructor families (P5-A03)
+
+`sa_vehicle_families_probe /game` reads the actual212 `vehicles.ide` definitions and constructs an immutable source-family value for every one. Ten model families and ten constructor branches are present; the two recognized fake-aircraft types are absent from this shipped corpus and their source default branch is tested separately. Exact model/TXD/handling identities are retained, with no model400/476 fallback.
+
+Direct1300 and strict ASan/UBSan pass; full builds, smoke, native sweep33/0 and clean packaged Forward+ catalog/chain/async remain green. Extension/package SHA256: `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`.
+
 ### Source boot/first-mission checkpoint (P4-A06/A07 dependency)
 
 `./build/mad-sa-linux --play --new-game --boot-gate --game-dir /game --seconds 700` follows the unchanged source route through mission0 and mission2 and exits0 only after the real mission2 thread terminates with control enabled and fade alpha0. Native `6dd454b7` owns exact world/model/COL handoff, mission actors, source car-recording interpolation, GXT and source-duration mission-audio clocks. Marker: `play-boot-gate-ok ... no-fault=1`. This verifies bounded P4-A06 boot, not cutscene/NPC/audio presentation or broad story progression. Focused peds9/audio/carrec7/beat8/trains5 and Session5482/scheduling106/frame104/transaction71/portable111 pass; extension SHA256 remains `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`.
