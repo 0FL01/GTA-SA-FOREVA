@@ -52,6 +52,14 @@ The canonical port-native envelope preserves and reapplies purchases, integer/fl
 
 The manifest covers all92 source cheats,20 replay packet types and9 script special-state families. Each row has a tested value route or an explicit Pending status; pending rows are not silently treated as implemented behavior.
 
+### Original-PC save block envelope (P8-A06)
+
+```bash
+./build/godot-native/sa_core_pc_save_codec_probe
+```
+
+The codec preserves all28 ordered `BLOCK` payload families inside the fixed202752-byte PC file, validates the original additive checksum and canonical padding, and repairs explicit int32 references atomically. Payload semantics and full progression import/export remain P8-A07; this structural gate alone is not an original-save compatibility claim.
+
 ### SFX, speech and environmental audio families (P7-A06 target-open)
 
 `SALegacyAudio` exposes copied source payloads for door SFX event80/bank138/sound40, mission speech43200 and rain bank105/sound0. Godot constructs WAV/Ogg streams and starts all three players; Dummy is structural CI only:

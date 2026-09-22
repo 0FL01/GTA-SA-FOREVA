@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P8-06 — 2026-09-13, DIRECT; original-PC block envelope codec
+
+- Native `72315602` encodes/decodes the exact28-header `BLOCK` sequence in the fixed202748-byte data area, appends/validates the source additive checksum and enforces canonical zero padding. Per-block payload sizes are supplied by the semantic block codec layer rather than embedded as a non-source field.
+- Direct37 round-trips every payload family and repairs explicit int32 references; truncation, checksum, tag, layout and missing-reference corruption retain prior output. Strict sanitizer plus progression/radio/special-state/Session/portable regressions, full builds, smoke and sweep33/0 pass.
+- P8-A06 verified at55/68. P8-A07 must prove fresh-process semantic import→mutation→export→import before any original-PC compatibility claim.
+
 ### GODOT-P8-05 — 2026-09-13, DIRECT; cheats/replay/special-state inventory
 
 - Native `894971fd` classifies all92 cheats,20 replay packet types and9 script-driven special families. Twelve cheat and seven replay value routes plus all nine script states are exercised; every other discovered feature remains an explicit Pending row, never omitted.

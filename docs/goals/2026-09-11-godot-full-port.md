@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6, P7-A01–A05/P7-A07 and P8-A01–A05 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, and P8-A06 is current.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6, P7-A01–A05/P7-A07 and P8-A01–A06 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, and P8-A07 is current.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -151,8 +151,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P8-A03 | verified | Complete side jobs, races, schools, minigames and other activities. | Each discovered activity family has one normal start/result/cleanup E2E. |
 | P8-A04 | verified | Complete purchases, stats, rewards/unlocks, interiors and their persistent owners. | Restarted-process progression route preserves and reapplies each owner family. |
 | P8-A05 | verified | Inventory and implement cheats, replay and special script-driven states rather than silently omitting them. | Manifest has a tested semantic route or explicit still-pending row for every discovered feature. |
-| P8-A06 | in_progress | Complete original-PC save block codecs, checksum and reference repair separately from port-native saves. | Source-format fixtures round-trip every block and reject corrupted checksum/references. |
-| P8-A07 | pending | Validate original-PC import/export against full progression semantics before compatibility is claimed. | Fresh-process import -> play/change -> export -> import route preserves semantic state. |
+| P8-A06 | verified | Complete original-PC save block codecs, checksum and reference repair separately from port-native saves. | Fixed-size source-format fixture round-trips all28 `BLOCK` payload families and rejects corrupted checksum/tags/layout/references atomically. |
+| P8-A07 | in_progress | Validate original-PC import/export against full progression semantics before compatibility is claimed. | Fresh-process import -> play/change -> export -> import route preserves semantic state. |
 
 ### P9 - Full-port closure and target release candidate (`pending`)
 
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P8-A05 cheats/replay/special-state manifest verified
+### 2026-09-13 — P8-A06 original-PC block envelope verified
+
+- **Versions/result:** native `72315602` is committed/pushed; root companion is the commit containing this checkpoint, based on `184d1de`. `NativePcSaveCodec` owns the original fixed `202748` data bytes plus four-byte checksum, all28 ordered `BLOCK` headers and caller-supplied per-block payload layouts without serializing C++ structs or pointers.
+- **Codec/reference contract:** encode pads canonical zero bytes to the source size and appends the exact additive byte checksum. Decode validates total202752-byte size, checksum, every header, bounded block layout and zero padding before publishing. Explicit reference fields repair old int32 handles through a complete mapping; absent mapping, bad field or corruption retains the entire prior image.
+- **Decisive gate:** `native-pc-save-codec-ok checks=37 blocks=28 bytes=202752 checksum=additive references=repaired padding=zero`; each block round-trips byte-identically and truncation/checksum/tag/layout/reference failures reject. Strict ASan/UBSan, progression12, radio23, special-state31, Session5482, portable restart111, full builds, smoke and native sweep33/0 pass. Native remains ELF64/no Wine; docker-init zombies return to0.
+- **Progress/boundary:** P8-A06 verified: `55/68=80.9%` equal-count atoms, not readiness. Block payloads are opaque source-format codec inputs; semantic import/export against every progression owner is intentionally P8-A07 and no original-save compatibility claim exists yet. P4-A08 mission3 TXD, P7-A06 target audio and Pending special states remain open.
+
+### Prior — P8-A05 cheats/replay/special-state manifest verified
 
 - **Versions/result:** native `894971fd` is committed/pushed; root companion is the commit containing this checkpoint, based on `5f33c08`. `NativeSpecialStateManifest` inventories all92 source cheats,20 replay packet types and9 script-driven special-state families with no unclassified row.
 - **Implemented routes:** twelve value-backed cheat rows cover health/armour/money, wanted up/clear, five weather states, faster/slower gameplay, riot and adrenaline toggles;80 rows remain explicitly Pending. Replay records/playbacks seven value packet families (end/general/clock/weather/end-of-frame/timer/misc) while13 entity/particle/clothes packet families stay Pending. Riot, adrenaline, widescreen, player control, zone names, update stats, random trains, density and weather script states all have direct value routes.
