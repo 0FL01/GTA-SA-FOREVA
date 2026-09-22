@@ -52,6 +52,7 @@ set(NATIVE_LOD_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCollisionAssets.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldResidency.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldVisibility.cpp"
 )
 add_library(sa_legacy SHARED
     register_types.cpp
@@ -365,6 +366,15 @@ add_executable(sa_world_residency_probe
 target_link_libraries(sa_world_residency_probe PRIVATE sa_diagnostic)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_world_residency_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fexceptions -fno-fast-math -ffp-contract=off)
+endif()
+add_executable(sa_world_visibility_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldVisibilityProbe.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldVisibility.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeLodCatalog.cpp")
+target_link_libraries(sa_world_visibility_probe PRIVATE sa_diagnostic)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_world_visibility_probe PRIVATE
         -Wall -Wextra -Wpedantic -fexceptions -fno-fast-math -ffp-contract=off)
 endif()
 

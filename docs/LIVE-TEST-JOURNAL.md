@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P5-02 — 2026-09-13, DIRECT; source area/time/LOD visibility
+
+- Native `0a465d60` publishes a complete visibility decision for every catalog resident from authored area, exact clock range, loaded model bounds, draw distance and LOD relation. Frustum/occlusion are explicitly external rather than silently approximated.
+- Real roads R190 retains326 resources and paired collision/path generation while the controlled hour route changes168 noon placements to173 at23:00. Invalid hours reject; every mesh exposes an ordered full identity plus source visibility reason. The Godot lab applies this value instead of diagnostic parent hiding.
+- Direct14 and ASan/UBSan pass; clean packaged Forward+ catalog/chain/async gates pass. Extension/package SHA256 `ae2f240583d582d00ce3390780e02ae2bee55655474a1c27451a8098dea5beac`; PID1 docker-init, zombies0. P5-A02 verified; count32/68, P5-A03 next.
+
 ### GODOT-P5-01 — 2026-09-13, DIRECT; generation-qualified world residency
 
 - Native `ebb5c335` adds exact catalog-selected source-COL binding, validates all64 source `NODES*.DAT` payloads and publishes immutable exterior/interior generations with capacity256 stable dynamic references. The direct actual-data itinerary passes19 checks for Grove321→area16-36, prior-snapshot immutability and stale/identity mismatch rejection; path search authority remains false.

@@ -52,7 +52,9 @@ const CATALOG_ROUTE_STOPS := [
 	{"center": Vector3(2495.0, -1685.0, 22.0), "eye": Vector3(2495.0, -1685.0, 22.0), "target": Vector3(2490.0, -1665.0, 14.0), "area": 0, "label": "grove-return"},
 ]
 const CATALOG_ROUTE_DWELL_SECONDS := 2.0
-const CATALOG_LOD_AUTHORITY := "unknown-pending-P5-A02"
+const CATALOG_LOD_AUTHORITY := "source-bounded-distance-and-relation"
+const CATALOG_TIME_AUTHORITY := "source-clock-range"
+const CATALOG_INTERIOR_AUTHORITY := "source-area-byte"
 const CATALOG_DEFAULT_RADIUS := 140.0
 
 @onready var camera: Camera3D = $Camera3D
@@ -861,14 +863,16 @@ func _lab_stage_one_item() -> void:
 	if _lab_candidate_current_instance == null or not is_instance_valid(_lab_candidate_current_instance):
 		var instance := MeshInstance3D.new()
 		instance.mesh = mesh
-		# P1-A04 paired alternate stays hidden; P1-A07 authored catalog targets
-		# held hidden are DIAGNOSTIC policy (lod_target_hidden), not source LOD.
+		# Window keeps the P1-A04 diagnostic alternate hidden. Catalog packets
+		# carry P5-A02 source-bounded area/time/distance/LOD decisions.
 		var is_pair_parent := _lab_candidate_next_mesh == _lab_candidate_pair_parent
 		var is_catalog_hidden := bool(mesh_info.get("lod_target_hidden", false))
-		if is_pair_parent or is_catalog_hidden:
-			instance.visible = false
+		var has_runtime_visibility := mesh_info.has("source_runtime_visible")
+		instance.visible = bool(mesh_info.get("source_runtime_visible", not (is_pair_parent or is_catalog_hidden)))
 		instance.set_meta("lod_chain_alternate", is_pair_parent)
 		instance.set_meta("lod_target_hidden", is_catalog_hidden)
+		instance.set_meta("source_runtime_visible", instance.visible if has_runtime_visibility else null)
+		instance.set_meta("source_visibility_reason", str(mesh_info.get("source_visibility_reason", "diagnostic-fallback")))
 		instance.set_meta("source_model_id", int(mesh_info.get("source_model_id", -1)))
 		instance.set_meta("source_model", str(mesh_info.get("source_model", "")))
 		staging_root.add_child(instance)
@@ -1636,7 +1640,7 @@ func _validate_and_begin_staging(result: Dictionary, center_sa: Vector3, started
 			return false
 		# P1-A07: authored catalog targets carry lod_target_hidden bool.
 		# Legacy capped payloads must never claim it true; catalog payloads
-		# must carry it for every mesh (DIAGNOSTIC policy, not source LOD).
+		# must carry it for every mesh as provenance; source visibility is separate.
 		if mesh_info.has("lod_target_hidden") and not mesh_info.get("lod_target_hidden") is bool:
 			_fatal("load_region lod_target_hidden is not boolean", 4)
 			return false
@@ -1645,6 +1649,9 @@ func _validate_and_begin_staging(result: Dictionary, center_sa: Vector3, started
 			return false
 		if expected_is_catalog and not mesh_info.has("lod_target_hidden"):
 			_fatal("load_region catalog payload is missing lod_target_hidden", 4)
+			return false
+		if expected_is_catalog and (not mesh_info.get("source_runtime_visible") is bool or str(mesh_info.get("source_visibility_reason", "")).is_empty()):
+			_fatal("load_region catalog payload is missing source visibility", 4)
 			return false
 		var mesh_value: Variant = mesh_info.get("mesh")
 		if not mesh_value is ArrayMesh or mesh_value.get_surface_count() == 0:
@@ -1816,9 +1823,18 @@ func _validate_catalog_selection(stats: Dictionary, meshes: Array, expected_area
 	if expected_visible + expected_hidden + excluded_outside != catalog_population:
 		_fatal("load_catalog_region selection expected+excluded does not match population", 4)
 		return false
-	for key in ["lod_visibility_authority", "time_visibility_authority"]:
+	var authorities := {
+		"lod_visibility_authority": CATALOG_LOD_AUTHORITY,
+		"time_visibility_authority": CATALOG_TIME_AUTHORITY,
+		"interior_visibility_authority": CATALOG_INTERIOR_AUTHORITY,
+	}
+	for key in authorities:
 		var a: Variant = sel.get(key, "")
-		if not (a is String or a is StringName) or str(a) != CATALOG_LOD_AUTHORITY:
+		if not (a is String or a is StringName) or str(a) != str(authorities[key]):
+			_fatal("load_catalog_region selection has invalid %s" % key, 4)
+			return false
+	for key in ["hour", "present", "area_rejected", "time_rejected", "distance_rejected", "lod_suppressed"]:
+		if not sel.get(key) is int or int(sel.get(key, -1)) < 0:
 			_fatal("load_catalog_region selection has invalid %s" % key, 4)
 			return false
 	# Reconcile hidden flags one-to-one; identities must be unique real resources.
@@ -2755,7 +2771,7 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"active_is_catalog": _loaded_is_catalog if _has_published_region else false,
 			"residency_mode": _residency_mode_label(),
 			"selection": _selection_scalar_summary(),
-			"selection_note": "scalar only; no COL/mesh array dump. Authored lod_target_hidden held hidden as diagnostic policy, not source LOD. No automatic LOD/time visibility/gameplay physics.",
+			"selection_note": "scalar only; no COL/mesh array dump. Source-bounded area/time/distance/LOD; frustum/occlusion external; no gameplay physics.",
 			"candidate_status": "unavailable" if _region_candidate_unavailable else "none",
 			"retry_suppressed": _region_retry_suppressed,
 			"retry_control": "F6",
@@ -2829,7 +2845,7 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"selection": _selection_scalar_summary(),
 			"catalog_route_enabled": _catalog_route_enabled,
 			"publication": "bounded replacement; the previous complete publication remains active until a valid candidate is fully staged. Initial and fixed captures use synchronous diagnostics; movement/F6 use async submit plus nonblocking poll",
-			"lod_status": "no Godot runtime LOD selection; source representation is whatever the bridge publishes. Catalog lod_target_hidden is diagnostic hold-hidden, not source LOD; time visibility unknown-pending-P5-A02; no gameplay physics",
+			"lod_status": "source-bounded-distance-and-relation; source-clock-range; source-area-byte; frustum/occlusion external; no gameplay physics",
 		},
 		"route": {
 			"enabled": _route_enabled,
@@ -2898,7 +2914,7 @@ func _write_run_manifest(capture_id: String, image_written: bool, image_path: St
 			"Async raw parse runs off main; main conversion/publication/retirement is quota-budgeted per frame but single Godot calls and two root flips are measured atomic units that may overshoot. No hitch-free or faster-GPU claim.",
 			"Route frame intervals start after synchronous initialization; measured open/environment/load stalls are reported separately, while manifest hashing and driver discovery are not timed.",
 			"Residency, absent Godot runtime LOD selection, and fog visibility are separate facts.",
-			"Catalog lod_target_hidden hold-hidden is diagnostic policy, not source LOD; time visibility unknown-pending-P5-A02; no automatic LOD/time visibility/gameplay physics.",
+			"Catalog source-bounded area/time/distance/LOD visibility; frustum/occlusion external; no gameplay physics.",
 			"Post toggle implements PC ColourFilter only; PS2 filter/radiosity/heat haze remain unavailable.",
 			"Gameplay collision is unsupported; the viewer does not generate collision data.",
 			"No controlled original capture was supplied, so discrepancy labels are not parity passes.",
@@ -2990,7 +3006,7 @@ func _update_overlay() -> void:
 		status_label.text += "REGION CANDIDATE UNAVAILABLE: %s | showing committed revision %d; F6 retry\n" % [_bounded_status_string(_last_region_error.get("error", "unspecified bridge error"), 180), _publication_revision]
 	status_label.text += "WASD move  Q/E fall/rise  Shift fast  RMB look  Esc release/quit  R route\n"
 	status_label.text += "1 clear  2 evening  3 night  4 overcast | F1-F4 diagnostics | F5 PC filter | F6 retry | F12 capture\n"
-	status_label.text += "LOD unavailable | gameplay collision unsupported | catalog hidden is diagnostic, time unknown-pending-P5-A02\n"
+	status_label.text += "source LOD/time/area bounded | frustum/occlusion external | gameplay collision unsupported\n"
 	var paired_summary := _paired_data_summary()
 	if bool(paired_summary.get("present", false)):
 		status_label.text += "paired data: %d->%d COL %df (data only, no gameplay)\n" % [int(paired_summary.get("child_model_id", -1)), int(paired_summary.get("parent_model_id", -1)), int(paired_summary.get("faces", 0))]

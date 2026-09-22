@@ -1324,8 +1324,8 @@ SALegacyBridge::AdvanceOutcome SALegacyBridge::AdvanceConversionLocked(int64_t q
         }
         TypedArray<Dictionary> finalMeshes;
         if (pairOk) {
-            // P1-A07 lod_target_hidden from owned HiddenTargets (lab DIAGNOSTIC
-            // policy, NOT source runtime LOD). Plan mesh i maps via
+            // P1-A07 provenance remains available as lod_target_hidden. P5-A02
+            // adds source_runtime_visible/reason from the owned evaluator. Plan mesh i maps via
             // sourceMeshIndex to scene/Rendered identity; Window packets carry
             // empty HiddenTargets so every flag is false there. A04 source
             // 4043 keeps lod_chain_alternate true via actual Rendered IDs with
@@ -1348,9 +1348,17 @@ SALegacyBridge::AdvanceOutcome SALegacyBridge::AdvanceConversionLocked(int64_t q
             };
             for (size_t i = 0; i < conv.meshDicts.size(); ++i) {
                 Dictionary entry = conv.meshDicts[i];
+                const size_t src = i < plan.meshes.size() ? plan.meshes[i].sourceMeshIndex : SIZE_MAX;
                 entry["lod_chain_alternate"] =
                     lodSelected && static_cast<int>(i) == parentMeshIndex;
                 entry["lod_target_hidden"] = isHiddenTarget(i);
+                if (conv.raw && conv.raw->VisibilityReady && src < conv.raw->Visibility.Decisions.size()) {
+                    const auto& visibility = conv.raw->Visibility.Decisions[src];
+                    entry["source_runtime_visible"] = visibility.Present;
+                    entry["source_visibility_reason"] = SourceString(visibility.Reason);
+                    entry["source_visibility_distance"] = visibility.Distance;
+                    entry["source_visibility_draw_radius"] = visibility.DrawRadius;
+                }
                 conv.meshDicts[i] = entry;
                 finalMeshes.push_back(entry);
             }
@@ -1421,8 +1429,8 @@ Dictionary SALegacyBridge::BuildReadyPayloadLocked() {
     // P1-A07 Stats['selection'] for catalog success only. Legacy Window
     // packets leave the field absent (old tests unchanged). Catalog mode is
     // catalog_disc (area0, Open radius) or catalog_area (whole positive area);
-    // ROI selection uses radius only for area0. Visibility authorities stay
-    // unknown-pending-P5-A02 (lab labels, no new LOD/physics claim).
+    // ROI selection uses radius only for area0. P5-A02 adds bounded source
+    // area/time/distance/LOD decisions; frustum/occlusion stay external.
     if (raw.HasCatalog) {
         Dictionary selection;
         selection["mode"] = SourceString(raw.Catalog.Mode);
@@ -1437,8 +1445,19 @@ Dictionary SALegacyBridge::BuildReadyPayloadLocked() {
         selection["excluded_outside"] =
             static_cast<int64_t>(raw.Catalog.ExcludedOutside);
         selection["time_models"] = static_cast<int64_t>(raw.Catalog.TimeModels);
-        selection["lod_visibility_authority"] = "unknown-pending-P5-A02";
-        selection["time_visibility_authority"] = "unknown-pending-P5-A02";
+        selection["lod_visibility_authority"] = "source-bounded-distance-and-relation";
+        selection["time_visibility_authority"] = "source-clock-range";
+        selection["interior_visibility_authority"] = "source-area-byte";
+        if (raw.VisibilityReady) {
+            selection["hour"] = raw.Request.Hour;
+            selection["present"] = static_cast<int64_t>(raw.Visibility.Present);
+            selection["area_rejected"] = static_cast<int64_t>(raw.Visibility.AreaRejected);
+            selection["time_rejected"] = static_cast<int64_t>(raw.Visibility.TimeRejected);
+            selection["distance_rejected"] = static_cast<int64_t>(raw.Visibility.DistanceRejected);
+            selection["lod_suppressed"] = static_cast<int64_t>(raw.Visibility.LodSuppressed);
+            selection["frustum_authority"] = "external";
+            selection["occlusion_authority"] = "external";
+        }
         if (raw.ResidencyReady && raw.Residency.Collision) {
             TypedArray<Dictionary> collisionIdentities;
             for (const auto& instance : raw.Residency.Collision->Instances) {
@@ -1502,10 +1521,10 @@ void SALegacyBridge::_bind_methods() {
                          &SALegacyBridge::TickDiagnosticActors, DEFVAL(false), DEFVAL(false));
     ClassDB::bind_method(D_METHOD("load_region", "SA_position"), &SALegacyBridge::LoadRegion);
     ClassDB::bind_method(D_METHOD("submit_region", "SA_position"), &SALegacyBridge::SubmitRegion);
-    ClassDB::bind_method(D_METHOD("submit_catalog_region", "SA_position", "area_id"),
-                         &SALegacyBridge::SubmitCatalogRegion, DEFVAL(0));
-    ClassDB::bind_method(D_METHOD("load_catalog_region", "SA_position", "area_id"),
-                         &SALegacyBridge::LoadCatalogRegion, DEFVAL(0));
+    ClassDB::bind_method(D_METHOD("submit_catalog_region", "SA_position", "area_id", "hour"),
+                         &SALegacyBridge::SubmitCatalogRegion, DEFVAL(0), DEFVAL(12));
+    ClassDB::bind_method(D_METHOD("load_catalog_region", "SA_position", "area_id", "hour"),
+                         &SALegacyBridge::LoadCatalogRegion, DEFVAL(0), DEFVAL(12));
     ClassDB::bind_method(D_METHOD("poll_region"), &SALegacyBridge::PollRegion);
     ClassDB::bind_method(D_METHOD("cancel_region", "request_id"), &SALegacyBridge::CancelRegion);
     ClassDB::bind_method(D_METHOD("environment", "weather", "hour"), &SALegacyBridge::Environment);
@@ -1846,7 +1865,8 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
     // radius (whole area); area0 discs use the Open radius. Select failure ->
     // catalog_selection_error, selected load failure -> selected_model_failed,
     // mismatch -> catalog_accounting_mismatch (code by stage, human
-    // source-identity message, never parsed strings). Other P0 typed plan
+    // source-identity message, never parsed strings). P5-A02 evaluates bounded
+    // source visibility after exact model load. Other P0 typed plan
     // failures preserved exact via RegionPlanFailure.
     ParseFn parse = [catalog, collisionAssets, collisionPopulation, pathCatalog, radius](RawRegionPacket& packet) {
         if (packet.Request.Selection == RegionSelection::Window) {
@@ -1944,6 +1964,32 @@ Dictionary SALegacyBridge::OpenGame(const String& gameDir, float radius, int32_t
             return;
         }
         packet.ResidencyReady = true;
+        std::vector<float> modelBounds;
+        modelBounds.reserve(packet.Scene.meshes.size());
+        for (const auto& mesh : packet.Scene.meshes) {
+            NativeCollisionVector minimum{std::numeric_limits<float>::max(),
+                std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+            NativeCollisionVector maximum{-minimum[0], -minimum[1], -minimum[2]};
+            for (std::size_t i = 0; i + 2 < mesh.pos.size(); i += 3) {
+                for (int axis = 0; axis < 3; ++axis) {
+                    minimum[axis] = std::min(minimum[axis], mesh.pos[i + std::size_t(axis)]);
+                    maximum[axis] = std::max(maximum[axis], mesh.pos[i + std::size_t(axis)]);
+                }
+            }
+            const float bx = (maximum[0] - minimum[0]) * 0.5f;
+            const float by = (maximum[1] - minimum[1]) * 0.5f;
+            const float bz = (maximum[2] - minimum[2]) * 0.5f;
+            modelBounds.push_back(std::sqrt(bx * bx + by * by + bz * bz));
+        }
+        if (!NativeWorldVisibility::Evaluate(*catalog, *collisionAssets, residency, modelBounds,
+            {{packet.Request.X, packet.Request.Y, packet.Request.Z}, areaId,
+                static_cast<std::uint8_t>(packet.Request.Hour), 1.0f, 1.0f, 300.0f},
+            packet.Visibility, residencyError)) {
+            packet.ErrorCode = kCatalogAccountingMismatch;
+            packet.Error = residencyError.empty() ? "world visibility evaluation failed" : residencyError;
+            return;
+        }
+        packet.VisibilityReady = true;
         packet.PlanReady = true;
         packet.PlanOk = BuildRegionPlan(packet.Scene, packet.Plan, packet.PlanFailure);
     };
@@ -2111,7 +2157,7 @@ bool SelectionAreaConsistent(RegionSelection selection, int areaId) {
 // unchanged; catalog lanes ride Selection/AreaId on the same worker/CV,
 // stepper, revision, and retiring protocol.
 Dictionary SALegacyBridge::LoadRegionInternal(const Vector3& saPosition,
-                                              RegionSelection selection, int areaId) {
+                                               RegionSelection selection, int areaId, int hour) {
     const bool isCatalog = (selection != RegionSelection::Window);
     const char* threadError = isCatalog ? "load_catalog_region must run on Godot's main thread"
                                         : "load_region must run on Godot's main thread";
@@ -2142,6 +2188,7 @@ Dictionary SALegacyBridge::LoadRegionInternal(const Vector3& saPosition,
     if (!ValidRegionArea(areaId) || !SelectionAreaConsistent(selection, areaId)) {
         return failureResult("area_id must be in [0,255] and consistent with the region selection");
     }
+    if (isCatalog && (hour < 0 || hour > 23)) return failureResult("hour must be in [0,23]");
     if (!m_Ready || s_PagerOwner != this || !m_Worker) {
         return failureResult(pagerError);
     }
@@ -2165,7 +2212,7 @@ Dictionary SALegacyBridge::LoadRegionInternal(const Vector3& saPosition,
     const uint64_t requestId = m_NextRequestId + 1;
     const uint64_t epoch = m_SessionEpoch;
     const RegionRequest req{saPosition.x, saPosition.y, saPosition.z, requestId, epoch,
-                            selection, areaId};
+                            selection, areaId, hour};
     if (!m_Worker->Submit(req)) {
         // ID consumed (never reused). No exposed update, revision unchanged.
         m_NextRequestId = requestId;
@@ -2255,15 +2302,15 @@ Dictionary SALegacyBridge::LoadRegion(const Vector3& saPosition) {
     return LoadRegionInternal(saPosition, RegionSelection::Window, 0);
 }
 
-Dictionary SALegacyBridge::LoadCatalogRegion(const Vector3& saPosition, int areaId) {
+Dictionary SALegacyBridge::LoadCatalogRegion(const Vector3& saPosition, int areaId, int hour) {
     const RegionSelection selection =
         (areaId == 0) ? RegionSelection::CatalogDisc : RegionSelection::CatalogArea;
-    return LoadRegionInternal(saPosition, selection, areaId);
+    return LoadRegionInternal(saPosition, selection, areaId, hour);
 }
 
 // P1-A07 shared async state machine (Window + catalog; single implementation).
 Dictionary SALegacyBridge::SubmitRegionInternal(const Vector3& saPosition,
-                                                RegionSelection selection, int areaId) {
+                                                 RegionSelection selection, int areaId, int hour) {
     const bool isCatalog = (selection != RegionSelection::Window);
     const char* threadError = isCatalog
         ? "submit_catalog_region must run on Godot's main thread"
@@ -2295,6 +2342,7 @@ Dictionary SALegacyBridge::SubmitRegionInternal(const Vector3& saPosition,
     if (!ValidRegionArea(areaId) || !SelectionAreaConsistent(selection, areaId)) {
         return failure("area_id must be in [0,255] and consistent with the region selection");
     }
+    if (isCatalog && (hour < 0 || hour > 23)) return failure("hour must be in [0,23]");
     if (!m_Ready || s_PagerOwner != this || !m_Worker) {
         return failure(pagerError);
     }
@@ -2307,7 +2355,7 @@ Dictionary SALegacyBridge::SubmitRegionInternal(const Vector3& saPosition,
     const uint64_t requestId = m_NextRequestId + 1;
     const uint64_t epoch = m_SessionEpoch;
     const RegionRequest req{saPosition.x, saPosition.y, saPosition.z, requestId, epoch,
-                            selection, areaId};
+                            selection, areaId, hour};
     if (!m_Worker->Submit(req)) {
         // Consume the ID (never reuse), keep the old exposed request intact.
         m_NextRequestId = requestId;
@@ -2338,10 +2386,10 @@ Dictionary SALegacyBridge::SubmitRegion(const Vector3& saPosition) {
     return SubmitRegionInternal(saPosition, RegionSelection::Window, 0);
 }
 
-Dictionary SALegacyBridge::SubmitCatalogRegion(const Vector3& saPosition, int areaId) {
+Dictionary SALegacyBridge::SubmitCatalogRegion(const Vector3& saPosition, int areaId, int hour) {
     const RegionSelection selection =
         (areaId == 0) ? RegionSelection::CatalogDisc : RegionSelection::CatalogArea;
-    return SubmitRegionInternal(saPosition, selection, areaId);
+    return SubmitRegionInternal(saPosition, selection, areaId, hour);
 }
 
 Dictionary SALegacyBridge::PollRegion() {

@@ -35,8 +35,8 @@ public:
     // Open radius, positive = whole area). Existing Window signatures/behavior
     // incl cap are unchanged. Main validates coords/area range; in-range empty
     // selections may fail on the worker (no main-thread catalog scans).
-    Dictionary LoadCatalogRegion(const Vector3& saPosition, int areaId = 0);
-    Dictionary SubmitCatalogRegion(const Vector3& saPosition, int areaId = 0);
+    Dictionary LoadCatalogRegion(const Vector3& saPosition, int areaId = 0, int hour = 12);
+    Dictionary SubmitCatalogRegion(const Vector3& saPosition, int areaId = 0, int hour = 12);
     Dictionary PollRegion();
     Dictionary CancelRegion(int64_t requestId);
     Dictionary Environment(const String& weather, int32_t hour);
@@ -82,9 +82,9 @@ private:
     // Window + catalog lanes; no duplicated hundreds-of-lines protocol).
     // Selection/AreaId ride the RegionRequest; Window uses AreaId 0.
     Dictionary SubmitRegionInternal(const Vector3& saPosition, RegionSelection selection,
-                                    int areaId);
+                                    int areaId, int hour = 12);
     Dictionary LoadRegionInternal(const Vector3& saPosition, RegionSelection selection,
-                                  int areaId);
+                                  int areaId, int hour = 12);
 
     std::string m_GameDir;
     bool m_Ready = false;

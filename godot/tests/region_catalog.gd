@@ -3,8 +3,8 @@ extends SceneTree
 # P1-A07 catalog residency gate: decisive actual bridge + lab fixture.
 # No old DLL fallback; catalog methods required. Every expected resource must
 # load or the whole candidate errors (no omission Ready). Authored targets held
-# hidden are DIAGNOSTIC policy (lod_target_hidden), not source LOD. Time/LOD
-# visibility stays unknown-pending-P5-A02. Legacy cap1/2/256 unchanged.
+# hidden remain provenance (`lod_target_hidden`), while P5-A02 publishes bounded
+# source area/time/distance/LOD decisions. Frustum/occlusion stay external.
 # Corpus fixtures from independent raw_catalog oracle + disjoint-set algebra
 # (correcting prior R130 double-count: R130 is 238 visible+44 hidden=282, all 44
 # targets already in seed; genuine VISIBLE must exceed 256, not just resident):
@@ -25,7 +25,9 @@ const TATTOO_SA := Vector3(-204.44, -26.454, 1001.3)
 const ANIM_SA := Vector3(1214.1484375, -913.4453125, 10.0)
 const SF_NAN_SA := Vector3(-1687.414063, -623.023438, 18.148438)
 const POPULATION := 50935
-const AUTHORITY := "unknown-pending-P5-A02"
+const LOD_AUTHORITY := "source-bounded-distance-and-relation"
+const TIME_AUTHORITY := "source-clock-range"
+const INTERIOR_AUTHORITY := "source-area-byte"
 const MAX_POLL_FRAMES := 3600
 const POLL_DEADLINE_MSEC := 120000
 
@@ -69,7 +71,7 @@ func _run() -> void:
 	_bridge = null
 	if not await _run_lab_fixture():
 		return
-	print("region-catalog-ok grove140a=321 grove140b=317 grove200=330 roads190=326 area16=36 pop=50935 pair122-retained legacy-capped stable-plateau invalid-rejected anim-whole-failure visible-gt256")
+	print("region-catalog-ok grove140a=321 grove140b=317 grove200=330 roads190=326 area16=36 pop=50935 pair122-retained source-lod-time-area legacy-capped stable-plateau invalid-rejected anim-whole-failure visible-gt256")
 	quit(0)
 
 
@@ -172,6 +174,14 @@ func _run_bridge_direct(game_dir: String) -> bool:
 		return false
 	if not _check(_validate_bridge_pair(ready_r), "roads pair 3991/4043 COL122"):
 		return false
+	var submit_r_night: Dictionary = _bridge.call("submit_catalog_region", ROADS_SA, 0, 23)
+	if not _check(bool(submit_r_night.get("ok", false)), "submit roads night"):
+		return false
+	var ready_r_night: Dictionary = await _await_bridge_terminal(int(submit_r_night.get("request_id", 0)))
+	if not _check(str(ready_r_night.get("status", "")) == "ready" and _validate_catalog_payload(ready_r_night, "catalog_disc", 0, 190.0, 279, 47, 326, "roads R190 night", 136, 5), "roads night payload"):
+		return false
+	if not _check(_visibility_route_diff(ready_r, ready_r_night), "roads noon/night source visibility"):
+		return false
 	# Area16 entire area (R140 open for stable cycle below).
 	_bridge.call("close_game")
 	_bridge_open = false
@@ -231,6 +241,10 @@ func _run_bridge_direct(game_dir: String) -> bool:
 		if not _check(not bool(bad_sync.get("ok", true)) and not bad_sync.has("meshes"), "invalid sync area %d no meshes" % bad_area):
 			return false
 		if not _check(int(bad_sync.get("publication_revision", -1)) == legacy_rev, "invalid no rev advance"):
+			return false
+	for bad_hour in [-1, 24]:
+		var bad_time: Dictionary = _bridge.call("submit_catalog_region", GROVE0_SA, 0, bad_hour)
+		if not _check(not bool(bad_time.get("ok", true)), "invalid hour %d must reject" % bad_hour):
 			return false
 	# Anim ROI R60 whole failure, no Rev, not skip.
 	_bridge.call("close_game")
@@ -469,7 +483,7 @@ func _run_lab_fixture() -> bool:
 	var sel: Variant = (parsed as Dictionary).get("region_publication", {}).get("selection", null)
 	if not _check(sel is Dictionary and str((sel as Dictionary).get("mode", "")) in ["catalog_disc", "catalog_area"], "manifest selection scalar"):
 		return false
-	if not _check(text.contains("unknown-pending-P5-A02") and text.contains("diagnostic"), "manifest labels unknown/time diagnostic"):
+	if not _check(text.contains("source-bounded-distance-and-relation") and text.contains("source-clock-range") and text.contains("frustum/occlusion external"), "manifest source visibility labels"):
 		return false
 	lab._update_overlay()
 	# Teardown cancels deferred capture.
@@ -562,7 +576,7 @@ func _validate_catalog_payload(packet: Dictionary, exp_mode: String, exp_area: i
 	if int(sel.get("excluded_outside", -1)) != POPULATION - exp_total:
 		printerr("region-catalog-fail: ", label, " excluded")
 		return false
-	if str(sel.get("lod_visibility_authority", "")) != AUTHORITY or str(sel.get("time_visibility_authority", "")) != AUTHORITY:
+	if str(sel.get("lod_visibility_authority", "")) != LOD_AUTHORITY or str(sel.get("time_visibility_authority", "")) != TIME_AUTHORITY or str(sel.get("interior_visibility_authority", "")) != INTERIOR_AUTHORITY:
 		printerr("region-catalog-fail: ", label, " authority")
 		return false
 	if not packet.get("meshes") is Array:
@@ -583,6 +597,9 @@ func _validate_catalog_payload(packet: Dictionary, exp_mode: String, exp_area: i
 			return false
 		if bool(info.get("lod_target_hidden", false)):
 			hidden += 1
+		if not info.get("source_runtime_visible") is bool or str(info.get("source_visibility_reason", "")).is_empty():
+			printerr("region-catalog-fail: ", label, " missing source visibility decision")
+			return false
 		if not info.get("mesh") is ArrayMesh or (info.mesh as ArrayMesh).get_surface_count() == 0:
 			printerr("region-catalog-fail: ", label, " invalid ArrayMesh")
 			return false
@@ -663,6 +680,35 @@ func _area16_models(packet: Dictionary, exp_unique: int) -> bool:
 	return true
 
 
+func _visibility_route_diff(noon: Dictionary, night: Dictionary) -> bool:
+	var noon_sel: Dictionary = (noon.get("stats", {}) as Dictionary).get("selection", {})
+	var night_sel: Dictionary = (night.get("stats", {}) as Dictionary).get("selection", {})
+	if int(noon_sel.get("hour", -1)) != 12 or int(night_sel.get("hour", -1)) != 23:
+		printerr("region-catalog-fail: visibility route hours")
+		return false
+	if int(noon_sel.get("present", -1)) == int(night_sel.get("present", -1)) and int(noon_sel.get("time_rejected", -1)) == int(night_sel.get("time_rejected", -1)):
+		printerr("region-catalog-fail: visibility route did not change")
+		return false
+	for key in ["collision_identities", "path_areas"]:
+		if not _deep_equal(noon_sel.get(key), night_sel.get(key)):
+			printerr("region-catalog-fail: visibility route changed residency ", key)
+			return false
+	var noon_meshes: Array = noon.get("meshes", [])
+	var night_meshes: Array = night.get("meshes", [])
+	if noon_meshes.size() != night_meshes.size():
+		return false
+	var changed := 0
+	for index in noon_meshes.size():
+		var a: Dictionary = noon_meshes[index]
+		var b: Dictionary = night_meshes[index]
+		if bool(a.get("source_runtime_visible", false)) != bool(b.get("source_runtime_visible", false)) or str(a.get("source_visibility_reason", "")) != str(b.get("source_visibility_reason", "")):
+			changed += 1
+	if changed == 0:
+		printerr("region-catalog-fail: no per-placement visibility change")
+		return false
+	return true
+
+
 func _stable_payload_match(first: Dictionary, second: Dictionary, label: String) -> bool:
 	var a_meshes: Array = first.get("meshes", [])
 	var b_meshes: Array = second.get("meshes", [])
@@ -721,7 +767,7 @@ func _validate_lab_catalog(lab: Node, exp_mode: String, exp_area: int, exp_vis: 
 		return false
 	if not _check(int(sel.get("population", -1)) == POPULATION and int(sel.get("excluded_outside", -1)) == POPULATION - exp_total, label + " pop"):
 		return false
-	if not _check(str(sel.get("lod_visibility_authority", "")) == AUTHORITY and str(sel.get("time_visibility_authority", "")) == AUTHORITY, label + " authority"):
+	if not _check(str(sel.get("lod_visibility_authority", "")) == LOD_AUTHORITY and str(sel.get("time_visibility_authority", "")) == TIME_AUTHORITY and str(sel.get("interior_visibility_authority", "")) == INTERIOR_AUTHORITY, label + " authority"):
 		return false
 	var nodes: Array = lab._active_region_root().get_children()
 	if not _check(nodes.size() == exp_total, label + " resident nodes"):
@@ -748,9 +794,12 @@ func _validate_lab_catalog(lab: Node, exp_mode: String, exp_area: int, exp_vis: 
 			return false
 		if bool(node.get_meta("lod_target_hidden", false)):
 			hidden_nodes += 1
-			if node.visible:
-				printerr("region-catalog-fail: ", label, " hidden must be invisible")
-				return false
+		if not node.has_meta("source_runtime_visible") or not node.get_meta("source_runtime_visible") is bool:
+			printerr("region-catalog-fail: ", label, " missing source_runtime_visible")
+			return false
+		if node.visible != bool(node.get_meta("source_runtime_visible")):
+			printerr("region-catalog-fail: ", label, " node visibility disagrees with source decision")
+			return false
 	if not _check(hidden_nodes == exp_hid, label + " hidden nodes actual=%d expected=%d" % [hidden_nodes, exp_hid]):
 		return false
 	if exp_models >= 0:

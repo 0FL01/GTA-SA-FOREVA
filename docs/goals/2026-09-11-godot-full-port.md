@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07 and P5-A01 are verified; P4-A08 remains dependency-open and P5-A02 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07 and P5-A01–A02 are verified; P4-A08 remains dependency-open and P5-A03 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -109,8 +109,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
 | P5-A01 | verified | Complete exterior/interior/path residency and dynamic-world service from P1 catalog authority. | Actual Grove321→area16-36 itinerary retains full ordered placement identities, paired source-COL/request generation, source path-area metadata and one stable dynamic ref; stale/mismatched publications reject atomically. |
-| P5-A02 | in_progress | Replace radius/cap fallback with source runtime LOD, time-object and interior visibility behavior. | Controlled time/area/LOD route records source-selection reasons with no silent omission. |
-| P5-A03 | pending | Map every shipped vehicle model to its real family and constructor. | Catalog matrix has no generic `400/476` representation and constructs one fixture per family. |
+| P5-A02 | verified | Replace radius/cap fallback with source runtime LOD, time-object and interior visibility behavior. | Actual roads326 noon/night route records a decision for every placement, changes authored time visibility (168→173 present), applies area and LOD-parent reasons, and rejects invalid hours without omission. |
+| P5-A03 | in_progress | Map every shipped vehicle model to its real family and constructor. | Catalog matrix has no generic `400/476` representation and constructs one fixture per family. |
 | P5-A04 | pending | Port family control dependencies for road, water, rail, flight, towing and special vehicles. | One direct state-transition fixture passes for each family dependency. |
 | P5-A05 | pending | Complete vehicle collision, occupants, damage, destruction and reload across classes. | Per-class lifecycle matrix preserves identities and cleans all owners on reload. |
 | P5-A06 | pending | Port general objects plus destructible/damage state into the dynamic world. | Object damage/destroy/reload fixture preserves source state and generation ownership. |
@@ -169,7 +169,15 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P5-A01 generation-qualified world residency verified
+### 2026-09-13 — P5-A02 source world visibility verified
+
+- **Versions/result:** native `0a465d60` is committed/pushed; root companion is the commit containing this checkpoint, based on `52e404b`. `NativeWorldVisibility` produces one value decision for every catalog-selected placement from exact authored area byte, `CTimeInfo` clock range, loaded source-COL or DFF model bound, source draw distance and authored LOD relation.
+- **Controlled route:** the real roads R190 selection keeps all326 resources resident while hour12 presents168 and hour23 presents173. Every mesh carries complete placement identity, `source_runtime_visible` and a typed reason (`area-mismatch`, `time-out-of-range`, `distance-out-of-range`, `lod-child-visible`, `lod-parent-fallback` or `source-visible`). Interior16 and exterior itineraries use the same source-area authority; invalid hours reject before worker admission.
+- **Presentation boundary:** the catalog lab now applies the immutable source visibility value instead of the old hold-hidden diagnostic policy. Frustum and occlusion remain explicitly external, and gameplay physics/path search remain separate owners. Retained resources are not silently removed: residency counts and paired render/source-COL/path generation from P5-A01 stay unchanged across the noon/night route.
+- **Gates:** direct real-data visibility probe passes14 checks (`residents=326 noon=168 night=173`); strict ASan+UBSan passes. Clean packaged Forward+/Wayland catalog route passes the full Grove/roads/interior/stability/rejection matrix with `source-lod-time-area`; region-chain and region-async regressions pass. Extension/package SHA256 `ae2f240583d582d00ce3390780e02ae2bee55655474a1c27451a8098dea5beac`; PID1 docker-init, zombies0.
+- **Boundary/next:** P5-A02 is verified at `32/68=47.1%`, not game readiness. It does not claim full camera frustum/occlusion parity, weather rendering, path search or population. P5-A03 now owns the complete shipped vehicle-family/model constructor matrix; P4-A08 remains strict at `0390`.
+
+### Prior — P5-A01 generation-qualified world residency verified
 
 - **Versions/result:** native `ebb5c335` is committed/pushed; root companion is the commit containing this checkpoint, based on `8854611`. `NativeWorldResidency` binds the existing disk-validated P1 catalog to exact ordered render identities, selected source-COL instances and source path-area metadata. Immutable publications are generation-qualified; stale or mismatched candidates retain the prior owner.
 - **Path/dynamic boundary:** all64 `data/Paths/NODES*.DAT` files are read-only validated against the source x86 payload layout and selected in source region order around the itinerary point. A capacity256 generation-safe dynamic value owner retains the same reference across exterior→interior adoption. It does not implement graph search (`PathSearchAuthority=false`); P6-A01 still owns that algorithm.

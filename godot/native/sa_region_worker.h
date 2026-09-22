@@ -50,6 +50,7 @@
 #include <vector>
 
 #include "app/platform/linux/NativeWorldResidency.h"
+#include "app/platform/linux/NativeWorldVisibility.h"
 
 // P1-A07 region selection lane (plain C++, no Godot). Window is the frozen
 // capped diagnostic path; CatalogDisc/CatalogArea are the opt-in catalog
@@ -86,13 +87,15 @@ struct RegionRequest {
     // coords/area range; worker revalidates enum/area plus existing checks.
     RegionSelection Selection{RegionSelection::Window};
     int AreaId{};
+    int Hour{12};
 };
 
 // P1-A07 owned scalar catalog summary for RawRegionPacket (plain C++, no
 // Godot). Mirrors Stats['selection'] for catalog success: mode
 // catalog_disc/catalog_area, area_id, radius, population, expected_visible,
 // expected_hidden, resident, excluded_outside, time_models. Visibility
-// authorities stay unknown-pending-P5-A02 (lab/bridge labels, not source).
+// P5-A02 visibility decisions are separate owned values; these counts remain
+// residency accounting rather than visibility counts.
 struct RegionCatalogSummary {
     std::string Mode;
     int AreaId{};
@@ -135,6 +138,8 @@ struct RawRegionPacket {
     bool PlanOk = false;
     NativeWorldResidencyCandidate Residency;
     bool ResidencyReady = false;
+    NativeWorldVisibilitySnapshot Visibility;
+    bool VisibilityReady = false;
 };
 
 enum class RegionWait { Pending, Ready, Superseded, Cancelled, Stopped };
