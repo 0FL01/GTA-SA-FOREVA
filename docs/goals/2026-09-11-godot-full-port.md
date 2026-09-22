@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5 and P6-A01–A05 are verified; P4-A08 remains dependency-open and P6-A06 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5 and P6-A01–A06 are verified; P4-A08 remains dependency-open and P6-A07 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -124,8 +124,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P6-A03 | verified | Port traffic/population spawn, removal and pool-pressure rules; parked definitions alone do not count. | Bounded route creates moving traffic/peds and cleans them under forced pool pressure. |
 | P6-A04 | verified | Port weapons, projectiles, fire and damage across source model/weapon classes. | Representative class matrix records authoritative hit/damage/death transitions. |
 | P6-A05 | verified | Port wanted escalation, pursuit, roadblocks and escape. | Controlled offense -> pursuit -> roadblock -> escape scenario is reproducible. |
-| P6-A06 | in_progress | Complete death/arrest, restart selection and return-to-play lifecycle. | Separate death and arrest E2Es recover world, control and camera; registration alone cannot pass. |
-| P6-A07 | pending | Port garages, properties, shops and related interactions required by normal play. | Buy/use/save/reload interaction route preserves ownership and progression. |
+| P6-A06 | verified | Complete death/arrest, restart selection and return-to-play lifecycle. | Separate death and arrest E2Es recover world, control and camera; registration alone cannot pass. |
+| P6-A07 | in_progress | Port garages, properties, shops and related interactions required by normal play. | Buy/use/save/reload interaction route preserves ownership and progression. |
 
 ### P7 - Complete presentation and platform families (`pending`, may begin beside P3/P4)
 
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P6-A05 wanted/pursuit/escape verified
+### 2026-09-13 — P6-A06 death/arrest return-to-play verified
+
+- **Versions/result:** native `8e1ec020` is committed/pushed; root companion is the commit containing this checkpoint, based on `06b1f36`. `NativeRestartLifecycle` consumes the existing source `NativeRestarts` selection with all63 required effect bits and only commits after the registry revision/one-shot selection remains current.
+- **Recovery ownership:** both routes restore health100/armour0/wanted0, reset task generation, clear/rebuild world generation, reset area/ENEX state, stream the selected scene, place the actor at target+Z1 with source heading, restore camera-behind-player/control and reset gameplay state. Death selects Hospital; arrest selects Police. Unsupported/stale selections retain the entire actor state.
+- **Decisive gate:** separate actual-map fixtures recover death at Hospital100,0,11 and arrest at Police-100,0,21, each with world/task generation2, control1 and camera behind. Direct11 and strict ASan+UBSan pass; registration alone is not counted.
+- **Regression/boundary:** full Godot-native/native builds, smoke and native sweep33/0 pass. Extension remains SHA256 `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`; no render rerun. P6-A06 verified at `42/68=61.8%`, not readiness. Visual fade/hospital-police presentation remains P7; P6-A07 now owns garages/properties/shops buy/use/save/reload. P4-A08 remains strict at `0390`.
+
+### Prior — P6-A05 wanted/pursuit/escape verified
 
 - **Versions/result:** native `c41bf195` is committed/pushed; root companion is the commit containing this checkpoint, based on `68e4528`. `NativeWantedRuntime` retains the reversed source chaos thresholds, six levels, roadblock percentages, maximum cops/cars and bounded ten-cop pursuit identity list.
 - **Source scenario:** offense600 escalates to level3 (`roadblock=12`, cops4, cop cars2). Four unique cops join; excess and duplicate joins reject. Explicit random percentages11/12 reproduce the roadblock boundary. Police presence prevents decay, an elusive law/air vehicle holds level>1, and subsequent no-police 1001ms ticks subtract source chaos2 in elusive regions until clean, trimming pursuit identities as level limits fall.

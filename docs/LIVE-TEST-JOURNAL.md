@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P6-06 — 2026-09-13, DIRECT; death/arrest return-to-play
+
+- Native `8e1ec020` composes source restart selection with all63 actor/world/area/stream/camera/control/gameplay effects. Death selects Hospital; arrest selects Police; actor health/armour/wanted/tasks and generations are reset.
+- Separate routes restore control and camera at Hospital100,0,11 and Police-100,0,21 with generation2; unsupported selection retains state. Direct11 and strict ASan+UBSan pass.
+- Full builds/smoke and native sweep33/0 pass; extension remains `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`. P6-A06 verified at42/68=61.8%; P6-A07 next.
+
 ### GODOT-P6-05 — 2026-09-13, DIRECT; wanted pursuit and clean escape
 
 - Native `c41bf195` preserves source chaos thresholds, roadblock percentages, pursuit cop/car limits and timed escape decay. Offense600 reaches level3, accepts four cops and draws roadblock only below12.
