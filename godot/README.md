@@ -20,6 +20,14 @@ known visual limitations.
 
 The radio gate owns all12 source station programming queues, interruption/resume and canonical restart state. The corpus gate binds exact `main.scm` and `script.img` identities to416669 classified main/mission/streamed sites (`unknown-reachable=0`, fingerprint `54B67C3B1B6BD9E5`). Its69764 strict sites remain explicitly unsupported; the ledger never converts them to NOPs. P4-A08 mission3 TXD and P7-A06 target audio remain open.
 
+### Representative story lifecycle matrix (P8-A02)
+
+```bash
+./build/godot-native/sa_core_story_lifecycle_probe /game
+```
+
+The mission2 fixture composes actual PROLOG1 and mission speech43200 through normal start, skip, failure cleanup, retry, authored cutscene/audio completion and final cleanup. It publishes immutable value state with `presentation-feedback=0`; this is lifecycle ownership, not a claim that every strict script site or final cutscene presentation is complete.
+
 ### SFX, speech and environmental audio families (P7-A06 target-open)
 
 `SALegacyAudio` exposes copied source payloads for door SFX event80/bank138/sound40, mission speech43200 and rain bank105/sound0. Godot constructs WAV/Ogg streams and starts all three players; Dummy is structural CI only:

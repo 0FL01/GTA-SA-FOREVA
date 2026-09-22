@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P8-02 — 2026-09-13, DIRECT; representative story lifecycle matrix
+
+- Native `32d5ef85` composes real PROLOG1 archive/timing and exact mission speech43200 into an immutable mission2 lifecycle. Attempt1 starts, skips, fails and cleans; attempt2 retries, reaches authored cutscene/audio completion, completes and clears all four registered resource families.
+- Direct marker: `native-story-lifecycle-ok checks=18 mission=2 attempts=2 fail=1 retry=1 skip=1 complete=1 cleanup=2 cutscene=PROLOG1 audio=43200 presentation-feedback=0`. Strict sanitizer, Session5482, mission-audio, portable111, builds, smoke and native sweep33/0 pass; extension remains byte-identical.
+- P8-A02 is verified at51/68. This is representative lifecycle/cleanup authority, not all strict script semantics or final rendered cutscene/NPC output. P8-A03 next; P4-A08/P7-A06 stay open.
+
 ### GODOT-P8-01 — 2026-09-13, DIRECT; complete shipped script-site classification
 
 - Native `78d4f78f` binds exact `main.scm`/`script.img` FNV identities to a pinned Sanny-derived manifest covering main,135 missions and79 streamed members. The8-byte AAA member is explicitly non-executable metadata.

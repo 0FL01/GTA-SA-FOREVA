@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6, P7-A01–A05/P7-A07 and P8-A01 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, and P8-A02 is current.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6, P7-A01–A05/P7-A07 and P8-A01–A02 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, and P8-A03 is current.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -147,8 +147,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
 | P8-A01 | verified | Expand site-level semantics and owner coverage across all main, mission, streamed and brain scripts. | Corpus report classifies every shipped command site with no reachable unknown behavior. |
-| P8-A02 | in_progress | Complete story mission and cutscene start/fail/retry/skip/complete/cleanup routes. | Representative lifecycle matrix passes through normal progression entry points. |
-| P8-A03 | pending | Complete side jobs, races, schools, minigames and other activities. | Each discovered activity family has one normal start/result/cleanup E2E. |
+| P8-A02 | verified | Complete story mission and cutscene start/fail/retry/skip/complete/cleanup routes. | Representative lifecycle matrix passes through normal progression entry points. |
+| P8-A03 | in_progress | Complete side jobs, races, schools, minigames and other activities. | Each discovered activity family has one normal start/result/cleanup E2E. |
 | P8-A04 | pending | Complete purchases, stats, rewards/unlocks, interiors and their persistent owners. | Restarted-process progression route preserves and reapplies each owner family. |
 | P8-A05 | pending | Inventory and implement cheats, replay and special script-driven states rather than silently omitting them. | Manifest has a tested semantic route or explicit still-pending row for every discovered feature. |
 | P8-A06 | pending | Complete original-PC save block codecs, checksum and reference repair separately from port-native saves. | Source-format fixtures round-trip every block and reject corrupted checksum/references. |
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P7-A07 radio state and P8-A01 complete shipped corpus verified
+### 2026-09-13 — P8-A02 representative story/cutscene lifecycle verified
+
+- **Versions/result:** native `32d5ef85` is committed/pushed; root companion is the commit containing this checkpoint, based on `991ab0d`. `NativeStoryLifecycle` composes the existing real PROLOG1 cutscene archive/timing and mission-audio event43200 owners into one immutable story state with ordered events and no presentation feedback.
+- **Lifecycle matrix:** normal mission2 start enters PROLOG1; premature non-skip completion rejects atomically; the first attempt takes the source skip path, registers mission resources, fails and cleans to retry-ready. Attempt2 runs the authored22.333332-second cutscene to completion, starts exact source-duration mission speech, blocks early completion, completes after audio and cleans all ped/vehicle/train/object counts. Held completion publication remains immutable.
+- **Decisive gate:** `native-story-lifecycle-ok checks=18 mission=2 attempts=2 fail=1 retry=1 skip=1 complete=1 cleanup=2 cutscene=PROLOG1 audio=43200 presentation-feedback=0`; strict ASan/UBSan passes. Session5482, mission-audio, portable restart111, full builds, smoke and native sweep33/0 pass. Native remains ELF64/no Wine; extension/package stay byte-identical `980cb6a251fd0a7fc3500a9249873088e501fd521a25966f7dddccad3a29bad6`.
+- **Progress/boundary:** P8-A02 verified: `51/68=75.0%` equal-count atoms, not readiness. The matrix proves lifecycle ownership and cleanup for the representative normal entry, not semantic implementation of every strict corpus site or final NPC/cutscene rendering. P8-A03 is next; P4-A08 mission3 TXD and P7-A06 target audio remain open.
+
+### Prior — P7-A07 radio state and P8-A01 complete shipped corpus verified
 
 - **Versions/result:** native `78d4f78f` is committed/pushed; root companion is the commit containing this checkpoint, based on `25c2b81`. `NativeRadioRuntime` owns the literal source programming arrays for all12 stations, deterministic five-track queues, interruption/resume, listen histories and canonical checksummed restart state. `NativeScriptContentLedger` binds the exact shipped `main.scm`/`script.img` identities to a complete main/mission/streamed site manifest.
 - **Radio gate:** direct23 proves Radio X source track IDs1259/1266, retune245, exact interruption event43200 and byte-stable save/restore. Strict ASan/UBSan passes. Independent native `--smoke-radio --station RE --seconds 2` decodes actual track1490 at32000Hz stereo with checksum6887869399635200511. This is source sequencing/playback state plus existing decoder evidence, not the still-open non-Dummy Godot output gate in P7-A06.
