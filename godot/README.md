@@ -60,6 +60,14 @@ The manifest covers all92 source cheats,20 replay packet types and9 script speci
 
 The codec preserves all28 ordered `BLOCK` payload families inside the fixed202752-byte PC file, validates the original additive checksum and canonical padding, and repairs explicit int32 references atomically. Payload semantics and full progression import/export remain P8-A07; this structural gate alone is not an original-save compatibility claim.
 
+### Weather region/cloud/water transition ownership (P7-A08)
+
+```bash
+./build/godot-native/sa_environment_lifecycle_probe /game
+```
+
+The value owner follows the source region rectangles and shipped timecycle rows through a controlled Los Santos→San Fierro→desert route. It retains cloud colours, weather factors, water colour/waviness and source UV-flow state; frustum, cloud/water geometry and presentation feedback remain separate renderer authorities.
+
 ### SFX, speech and environmental audio families (P7-A06 target-open)
 
 `SALegacyAudio` exposes copied source payloads for door SFX event80/bank138/sound40, mission speech43200 and rain bank105/sound0. Godot constructs WAV/Ogg streams and starts all three players; Dummy is structural CI only:

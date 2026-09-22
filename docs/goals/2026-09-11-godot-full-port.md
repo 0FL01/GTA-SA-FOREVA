@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6, P7-A01–A05/P7-A07 and P8-A01–A06 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, and P8-A07 is current.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6, P7-A01–A05/P7-A07–A08 and P8-A01–A06 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, P8-A07 remains open, and P7-A09 is current.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -138,8 +138,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P7-A05 | verified | Complete keyboard, mouse, controller, hotplug and rumble/feedback behavior. | Device lifecycle route covers bind/input/disconnect/reconnect/feedback deterministically. |
 | P7-A06 | in_progress | Port SFX, speech and environmental audio with real target Godot audio; Dummy remains CI-only. | Target audio route emits and audibly/structurally validates one event from each family. |
 | P7-A07 | verified | Port radio programming and playback state. | Station/program/interrupt/save-resume fixture preserves source sequencing state. |
-| P7-A08 | pending | Port weather regions/transitions, clouds, water and their time-dependent behavior. | Controlled time/region capture sequence matches source-backed transition oracles. |
-| P7-A09 | pending | Port particles, shadows, reflections and post effects under the explicit original visual profile. | Isolated rendered gate covers each discovered effect family and records approved differences. |
+| P7-A08 | verified | Port weather regions/transitions, clouds, water and their time-dependent behavior. | Controlled Los Santos→San Fierro→desert route publishes source timecycle/cloud/water-flow transitions and rejects invalid time atomically. |
+| P7-A09 | in_progress | Port particles, shadows, reflections and post effects under the explicit original visual profile. | Isolated rendered gate covers each discovered effect family and records approved differences. |
 | P7-A10 | pending | Support source startup movies only after codec, dependency and license evidence is established. | Clean-package playback gate uses the proven in-memory source route and records dependency/license status. |
 
 ### P8 - Complete progression/content and save compatibility (`in_progress`)
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P8-A06 original-PC block envelope verified
+### 2026-09-13 — P7-A08 weather region/cloud/water transitions verified
+
+- **Versions/result:** native `dd025fad` is committed/pushed; root companion is the commit containing this checkpoint, based on `d6a2129`. `NativeEnvironmentLifecycle` classifies the exact source LA/SF/LV/desert region rectangles, reads shipped named timecycle rows and publishes immutable weather transitions with cloud colours, sky/ambient/directional/water colours, fog/far clip and source weather factors.
+- **Water/time ownership:** each transition retains explicit game time, old/new weather and interpolation; source wind drives `min(wind+0.3,1)` waviness and the original double-intermediate UV flow increments. Frustum, cloud geometry, water geometry and presentation feedback stay external rather than being fabricated by this value owner.
+- **Decisive gate:** `native-environment-lifecycle-ok checks=11 route=los-santos,san-fierro,desert transitions=3 cloud=timecyc water=source-flow geometry=external feedback=0`; held snapshots stay immutable and invalid hour retains publication. Strict ASan/UBSan, full builds, smoke and native sweep33/0 pass.
+- **Progress/boundary:** P7-A08 verified: `56/68=82.4%` equal-count atoms, not readiness. Existing rendered cloud/water families remain their presentation evidence; this checkpoint does not claim weather boxes, full upper-cloud/sun layers or geometry ownership. P7-A09 effects is current; P4-A08, P7-A06 target audio and P8-A07 semantics remain open.
+
+### Prior — P8-A06 original-PC block envelope verified
 
 - **Versions/result:** native `72315602` is committed/pushed; root companion is the commit containing this checkpoint, based on `184d1de`. `NativePcSaveCodec` owns the original fixed `202748` data bytes plus four-byte checksum, all28 ordered `BLOCK` headers and caller-supplied per-block payload layouts without serializing C++ structs or pointers.
 - **Codec/reference contract:** encode pads canonical zero bytes to the source size and appends the exact additive byte checksum. Decode validates total202752-byte size, checksum, every header, bounded block layout and zero padding before publishing. Explicit reference fields repair old int32 handles through a complete mapping; absent mapping, bad field or corruption retains the entire prior image.

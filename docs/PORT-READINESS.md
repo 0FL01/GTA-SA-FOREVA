@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `72315602` and the original-PC28-block envelope/checksum/reference codec. P8-A07 semantic compatibility is current.55/68 verified atoms (80.9% by count) is not game readiness.
+**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `dd025fad` and source weather-region/timecycle/cloud/water-flow transitions. P7-A09 effects is current; P8-A07 semantic compatibility remains open.56/68 verified atoms (82.4% by count) is not game readiness.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -15,7 +15,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P4 | A01–A07 verified; A08 dependency-open | Source boot/first mission pass; mission3 stops strictly before unowned TXD/sprite residency, and fail/retry/restarted-save semantics remain open |
 | P5 | A01–A06 verified | World residency/visibility plus complete vehicle-family and destructible-object value lifecycles verified |
 | P6 | A01–A07 verified | Paths, AI flow, population, combat, wanted/recovery and persistent interactions verified |
-| P7 | A01–A05/A07 verified; A06 target-open | Source radio sequencing/save state verified; source audio families reach Godot streams under Dummy CI, while non-Dummy target output remains required |
+| P7 | A01–A05/A07–A08 verified; A06 target-open; A09 current | Source weather/timecycle/cloud/water-flow transitions verified; non-Dummy target audio and remaining effects/movies stay open |
 | P8 | A01–A05 verified; A06 in_progress | Site/story/activity/progression and explicit special-state inventory verified; original-PC save block codecs proceed next |
 | P9 | pending | Cross-axis full-port and target release closure |
 

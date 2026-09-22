@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P7-08 — 2026-09-13, DIRECT; weather region/timecycle/cloud/water transitions
+
+- Native `dd025fad` owns source region classification, named timecycle interpolation, low-cloud colours, weather factors, water colour/waviness and source UV-flow state without taking geometry or presentation feedback authority.
+- Direct11 runs Los Santos noon through half-rainy San Fierro to desert sandstorm, preserves held publications and rejects invalid time atomically. Strict sanitizer, full builds, smoke and sweep33/0 pass.
+- P7-A08 verified at56/68. P7-A09 effects is next; target audio, mission3 texture residency and semantic original-save compatibility remain open.
+
 ### GODOT-P8-06 — 2026-09-13, DIRECT; original-PC block envelope codec
 
 - Native `72315602` encodes/decodes the exact28-header `BLOCK` sequence in the fixed202748-byte data area, appends/validates the source additive checksum and enforces canonical zero padding. Per-block payload sizes are supplied by the semantic block codec layer rather than embedded as a non-source field.
