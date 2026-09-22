@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5 and P6-A01 are verified; P4-A08 remains dependency-open and P6-A02 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5 and P6-A01–A02 are verified; P4-A08 remains dependency-open and P6-A03 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -120,8 +120,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
 | P6-A01 | verified | Port owned path graph loading/search and deterministic path ownership. | Known source route returns the expected graph path and survives area residency changes. |
-| P6-A02 | in_progress | Port task, event, scanner and group producer/consumer flow. | Repeated producer/event fixture yields the same ordered task transitions. |
-| P6-A03 | pending | Port traffic/population spawn, removal and pool-pressure rules; parked definitions alone do not count. | Bounded route creates moving traffic/peds and cleans them under forced pool pressure. |
+| P6-A02 | verified | Port task, event, scanner and group producer/consumer flow. | Repeated producer/event fixture yields the same ordered task transitions. |
+| P6-A03 | in_progress | Port traffic/population spawn, removal and pool-pressure rules; parked definitions alone do not count. | Bounded route creates moving traffic/peds and cleans them under forced pool pressure. |
 | P6-A04 | pending | Port weapons, projectiles, fire and damage across source model/weapon classes. | Representative class matrix records authoritative hit/damage/death transitions. |
 | P6-A05 | pending | Port wanted escalation, pursuit, roadblocks and escape. | Controlled offense -> pursuit -> roadblock -> escape scenario is reproducible. |
 | P6-A06 | pending | Complete death/arrest, restart selection and return-to-play lifecycle. | Separate death and arrest E2Es recover world, control and camera; registration alone cannot pass. |
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P6-A01 deterministic source path graph verified
+### 2026-09-13 — P6-A02 deterministic task/event/group flow verified
+
+- **Versions/result:** native `1a25c083` is committed/pushed; root companion is the commit containing this checkpoint, based on `c8e8f71`. `NativeSourceEventFlow` owns capacity140 generation-safe producers, eight source groups with eight members each, exact16-event per-producer queues and a value-only ordered task-transition journal.
+- **Source ordering:** scanner sequences are monotonic per producer. Group fan-out preserves membership order. `CEventGroup::GetHighestPriorityEvent` behavior is retained: script-command ties keep the first event (`>`), ordinary event ties select the last (`>=`). Processing visits producers in stable pool order and updates the consumer task only after journaling the transition.
+- **Decisive gate:** the same three-producer/group route runs twice and produces identical seven transitions. It pins group fan-out, script tie first, ordinary tie last, remaining-event order and atomic stale-sequence rejection. Direct25 and strict ASan+UBSan pass.
+- **Regression/boundary:** full Godot-native/native builds, smoke and native sweep33/0 pass. Extension stays SHA256 `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`; no render rerun. P6-A02 is verified at `38/68=55.9%`, not readiness. Scanner perception and task response selection are caller-supplied typed events, not invented address-backed senses. P6-A03 now owns moving traffic/ped population and pool pressure; P4-A08 remains strict at `0390`.
+
+### Prior — P6-A01 deterministic source path graph verified
 
 - **Versions/result:** native `eb2fdb4e` is committed/pushed; root companion is the commit containing this checkpoint, based on `51113ae`. `NativePathGraph` reads all64 shipped `NODES*.DAT` payloads through the existing read-only OS adapter and reconstructs source addresses, compressed positions, node type/flags, base-link ranges and byte link lengths without original pointers.
 - **Residency/search:** adoption requires a strictly newer generation and exact P5-A01 area metadata/fingerprint identity; changed or duplicate payloads reject before replacing active areas. Search runs deterministic Dijkstra over only active areas, respects vehicle/ped partition, switched-off nodes and water-transition parity, and returns value-only source addresses plus byte-length distance.

@@ -50,6 +50,10 @@ Direct1300 and strict ASan/UBSan pass; full builds, smoke, native sweep33/0 and 
 
 `sa_path_graph_probe /game` parses all64 shipped node/link payloads and adopts the exact Grove path-area identity set. It pins the actual17-node vehicle route area14 node0→node1 at source distance313, repeats it after generation replacement and rejects stale/altered residency. Direct15 and strict ASan+UBSan pass; route following remains an AI consumer.
 
+### Deterministic task/event/group flow (P6-A02)
+
+`sa_source_event_flow_probe` runs a three-producer group route twice and compares all seven task transitions. It preserves source capacity16 event queues, group fan-out order, script-command first-tie and ordinary-event last-tie priority behavior. Direct25 and strict ASan+UBSan pass; perception remains an external typed event producer.
+
 ### Source boot/first-mission checkpoint (P4-A06/A07 dependency)
 
 `./build/mad-sa-linux --play --new-game --boot-gate --game-dir /game --seconds 700` follows the unchanged source route through mission0 and mission2 and exits0 only after the real mission2 thread terminates with control enabled and fade alpha0. Native `6dd454b7` owns exact world/model/COL handoff, mission actors, source car-recording interpolation, GXT and source-duration mission-audio clocks. Marker: `play-boot-gate-ok ... no-fault=1`. This verifies bounded P4-A06 boot, not cutscene/NPC/audio presentation or broad story progression. Focused peds9/audio/carrec7/beat8/trains5 and Session5482/scheduling106/frame104/transaction71/portable111 pass; extension SHA256 remains `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`.
