@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents.59/68 atoms are verified; P0 target reflight, P7-A06 target audio, P7-A10 movies and P9 closure remain open.
+Execution: ACTIVE in DIRECT mode without subagents.60/68 atoms are verified; P0 target reflight, P7-A06 target audio, P7-A10 movies and the remaining P9 closure gates remain open.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -162,14 +162,21 @@ P0 implementation and available server gates are verified; target reflight stays
 | P9-A02 | pending | Run long normal-play, route, reload, device, mission and save sessions on the Fedora target. | Reviewed endurance itinerary completes with preserved artifacts and no unbounded resource growth. |
 | P9-A03 | pending | Measure CPU/GPU/IO/frame-time/memory/loading behavior and propose target thresholds for review. | Repeatable target measurements support explicitly approved thresholds. |
 | P9-A04 | pending | Optimize only measured stalls without changing source behavior. | Before/after trace improves the selected stall while semantic and presentation gates remain unchanged. |
-| P9-A05 | pending | Prove asset-free reproducible clean packaging with external read-only data and private-test/public-distribution licensing separated. | Clean environment gate verifies dependencies, no EXE/Wine, no asset/config writes and documented licensing status. |
+| P9-A05 | verified | Prove asset-free reproducible clean packaging with external read-only data and private-test/public-distribution licensing separated. | Fail-closed package audit verifies dependencies, assets/symlinks, exports, licenses and external data boundary; clean package launches against `/game:ro`. |
 | P9-A06 | pending | Execute final catalog, route, mission, save, effects, device and native-regression closure. | Cross-axis release-candidate sweep and reviewed reference differences pass before any full-game declaration. |
 
 Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never renumbered or reused).
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P4-A08 first-mission restart matrix verified
+### 2026-09-13 — P9-A05 clean asset-free package verified
+
+- **Versions/result:** root companion is the commit containing this checkpoint, based on `f64c6aa`; native remains `8faf5bee`. `tools/godot-package-audit.py` fail-closes the staged transfer tree: required runtime/project/extension/license records, no symlinks, no source game/save/executable/DLL payload suffixes, ELF64 x86-64 identity, resolved runtime dependencies, no Wine/build-tree/Conan linkage, sole GDExtension export and relative descriptor.
+- **Decisive gate:** regenerate from the allowlisted package script, then `godot-package-audit-ok files=26 assets=0 symlinks=0 extension=980cb6a... runtime=4.6.1... exe=0 wine=0 licenses=godot,godot-cpp,librw external-game-dir=required`. The staged runtime launches from its own tree against the separately mounted `/game:ro`; absent `--game-dir` is explicitly rejected.
+- **Legal/reproducibility boundary:** the package carries only Godot/godot-cpp/librw license notices and the project's source scripts/library; owned GTA assets, original EXE, captures, tests, caches and user settings are excluded. Game data is a private external runtime input and is never licensed for redistribution by this project.
+- **Progress/next:** P9-A05 verified: `60/68=88.2%` equal-count atoms, not readiness. P9-A01 audit remains current; Fedora endurance/performance/optimization/release sweep, target audio, startup movies and target reflight remain open.
+
+### Prior — P4-A08 first-mission restart matrix verified
 
 - **Versions/result:** native `8faf5bee` is committed/pushed; root companion is the commit containing this checkpoint, based on `57ff58a`. `NativeFirstMissionSaveProbe` composes the real PROLOG1/cutscene and mission-audio owners with progression persistence across two separate `exec` readers.
 - **Decisive E2E:** pre-save restart enters mission2, performs source skip, registers resources, fails, cleans up, retries, runs the authored22.333332-second cutscene, waits for exact mission-audio duration, completes and cleans every resource family. It writes post-progress stat146=1; a second fresh process restores and verifies that state. Marker: `native-first-mission-save-ok mission=2 start=1 fail=1 retry=1 skip=1 complete=1 cleanup=2 pre-post-restart=2 progression=matched`.

@@ -768,6 +768,7 @@ After a successful native build:
 
 ```bash
 ./tools/godot-package.sh
+./tools/godot-package-audit.py artifacts/godot/package
 ```
 
 Transfer the ignored `artifacts/godot/package/` directory using the user's approved
@@ -780,6 +781,10 @@ unresolved libraries, native SDL/OpenAL/GL/Wine coupling, and repository,
 `/workspace`, or Conan runtime paths. It does not include game assets, captures,
 tests, `.godot`, caches, or user settings.
 The extension exports only `sa_legacy_library_init`, enforced by `nm` at packaging.
+The independent audit additionally rejects symlinks, proprietary game/save/EXE/DLL
+suffixes, unresolved or Wine/build-tree dependencies, missing license records and
+an absolute extension descriptor. The package still requires an external owned
+`--game-dir`; that data is private runtime input, not distributable content.
 This isolates its static C++ runtime from Mesa's separately loaded libstdc++:
 exported GNU-unique locale facet IDs previously caused a Vulkan-only parser crash.
 The ELF export map fixes that ABI collision without changing parsing/validation.

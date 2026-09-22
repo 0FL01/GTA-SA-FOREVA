@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-01 — 2026-09-13, DIRECT; clean asset-free package audit
+
+- `tools/godot-package.sh` regenerates an allowlisted transfer tree; `tools/godot-package-audit.py` verifies26 files, zero game assets/symlinks, ELF/export/dependency boundaries and required Godot/godot-cpp/librw notices.
+- Marker: `godot-package-audit-ok ... assets=0 ... exe=0 wine=0 ... external-game-dir=required`. The packaged runtime launches against `/game:ro`; it rejects a missing explicit game directory.
+- P9-A05 verified at60/68 overall. Game data stays privately owned/read-only and is never part of the distributable package; target/endurance/release rows remain open.
+
 ### GODOT-P4-11 — 2026-09-13, DIRECT; first-mission fresh-process restart matrix
 
 - Native `8faf5bee` composes actual PROLOG1 and mission-audio owners with progression persistence. Attempt1 skips/fails/cleans; attempt2 retries, completes authored cutscene/audio barriers and cleans all resources.
