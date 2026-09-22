@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07 and P5-A01–A05 are verified; P4-A08 remains dependency-open and P5-A06 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07 and P5-A01–A06 are verified; P4-A08 remains dependency-open and P6-A01 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -113,13 +113,13 @@ P0 implementation and available server gates are verified; target reflight stays
 | P5-A03 | verified | Map every shipped vehicle model to its real family and constructor. | Actual212-definition matrix preserves every model/TXD/handling identity, covers all10 shipped families and10 source constructors (12 recognized types, two fake types absent), with no `400/476` fallback. |
 | P5-A04 | verified | Port family control dependencies for road, water, rail, flight, towing and special vehicles. | One direct state-transition fixture passes for each family dependency; address-backed full flight/bike controls remain explicitly outside this bounded dependency owner. |
 | P5-A05 | verified | Complete vehicle collision ownership, occupants, resolved damage state, destruction and reload across classes. | Twelve-family lifecycle matrix preserves exact identities and collision owners, clears occupants on destruction and cleans all live owners on epoch reload. |
-| P5-A06 | in_progress | Port general objects plus destructible/damage state into the dynamic world. | Object damage/destroy/reload fixture preserves source state and generation ownership. |
+| P5-A06 | verified | Port general objects plus destructible/damage state into the dynamic world. | Object damage/destroy/reload fixture preserves source state and generation ownership. |
 
-### P6 - Population, AI, combat, police and recovery (`pending`)
+### P6 - Population, AI, combat, police and recovery (`in_progress`)
 
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
-| P6-A01 | pending | Port owned path graph loading/search and deterministic path ownership. | Known source route returns the expected graph path and survives area residency changes. |
+| P6-A01 | in_progress | Port owned path graph loading/search and deterministic path ownership. | Known source route returns the expected graph path and survives area residency changes. |
 | P6-A02 | pending | Port task, event, scanner and group producer/consumer flow. | Repeated producer/event fixture yields the same ordered task transitions. |
 | P6-A03 | pending | Port traffic/population spawn, removal and pool-pressure rules; parked definitions alone do not count. | Bounded route creates moving traffic/peds and cleans them under forced pool pressure. |
 | P6-A04 | pending | Port weapons, projectiles, fire and damage across source model/weapon classes. | Representative class matrix records authoritative hit/damage/death transitions. |
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P5-A05 cross-family vehicle lifecycle verified
+### 2026-09-13 — P5-A06 destructible object lifecycle verified
+
+- **Versions/result:** native `6cc3e4b5` is committed/pushed; root companion is the commit containing this checkpoint, based on `0aca76e`. The existing generation-safe capacity350 `NativeScriptObjects` registry now retains source health1000, damage revision, collision/visibility/static/render-damaged/broken state and immutable epoch snapshots without creating another world authority.
+- **Source damage states:** finite damage is multiplied by the supplied source object-info collision multiplier and clamps health at zero. Source effect IDs0,1,20,21,200 and202 preserve no-effect, changed-model, smash-completely, change-then-smash and breakable/removed transitions, including collision/visibility/static/broken state. Invalid damage is atomic; destroyed/reloaded refs become stale while held snapshots retain exact collision and damage history.
+- **Decisive gate:** `sa_object_lifecycle_probe` passes29 checks over all six source effect paths, two-stage change-then-smash, invalid retention, stale reload rejection, epoch2 cleanup and immutable history. Existing real model3084 object probe remains10 checks. Strict ASan+UBSan passes.
+- **Regression/boundary:** full Godot-native/native builds, smoke and native sweep33/0 pass. Extension stays SHA256 `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`; no render rerun. P5-A06 closes P5 at `36/68=52.9%`, not game readiness. Break particles/effects/render replacement remain P7 presentation consumers; P6-A01 now owns actual path graph loading/search. P4-A08 remains strict at `0390`.
+
+### Prior — P5-A05 cross-family vehicle lifecycle verified
 
 - **Versions/result:** native `f15d6672` is committed/pushed; root companion is the commit containing this checkpoint, based on `8ff5463`. `NativeVehicleFamilyLifecycle` composes the exact P5-A03 constructor identity, shared capacity110 source pool and an owned source-COL model for every recognized family under one reload epoch.
 - **Lifecycle ownership:** each record retains model/family/constructor and collision owner, source health1000, generation-safe pool reference, driver and bounded passenger identities, collision contact/damage revision, world/destroyed state. `ApplyResolvedCollision` commits a finite damage amount produced by the existing source collision/response authority; it deliberately does not invent class-specific damage formulas. Destroy marks Wrecked/out-of-world, releases occupants/collision and the pool slot; reload destroys every remaining live record before advancing epoch.

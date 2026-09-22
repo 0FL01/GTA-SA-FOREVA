@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `f15d6672`, the twelve-family vehicle lifecycle matrix and P5-A06 as the next independent atom.35/68 verified atoms (51.5% by count) is not game readiness.
+**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `6cc3e4b5`, source destructible-object lifecycles and P6-A01 as the next independent atom.36/68 verified atoms (52.9% by count) is not game readiness.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -13,8 +13,8 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P2 | A01–A06 verified | Owned core boundaries plus labelled CJ/car studio approximation;27-row CPU/Godot trace, interpolation/teardown, clean Vulkan and native33/0 verified, NOT source gameplay |
 | P3 | A01–A07 verified | Real source Pad/model400/COL route crosses enter/drive/exit/destroy/evict and emits authoritative initial HUD, action journal and exact NEW-door PCM identities |
 | P4 | A01–A07 verified; A08 dependency-open | Source boot/first mission pass; mission3 stops strictly before unowned TXD/sprite residency, and fail/retry/restarted-save semantics remain open |
-| P5 | A01–A05 verified; A06 in_progress | World residency/visibility plus constructor/control/lifecycle ownership across all vehicle families; general object damage/reload is next |
-| P6 | pending | Population/AI/combat/police/recovery/interactions |
+| P5 | A01–A06 verified | World residency/visibility plus complete vehicle-family and destructible-object value lifecycles verified |
+| P6 | A01 in_progress | Owned path graph loading/search and deterministic residency handoff is next |
 | P7 | pending, joins P3/P4 | Complete visual/audio/UI/input/video families |
 | P8 | pending | Complete source progression/content and PC-save compatibility |
 | P9 | pending | Cross-axis full-port and target release closure |

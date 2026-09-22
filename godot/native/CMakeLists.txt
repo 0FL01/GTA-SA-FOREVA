@@ -268,6 +268,9 @@ target_link_libraries(sa_core_script_trains_probe PRIVATE sa_core)
 add_executable(sa_core_objects_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptObjectsProbe.cpp")
 target_link_libraries(sa_core_objects_probe PRIVATE sa_core)
+add_executable(sa_object_lifecycle_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeObjectLifecycleProbe.cpp")
+target_link_libraries(sa_object_lifecycle_probe PRIVATE sa_core)
 add_executable(sa_core_ped_control_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedControlProbe.cpp")
 target_link_libraries(sa_core_ped_control_probe PRIVATE sa_core)
 add_executable(sa_core_jump_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceJumpProbe.cpp")

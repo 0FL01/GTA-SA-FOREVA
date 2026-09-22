@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P5-06 — 2026-09-13, DIRECT; destructible object lifecycle
+
+- Native `6cc3e4b5` extends the existing source object registry with health1000, collision multiplier damage and exact effect IDs0/1/20/21/200/202. Change/smash/breakable states preserve collision, visibility, static, damaged and broken values without a second world owner.
+- Direct29 verifies all effects, two-stage change-then-smash, atomic invalid rejection, epoch reload/stale refs and held immutable history; existing real-object10 and strict ASan/UBSan pass.
+- Full builds/smoke and native sweep33/0 pass; extension remains `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`. P5 closes at36/68=52.9%; P6-A01 next.
+
 ### GODOT-P5-05 — 2026-09-13, DIRECT; cross-family vehicle lifecycle
 
 - Native `f15d6672` composes exact constructor identity, source collision ownership and the shared vehicle pool into a twelve-family lifetime owner. Driver/passenger identities, source-health/resolved-damage state, destruction and epoch reload cleanup are value-owned and generation-safe.
