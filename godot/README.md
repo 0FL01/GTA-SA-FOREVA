@@ -46,6 +46,10 @@ Direct1300 and strict ASan/UBSan pass; full builds, smoke, native sweep33/0 and 
 
 `sa_object_lifecycle_probe` runs source effects0/1/20/21/200/202 through health/multiplier damage, changed-model, smash and breakable value states, then rejects stale reload and clears epoch2 owners while held history survives. Direct29, existing real-object10 and strict ASan/UBSan pass. Particle/render replacement remains a separate P7 consumer.
 
+### Deterministic source path graph (P6-A01)
+
+`sa_path_graph_probe /game` parses all64 shipped node/link payloads and adopts the exact Grove path-area identity set. It pins the actual17-node vehicle route area14 node0→node1 at source distance313, repeats it after generation replacement and rejects stale/altered residency. Direct15 and strict ASan+UBSan pass; route following remains an AI consumer.
+
 ### Source boot/first-mission checkpoint (P4-A06/A07 dependency)
 
 `./build/mad-sa-linux --play --new-game --boot-gate --game-dir /game --seconds 700` follows the unchanged source route through mission0 and mission2 and exits0 only after the real mission2 thread terminates with control enabled and fade alpha0. Native `6dd454b7` owns exact world/model/COL handoff, mission actors, source car-recording interpolation, GXT and source-duration mission-audio clocks. Marker: `play-boot-gate-ok ... no-fault=1`. This verifies bounded P4-A06 boot, not cutscene/NPC/audio presentation or broad story progression. Focused peds9/audio/carrec7/beat8/trains5 and Session5482/scheduling106/frame104/transaction71/portable111 pass; extension SHA256 remains `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`.

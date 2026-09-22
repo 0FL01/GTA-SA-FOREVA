@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P6-01 — 2026-09-13, DIRECT; deterministic source path ownership
+
+- Native `eb2fdb4e` parses all64 exact path files into pointer-free nodes/links and adopts only generation-qualified P5 residency identities. Search respects source node partitions, disabled/water flags and byte link lengths.
+- Actual Grove areas14/15/22/23 pin a17-node route14:0→14:1 with distance313; generation2 repeats it exactly while stale/altered adoption rejects. Direct15 and strict ASan+UBSan pass.
+- Full builds/smoke and native sweep33/0 pass; extension remains `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`. P6-A01 verified at37/68=54.4%; P6-A02 next.
+
 ### GODOT-P5-06 — 2026-09-13, DIRECT; destructible object lifecycle
 
 - Native `6cc3e4b5` extends the existing source object registry with health1000, collision multiplier damage and exact effect IDs0/1/20/21/200/202. Change/smash/breakable states preserve collision, visibility, static, damaged and broken values without a second world owner.
