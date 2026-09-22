@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P8-04 — 2026-09-13, DIRECT; restarted-process progression owners
+
+- Native `2d818f90` composes purchases, stats, rewards, unlocks and interior ownership/visits into canonical `MADSAPRG` v1 state while retaining the existing interaction semantics.
+- Fresh-owner restore preserves money4000, owned SAFEHOUSE, shop purchase, int/float stats, reward2500, unlock5 and interior1 visit; restored mutation works and corrupt checksum retains state. Direct12, strict sanitizer, full builds, smoke and native sweep33/0 pass.
+- P8-A04 verified at53/68. The envelope is port-native, not original-PC compatibility. P8-A05 next; P4-A08/P7-A06 remain open.
+
 ### GODOT-P8-03 — 2026-09-13, DIRECT; discovered activity-family lifecycle routes
 
 - Native `53f4d699` inventories17 activity families across service/race/school/minigame/other, including exact shipped streamed identities for Valet, Pool, Slot Machine, Arcade, Gym Bike and Dance.

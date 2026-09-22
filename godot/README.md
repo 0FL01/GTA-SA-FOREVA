@@ -36,6 +36,14 @@ The mission2 fixture composes actual PROLOG1 and mission speech43200 through nor
 
 The gate covers17 discovered service, race, school, minigame and other families with normal start/result/cleanup, exact shipped identities where the activity is streamed, and one failure/retry route. Family scripts/tasks remain gameplay-result authority; the lifecycle owner does not replace their rules.
 
+### Restarted-process progression ownership (P8-A04)
+
+```bash
+./build/godot-native/sa_core_progression_runtime_probe
+```
+
+The canonical port-native envelope preserves and reapplies purchases, integer/float stats, rewards, unlocks and interiors in a fresh owner. It rejects checksum corruption atomically. Original-PC save block compatibility is a separate P8-A06/A07 milestone.
+
 ### SFX, speech and environmental audio families (P7-A06 target-open)
 
 `SALegacyAudio` exposes copied source payloads for door SFX event80/bank138/sound40, mission speech43200 and rain bank105/sound0. Godot constructs WAV/Ogg streams and starts all three players; Dummy is structural CI only:

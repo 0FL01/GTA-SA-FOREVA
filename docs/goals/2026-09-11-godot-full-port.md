@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6, P7-A01–A05/P7-A07 and P8-A01–A03 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, and P8-A04 is current.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6, P7-A01–A05/P7-A07 and P8-A01–A04 are verified; P4-A08 remains dependency-open, P7-A06 awaits target audio output, and P8-A05 is current.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -149,8 +149,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P8-A01 | verified | Expand site-level semantics and owner coverage across all main, mission, streamed and brain scripts. | Corpus report classifies every shipped command site with no reachable unknown behavior. |
 | P8-A02 | verified | Complete story mission and cutscene start/fail/retry/skip/complete/cleanup routes. | Representative lifecycle matrix passes through normal progression entry points. |
 | P8-A03 | verified | Complete side jobs, races, schools, minigames and other activities. | Each discovered activity family has one normal start/result/cleanup E2E. |
-| P8-A04 | in_progress | Complete purchases, stats, rewards/unlocks, interiors and their persistent owners. | Restarted-process progression route preserves and reapplies each owner family. |
-| P8-A05 | pending | Inventory and implement cheats, replay and special script-driven states rather than silently omitting them. | Manifest has a tested semantic route or explicit still-pending row for every discovered feature. |
+| P8-A04 | verified | Complete purchases, stats, rewards/unlocks, interiors and their persistent owners. | Restarted-process progression route preserves and reapplies each owner family. |
+| P8-A05 | in_progress | Inventory and implement cheats, replay and special script-driven states rather than silently omitting them. | Manifest has a tested semantic route or explicit still-pending row for every discovered feature. |
 | P8-A06 | pending | Complete original-PC save block codecs, checksum and reference repair separately from port-native saves. | Source-format fixtures round-trip every block and reject corrupted checksum/references. |
 | P8-A07 | pending | Validate original-PC import/export against full progression semantics before compatibility is claimed. | Fresh-process import -> play/change -> export -> import route preserves semantic state. |
 
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P8-A03 discovered activity-family lifecycles verified
+### 2026-09-13 — P8-A04 restarted-process progression ownership verified
+
+- **Versions/result:** native `2d818f90` is committed/pushed; root companion is the commit containing this checkpoint, based on `86005ae`. `NativeProgressionRuntime` composes the existing purchase/interactions owner with source-range integer/float stats, reward values, unlock bits and generation-independent interior ownership/visits.
+- **Restart route:** a fresh owner begins with10000 money, buys/uses SAFEHOUSE for5000, buys AMMUNATION for1000, sets integer stat146=7 and float stat0=42.5, grants reward3=2500, unlock5 and unlocks/enters interior1. A canonical `MADSAPRG` v1 envelope restores in a new process-like owner with money4000 and all families intact; the restored owner then reapplies property use/stat mutation. Checksum corruption retains complete state.
+- **Decisive gate:** `native-progression-runtime-ok checks=12 money=4000 property=owned shop=1 stats=7,42.5 reward=2500 unlock=5 interior=1 restart=reapplied envelope=1743`; strict ASan/UBSan, full builds, smoke and sweep33/0 pass. This is the port-native progression envelope; original-PC block compatibility remains P8-A06/A07.
+- **Progress/boundary:** P8-A04 verified: `53/68=77.9%` equal-count atoms, not readiness. P8-A05 is next. P4-A08 mission3 TXD and P7-A06 target audio remain open.
+
+### Prior — P8-A03 discovered activity-family lifecycles verified
 
 - **Versions/result:** native `53f4d699` is committed/pushed; root companion is the commit containing this checkpoint, based on `bc0d85d`. `NativeActivityLifecycle` owns ordered start/result/cleanup state and immutable per-family statistics for17 discovered families across service, race, school, minigame and other categories.
 - **Source identities:** normal routes cover Taxi, Vigilante, Paramedic, Firefighter, Courier, Trucking, Valet, Race, four Schools, Pool, Casino, Arcade, Gym and Dance. Stream-backed families are matched exactly to shipped definitions (`VALET`, `POOL_SCRIPT`, `SLOT_MACHINE`, `ARCADE`, `GYMBIKE`, `DANCE`) from the real79-entry metadata; other families retain their source category identities.
