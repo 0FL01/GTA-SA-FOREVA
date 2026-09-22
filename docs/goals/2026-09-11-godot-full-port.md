@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5 and P6-A01–A06 are verified; P4-A08 remains dependency-open and P6-A07 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5 and P6 are verified; P4-A08 remains dependency-open and P7-A01 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -125,13 +125,13 @@ P0 implementation and available server gates are verified; target reflight stays
 | P6-A04 | verified | Port weapons, projectiles, fire and damage across source model/weapon classes. | Representative class matrix records authoritative hit/damage/death transitions. |
 | P6-A05 | verified | Port wanted escalation, pursuit, roadblocks and escape. | Controlled offense -> pursuit -> roadblock -> escape scenario is reproducible. |
 | P6-A06 | verified | Complete death/arrest, restart selection and return-to-play lifecycle. | Separate death and arrest E2Es recover world, control and camera; registration alone cannot pass. |
-| P6-A07 | in_progress | Port garages, properties, shops and related interactions required by normal play. | Buy/use/save/reload interaction route preserves ownership and progression. |
+| P6-A07 | verified | Port garages, properties, shops and related interactions required by normal play. | Buy/use/save/reload interaction route preserves ownership and progression. |
 
-### P7 - Complete presentation and platform families (`pending`, may begin beside P3/P4)
+### P7 - Complete presentation and platform families (`in_progress`, may begin beside P3/P4)
 
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
-| P7-A01 | pending | Port source skins, animation families and cutscene poses. | Controlled skinned animation/cutscene capture matches source data and pose transitions. |
+| P7-A01 | in_progress | Port source skins, animation families and cutscene poses. | Controlled skinned animation/cutscene capture matches source data and pose transitions. |
 | P7-A02 | pending | Port material families, MatFX, mip selection and alpha behavior without PBR gap-covering. | Renderer pixel gate isolates each discovered material family and expected alpha/mip result. |
 | P7-A03 | pending | Complete camera modes, HUD, radar, map, frontend and settings lifecycle. | One frontend -> game -> map -> settings -> game route restores authoritative state. |
 | P7-A04 | pending | Complete MAIN/mission GXT, source fonts and substitutions. | Multilingual mission/UI fixture resolves all strings and expected glyph substitutions. |
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P6-A06 death/arrest return-to-play verified
+### 2026-09-13 — P6-A07 persistent normal-play interactions verified
+
+- **Versions/result:** native `2d96815f` is committed/pushed; root companion is the commit containing this checkpoint, based on `0cb44df`. `NativeInteractionRuntime` owns a bounded64-record registry for garages, properties and shops plus nonnegative source money, ownership, use and purchase progression.
+- **Interaction/save lifecycle:** Garage use is available but not purchasable; Property use requires ownership and purchase is one-shot; Shop purchases deduct the registered price and accumulate progression. A canonical `MADSAINT` v1 little-endian envelope retains money, records, ownership/use/purchase counters and revision under FNV checksum; restore validates complete size/type/name uniqueness/checksum before replacing current state.
+- **Decisive gate:** wallet10000 buys SAFEHOUSE5000, uses it and GROVEGAR, buys AMMUNATION1000, saves with money4000, restores in a fresh owner and continues use to count2. Truncation and checksum corruption reject while retaining restored progression. Direct11 and strict ASan+UBSan pass.
+- **Regression/boundary:** full Godot-native/native builds, smoke and native sweep33/0 pass. Extension remains SHA256 `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`; no render rerun. P6 closes at `43/68=63.2%`, not readiness. Store/garage presentation and original-save integration remain P7/P8. P7-A01 now owns source skins/animation/cutscene poses; P4-A08 remains strict at `0390`.
+
+### Prior — P6-A06 death/arrest return-to-play verified
 
 - **Versions/result:** native `8e1ec020` is committed/pushed; root companion is the commit containing this checkpoint, based on `06b1f36`. `NativeRestartLifecycle` consumes the existing source `NativeRestarts` selection with all63 required effect bits and only commits after the registry revision/one-shot selection remains current.
 - **Recovery ownership:** both routes restore health100/armour0/wanted0, reset task generation, clear/rebuild world generation, reset area/ENEX state, stream the selected scene, place the actor at target+Z1 with source heading, restore camera-behind-player/control and reset gameplay state. Death selects Hospital; arrest selects Police. Unsupported/stale selections retain the entire actor state.

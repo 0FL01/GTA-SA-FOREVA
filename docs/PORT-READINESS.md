@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `8e1ec020`, separate death/arrest return-to-play ownership and P6-A07 next.42/68 verified atoms (61.8% by count) is not game readiness.
+**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `2d96815f`, persistent normal-play interactions and P7-A01 next.43/68 verified atoms (63.2% by count) is not game readiness.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -14,8 +14,8 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P3 | A01–A07 verified | Real source Pad/model400/COL route crosses enter/drive/exit/destroy/evict and emits authoritative initial HUD, action journal and exact NEW-door PCM identities |
 | P4 | A01–A07 verified; A08 dependency-open | Source boot/first mission pass; mission3 stops strictly before unowned TXD/sprite residency, and fail/retry/restarted-save semantics remain open |
 | P5 | A01–A06 verified | World residency/visibility plus complete vehicle-family and destructible-object value lifecycles verified |
-| P6 | A01–A06 verified; A07 in_progress | Paths through wanted plus death/arrest recovery verified; garages/properties/shops interaction next |
-| P7 | pending, joins P3/P4 | Complete visual/audio/UI/input/video families |
+| P6 | A01–A07 verified | Paths, AI flow, population, combat, wanted/recovery and persistent interactions verified |
+| P7 | A01 in_progress, joins P4 | Source skins/animation/cutscene poses next; complete visual/audio/UI/input/video families remain |
 | P8 | pending | Complete source progression/content and PC-save compatibility |
 | P9 | pending | Cross-axis full-port and target release closure |
 

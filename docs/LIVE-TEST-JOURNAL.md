@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P6-07 — 2026-09-13, DIRECT; persistent normal-play interactions
+
+- Native `2d96815f` owns garage/property/shop records, money, ownership, use and purchase progression. SAFEHOUSE and AMMUNATION purchases leave money4000; GROVEGAR and property use persist.
+- A canonical versioned/checksummed envelope restores into a fresh owner and continues use; truncation/checksum corruption retain current state. Direct11 and strict ASan+UBSan pass.
+- Full builds/smoke and native sweep33/0 pass; extension remains `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`. P6 closes at43/68=63.2%; P7-A01 next.
+
 ### GODOT-P6-06 — 2026-09-13, DIRECT; death/arrest return-to-play
 
 - Native `8e1ec020` composes source restart selection with all63 actor/world/area/stream/camera/control/gameplay effects. Death selects Hospital; arrest selects Police; actor health/armour/wanted/tasks and generations are reset.
