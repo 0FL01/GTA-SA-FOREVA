@@ -59,6 +59,7 @@ add_library(sa_legacy SHARED
     sa_legacy_bridge.cpp
     sa_input_bridge.cpp
     sa_camera_bridge.cpp
+    sa_frontend_bridge.cpp
     sa_pose_bridge.cpp
     sa_region_plan.cpp
     sa_region_worker.cpp
@@ -158,6 +159,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedResponse.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedWorld.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceCamera.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeFrontendLifecycle.cpp"
     "${NATIVE_SOURCE_DIR}/game_sa/SurfaceInfos_c.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCollisionAssets.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
@@ -201,6 +203,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedCollision.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedModelContact.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceCamera.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeFrontendLifecycle.cpp"
         PROPERTIES COMPILE_OPTIONS "-fno-fast-math;-ffp-contract=off"
     )
     # P2-A04 isolated world authority: existing Assets/EntityInfo/SourceGround/
@@ -309,6 +312,8 @@ add_executable(sa_core_ped_world_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/
 target_link_libraries(sa_core_ped_world_probe PRIVATE sa_core)
 add_executable(sa_core_camera_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceCameraProbe.cpp")
 target_link_libraries(sa_core_camera_probe PRIVATE sa_core)
+add_executable(sa_core_frontend_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeFrontendLifecycleProbe.cpp")
+target_link_libraries(sa_core_frontend_probe PRIVATE sa_core)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_frame_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_session_probe PRIVATE -Wall -Wextra -Wpedantic)
@@ -339,6 +344,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_ped_response_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_ped_world_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
     target_compile_options(sa_core_camera_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+    target_compile_options(sa_core_frontend_probe PRIVATE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
 endif()
 
 # P2-A02 owned source-clock probe: links ONLY sa_core, never the extension.

@@ -11,6 +11,19 @@ Fedora 44 / Mesa / RX 780M and original-reference acceptance remain not-run. See
 [`docs/visual_contract.md`](../docs/visual_contract.md) for the evidence rules and
 known visual limitations.
 
+### Frontend, map, HUD and settings lifecycle (P7-A03)
+
+`SALegacyFrontend` is a value-only adapter around source screen IDs, CMenuManager display defaults, map center/zoom and the existing source camera transition owner. The decisive route is frontend → game → map → settings → game; it restores map/camera state while retaining changed HUD/radar/subtitle preferences and never samples Godot node transforms.
+
+```sh
+./build/godot-native/sa_core_frontend_probe
+./artifacts/godot/package/runtime/godot --headless \
+  --path artifacts/godot/package/godot --audio-driver Dummy \
+  --script /workspace/godot/tests/frontend_lifecycle.gd
+```
+
+Require `native-frontend-lifecycle-ok ... events=13 ... feedback=0` and `frontend-lifecycle-godot-ok`. Camera modes4/18 remain independently pinned by `sa_core_camera_probe`; `RealtimeHudProbe.py` and native `--menu-nav` retain actual radar tiles, source fonts and GXT text. The source eye/collision solver is still explicit `unsupported`, not replaced by a Godot camera. Current extension/package SHA256 is `afe27781b7e8161e0656c05a82581817b6da11d18891917bb503979adb1592da`.
+
 ### Source material, MatFX, mip and alpha families (P7-A02)
 
 Native scenes retain complete decoded source mip chains and discovered MatFX environment metadata. Actual Landstal evidence is20 no-effect/97 environment materials,930 env-mapped triangles using `xvehicleenv128`, and authored vehicle alpha. Unsupported MatFX types are rejected rather than hidden behind PBR or a generic fallback.

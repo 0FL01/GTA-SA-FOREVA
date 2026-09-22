@@ -1,5 +1,6 @@
 #include "sa_input_bridge.h"
 #include "sa_camera_bridge.h"
+#include "sa_frontend_bridge.h"
 #include "sa_legacy_bridge.h"
 #include "sa_pose_bridge.h"
 
@@ -13,6 +14,7 @@ static void InitialiseSALegacy(ModuleInitializationLevel level) {
         ClassDB::register_class<SALegacyBridge>();
         ClassDB::register_class<SALegacyInput>();
         ClassDB::register_class<SALegacyCamera>();
+        ClassDB::register_class<SALegacyFrontend>();
         ClassDB::register_class<SALegacyPose>();
     }
 }

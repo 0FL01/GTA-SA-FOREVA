@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P7-03 — 2026-09-13, DIRECT; frontend/game/map/settings lifecycle
+
+- Native `308ffe90` owns source screen IDs, exact display defaults, map state and pause/resume while preserving source camera mode/target. Direct11 and strict sanitizer run13 ordered events through frontend→game→map→settings→game; invalid transitions retain state.
+- Clean packaged `SALegacyFrontend` runs the matching route with brightness300, HUD off, radar blips-only and exact map/camera restoration. Camera72 and clean camera trace cover modes4/18; native HUD/radar GPU and SDL event-queue source GXT/font menu navigation pass independently.
+- Full builds, smoke and sweep33/0 pass. Extension/package SHA `afe27781b7e8161e0656c05a82581817b6da11d18891917bb503979adb1592da`, docker-init zombies0. P7-A03 verified at46/68=67.6%; P7-A04 next, P4-A08 remains strict at0390.
+
 ### GODOT-P7-02 — 2026-09-13, DIRECT; source material, MatFX, mip and alpha families
 
 - Native `d72a417c` decodes complete authored mip chains and publishes MatFX environment metadata with actual secondary image ownership. Landstal census is20 none/97 env;930 env triangles use `xvehicleenv128`, with80 authored-alpha triangles. A merge bug that offset only primary textures was fixed for MatFX images.
