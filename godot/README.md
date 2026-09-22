@@ -11,6 +11,21 @@ Fedora 44 / Mesa / RX 780M and original-reference acceptance remain not-run. See
 [`docs/visual_contract.md`](../docs/visual_contract.md) for the evidence rules and
 known visual limitations.
 
+### Source new-game player visibility and mission ABI checkpoint
+
+The source SCM player starts from the base MODEL_PLAYER placeholder. In the
+native new-game host only, the source wardrobe prepares actual modular CJ
+before the parser worker starts, keeps the ped hidden until the four authored
+`087B` assignments and `070D` build, then publishes2332 triangles/15 textures.
+`./build/godot-native/sa_script_appearance_probe /game` checks the transition,
+seated hiding and script-owned car position/heading/exit restore. The mission
+`0340` text-colour handler reads the low byte of integer operands including
+local179, exactly as `Read<CRGBA>` in the original command parser; 060D remains
+strict. The clean Godot package renders actor/pose/material/catalog gates, but
+the current native first-mission route still stops at source random car-generator
+population selection. Do not infer a passing target mission, Big Smoke, or
+original GPU parity from these local fixtures.
+
 ### Source startup movies and splash (P7-A10)
 
 ```bash

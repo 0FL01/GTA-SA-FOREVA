@@ -503,6 +503,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 add_executable(sa_diagnostic_actors_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeDiagnosticActorsProbe.cpp")
 target_link_libraries(sa_diagnostic_actors_probe PRIVATE sa_diagnostic)
+add_executable(sa_script_appearance_probe "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptAppearanceProbe.cpp")
+target_link_libraries(sa_script_appearance_probe PRIVATE sa_diagnostic)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_script_appearance_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fexceptions -fno-fast-math -ffp-contract=off)
+endif()
 add_executable(sa_pose_families_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePoseFamiliesProbe.cpp")
 target_link_libraries(sa_pose_families_probe PRIVATE sa_diagnostic)

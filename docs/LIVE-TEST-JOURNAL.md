@@ -1,8 +1,15 @@
 # Live-test journal
 
-Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology](goals/2026-09-08-linux-native-opengl-port.md)
+Updated: 2026-09-23. [Readiness roadmap](PORT-READINESS.md) · [full chronology](goals/2026-09-08-linux-native-opengl-port.md)
 
 ## Entry contract
+
+### GODOT-P9-03 — 2026-09-23, DIRECT; target 0340/CJ diagnosis and local generator frontier
+
+- User-reported Fedora44 Radeon780M route: real native world loads, but source player placeholder is two triangles and mission stops with `0340@210627 text colour outside bytes`. Individual audio (`target=1`), package and render checks passed, **not** the full target closure or Big Smoke. Target6.46fps is not attributable to streaming based only on maxWork179.6ms/maxStream0.04ms.
+- Source `Read<CRGBA>` low-byte semantics now pinned by MissionText12 and Session5486 (local179 int32 via tag3, first three channels255 via tag5); 060D strict validation unchanged. Source CJ wardrobe parses player.img before the worker and becomes2332 tris/15 textures only on exact four 087B plus070D. Native appearance10, ASan/UBSan and actual llvmpipe pixel delta7778 verify visibility. Source mission car pool position/heading now drives seated hidden pose and scripted exit restore.
+- After that correction the unchanged long server gate fails **later** at car-generator RandomPopulationSelection on frame581. Exact resident IDs400/481/537/569/596 were observed; no source zone/AppropriateLoadedCars or committed random spawn exists, and the mission does not pass. Retail-derived garage branch tests pass, with real Ganton floor absent explicitly labelled and synthetic floor confined to camera fixture.
+- Native34/0 and clean packaged Forward+ actor/pose/material/source/catalog/chain/async pass exit0; package SHA `a9dddceb4497594b7739fc93ef1c44981d20c6603dd142fb3ad79028a90b4d91`. One catalog run returned timeout124 after its marker and was rejected; unchanged retry exited0. Fedora reflight of this diff remains outstanding. Goal is ACTIVE, not done.
 
 ### GODOT-P9-02 — 2026-09-13, DIRECT; external target closure blocker
 

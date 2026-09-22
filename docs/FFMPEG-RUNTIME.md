@@ -31,3 +31,19 @@ terms of the exact FFmpeg build it ships. The asset-free Godot package does not
 contain FFmpeg or MPEG files.
 
 This is a dependency and redistribution boundary, not legal advice.
+
+## Fedora 44 target policy
+
+The Ubuntu 24.04 development build links FFmpeg `libavformat.so.60` and
+`libavcodec.so.60`. Fedora 44 provides `.so.62`, so the Ubuntu native binary is
+**not** a portable Fedora release artifact. Reconfigure and rebuild
+`build/mad-sa-linux` from these sources on the Fedora target using its own
+FFmpeg development packages and system shared libraries (the native Conan/SDL3
+and CMake steps are in the root README). `tools/target-closure.sh` checks that
+the native ELF resolves Fedora's system `.so.62` libraries, rejects an injected
+`LD_LIBRARY_PATH`, and does not accept private extracted compat libraries.
+
+The asset-free Godot package has a separate extension/runtime dependency audit:
+it never carries MPEG files or FFmpeg libraries. Any future redistribution of
+the Fedora-built native binary requires notices/license review for that exact
+host FFmpeg configuration, independently of the Godot transfer package.
