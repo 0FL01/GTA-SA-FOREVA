@@ -44,6 +44,14 @@ The gate covers17 discovered service, race, school, minigame and other families 
 
 The canonical port-native envelope preserves and reapplies purchases, integer/float stats, rewards, unlocks and interiors in a fresh owner. It rejects checksum corruption atomically. Original-PC save block compatibility is a separate P8-A06/A07 milestone.
 
+### Cheats, replay and special-state inventory (P8-A05)
+
+```bash
+./build/godot-native/sa_core_special_state_probe
+```
+
+The manifest covers all92 source cheats,20 replay packet types and9 script special-state families. Each row has a tested value route or an explicit Pending status; pending rows are not silently treated as implemented behavior.
+
 ### SFX, speech and environmental audio families (P7-A06 target-open)
 
 `SALegacyAudio` exposes copied source payloads for door SFX event80/bank138/sound40, mission speech43200 and rain bank105/sound0. Godot constructs WAV/Ogg streams and starts all three players; Dummy is structural CI only:

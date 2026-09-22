@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P8-05 — 2026-09-13, DIRECT; cheats/replay/special-state inventory
+
+- Native `894971fd` classifies all92 cheats,20 replay packet types and9 script-driven special families. Twelve cheat and seven replay value routes plus all nine script states are exercised; every other discovered feature remains an explicit Pending row, never omitted.
+- Direct31 and strict sanitizer pass; full builds, smoke and native sweep33/0 pass. Marker reports `unknown=0` with cheat80/replay13 pending rows.
+- P8-A05 verified at54/68. P8-A06 original-PC save blocks next; pending special states and P4-A08/P7-A06 remain open.
+
 ### GODOT-P8-04 — 2026-09-13, DIRECT; restarted-process progression owners
 
 - Native `2d818f90` composes purchases, stats, rewards, unlocks and interior ownership/visits into canonical `MADSAPRG` v1 state while retaining the existing interaction semantics.

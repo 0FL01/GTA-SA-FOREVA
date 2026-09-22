@@ -113,6 +113,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeStoryLifecycle.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeActivityLifecycle.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeProgressionRuntime.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSpecialStateManifest.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptFrame.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptServiceTransaction.cpp"
@@ -195,6 +196,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeStoryLifecycle.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeActivityLifecycle.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeProgressionRuntime.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSpecialStateManifest.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSession.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptFrame.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptServiceTransaction.cpp"
@@ -259,6 +261,9 @@ target_link_libraries(sa_core_activity_lifecycle_probe PRIVATE sa_core)
 add_executable(sa_core_progression_runtime_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeProgressionRuntimeProbe.cpp")
 target_link_libraries(sa_core_progression_runtime_probe PRIVATE sa_core)
+add_executable(sa_core_special_state_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSpecialStateManifestProbe.cpp")
+target_link_libraries(sa_core_special_state_probe PRIVATE sa_core)
 add_executable(sa_core_scheduling_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptSchedulingProbe.cpp")
 target_link_libraries(sa_core_scheduling_probe PRIVATE sa_core)
@@ -361,6 +366,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_story_lifecycle_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_activity_lifecycle_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_progression_runtime_probe PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(sa_core_special_state_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_scheduling_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_service_transactions_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_portable_save_probe PRIVATE -Wall -Wextra -Wpedantic)
