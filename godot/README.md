@@ -11,6 +11,21 @@ Fedora 44 / Mesa / RX 780M and original-reference acceptance remain not-run. See
 [`docs/visual_contract.md`](../docs/visual_contract.md) for the evidence rules and
 known visual limitations.
 
+### Keyboard, mouse, controller, hotplug and feedback (P7-A05)
+
+`NativeInputLifecycle` owns generation-qualified devices and34 source-default keyboard/mouse/gamepad bindings, then commits complete samples through `NativeSourcePad`. The native Realtime loop forwards SDL key, mouse, wheel, gamepad button/axis and hotplug events. The direct lifecycle and actual SDL3 virtual-rumble gates are:
+
+```sh
+./build/godot-native/sa_core_input_lifecycle_probe
+SDL_VIDEODRIVER=dummy ./artifacts/graphics/NativePadFeedbackProbe
+./artifacts/godot/package/runtime/godot --headless \
+  --path artifacts/godot/package/godot --audio-driver Dummy \
+  --script /workspace/godot/tests/input_trace.gd -- \
+  --reference-trace /workspace/artifacts/build-runs/p7-a05-pad-trace.txt
+```
+
+Require `native-input-lifecycle-ok checks=17 ... bindings=34`, feedback `failures=0`, and `input-trace-ok`. Feedback maps source shake100 to both motors25700 for120ms; unsupported/no-device outcomes remain explicit. Extension/package remains byte-identical SHA256 `afe27781b7e8161e0656c05a82581817b6da11d18891917bb503979adb1592da`.
+
 ### Multilingual MAIN/mission text and source fonts (P7-A04)
 
 The value-only `NativeTextFamilies` owner validates all127 tables in each shipped GXT language and resolves every keyed TDAT string by source CRC32-uppercase hash. It also applies the source number/string/control-key substitution order without inventing fallback strings. The decisive direct route includes actual font1/font2 TXD atlases and `fonts.dat` metrics:

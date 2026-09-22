@@ -162,6 +162,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeFrontendLifecycle.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/GxtText.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeTextFamilies.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeInputLifecycle.cpp"
     "${NATIVE_SOURCE_DIR}/game_sa/SurfaceInfos_c.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCollisionAssets.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
@@ -320,6 +321,9 @@ add_executable(sa_core_text_families_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeTextFamiliesProbe.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/MenuShot.cpp")
 target_link_libraries(sa_core_text_families_probe PRIVATE sa_diagnostic sa_core)
+add_executable(sa_core_input_lifecycle_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeInputLifecycleProbe.cpp")
+target_link_libraries(sa_core_input_lifecycle_probe PRIVATE sa_core)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_frame_probe PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(sa_core_session_probe PRIVATE -Wall -Wextra -Wpedantic)

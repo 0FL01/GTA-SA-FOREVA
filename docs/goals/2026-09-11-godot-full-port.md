@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6 and P7-A01–A04 are verified; P4-A08 remains dependency-open and P7-A05 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6 and P7-A01–A05 are verified; P4-A08 remains dependency-open and P7-A06 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -135,8 +135,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P7-A02 | verified | Port material families, MatFX, mip selection and alpha behavior without PBR gap-covering. | Renderer pixel gate isolates each discovered material family and expected alpha/mip result. |
 | P7-A03 | verified | Complete camera modes, HUD, radar, map, frontend and settings lifecycle. | One frontend -> game -> map -> settings -> game route restores authoritative state. |
 | P7-A04 | verified | Complete MAIN/mission GXT, source fonts and substitutions. | Multilingual mission/UI fixture resolves all strings and expected glyph substitutions. |
-| P7-A05 | in_progress | Complete keyboard, mouse, controller, hotplug and rumble/feedback behavior. | Device lifecycle route covers bind/input/disconnect/reconnect/feedback deterministically. |
-| P7-A06 | pending | Port SFX, speech and environmental audio with real target Godot audio; Dummy remains CI-only. | Target audio route emits and audibly/structurally validates one event from each family. |
+| P7-A05 | verified | Complete keyboard, mouse, controller, hotplug and rumble/feedback behavior. | Device lifecycle route covers bind/input/disconnect/reconnect/feedback deterministically. |
+| P7-A06 | in_progress | Port SFX, speech and environmental audio with real target Godot audio; Dummy remains CI-only. | Target audio route emits and audibly/structurally validates one event from each family. |
 | P7-A07 | pending | Port radio programming and playback state. | Station/program/interrupt/save-resume fixture preserves source sequencing state. |
 | P7-A08 | pending | Port weather regions/transitions, clouds, water and their time-dependent behavior. | Controlled time/region capture sequence matches source-backed transition oracles. |
 | P7-A09 | pending | Port particles, shadows, reflections and post effects under the explicit original visual profile. | Isolated rendered gate covers each discovered effect family and records approved differences. |
@@ -169,7 +169,15 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P7-A04 multilingual MAIN/mission text and source fonts verified
+### 2026-09-13 — P7-A05 complete input device lifecycle verified
+
+- **Versions/result:** native `f735a739` is committed/pushed; root companion is the commit containing this checkpoint, based on `b399e4a`. `NativeInputLifecycle` owns generation-qualified keyboard, mouse and gamepad devices,34 source-default bindings, per-device digital/axis state, deterministic pad sampling and value-only feedback requests. Native Realtime routes SDL key/mouse/wheel/gamepad events through this owner; disconnect removes state and reconnect allocates a new generation.
+- **Decisive route:** direct17 covers W/F keyboard movement/entry, mouse fire/look/wheel, gamepad sticks/buttons, source pad edge masks, hot-unplug/stale rejection, same-hardware reconnect with neutral state, unsupported mouse feedback and exact25700/120 feedback request. Strict ASan/UBSan passes.
+- **Physical backend evidence:** `NativePadFeedbackProbe` uses actual SDL3 virtual gamepads and proves enumeration, hotplug, duplicate suppression, unsupported devices, callback failure, pause/resume/deadline, owned-vs-borrowed subsystem references and source `StartShake(120,100)`→both motors25700 for120ms with zero failures. Clean packaged Godot input trace independently drives actual `_input()` callbacks and matches all11 canonical source-pad rows.
+- **Safety/regression:** full Godot/native builds, native smoke and sweep33/0 pass; native is ELF64/no Wine. Extension/package remain byte-identical SHA256 `afe27781b7e8161e0656c05a82581817b6da11d18891917bb503979adb1592da`; package input trace passes without regeneration. Docker-init zombies0.
+- **Boundary/next:** P7-A05 closes at `48/68=70.6%`, not readiness. P7-A06 now owns SFX, speech and environmental audio with real target Godot output; Dummy remains CI-only. P4-A08 remains strict/dependency-open at `0390`.
+
+### Prior — P7-A04 multilingual MAIN/mission text and source fonts verified
 
 - **Versions/result:** native `679336e0` is committed/pushed; root companion is the commit containing this checkpoint, based on `070034f`. `NativeTextFamilies` loads every table from all five shipped GXT files (`american`, `french`, `german`, `italian`, `spanish`) through read-only `OS_File*`, validates identical127-table identities, sorted key arrays and every bounded TDAT string, and owns no presentation feedback.
 - **Decisive corpus:** direct probe resolves all82,997 table/key records by exact source hash, plus named MAIN `FEP_STG` and mission `INTRO1` coverage. It validates source-ordered number, string and `~k~~ACTION~` substitutions and rejects absent tables without changing prior output. Actual `models/fonts.txd` font1/font2 atlases and `data/fonts.dat` metrics load through the existing source glyph path.

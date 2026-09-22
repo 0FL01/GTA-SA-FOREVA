@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P7-05 — 2026-09-13, DIRECT; keyboard/mouse/gamepad/hotplug/feedback lifecycle
+
+- Native `f735a739` routes SDL keyboard, mouse, wheel and gamepad events through a generation-qualified value owner with34 source-default bindings and `NativeSourcePad` sampling. Direct17 verifies bind/input/disconnect/stale/reconnect/feedback and strict sanitizer passes.
+- Actual SDL3 virtual-gamepad probe has zero failures across no-device, hotplug, duplicate, unsupported, callback-error, pause/resume/deadline and borrowed subsystem paths; source shake100 maps exactly to motors25700 for120ms. Packaged Godot input trace still matches11 canonical callback-driven source rows.
+- Full builds, smoke and sweep33/0 pass; extension/package remains `afe27781b7e8161e0656c05a82581817b6da11d18891917bb503979adb1592da`, docker-init zombies0. P7-A05 verified48/68; P7-A06 complete audio families next, P4-A08 strict at0390.
+
 ### GODOT-P7-04 — 2026-09-13, DIRECT; multilingual GXT, substitutions and source fonts
 
 - Native `679336e0` loads every MAIN/mission table from american/french/german/italian/spanish GXT through `OS_File*`. Direct83,025 checks resolve all82,997 keyed strings, named MAIN/INTRO1 paths and source number/string/control substitutions while preserving failed-output atomicity.
