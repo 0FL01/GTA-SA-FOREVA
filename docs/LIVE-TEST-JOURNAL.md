@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P6-04 — 2026-09-13, DIRECT; source weapon/projectile/fire damage
+
+- Native `f5e4d07f` reads71 shipped weapon rows and owns generation-safe ped/vehicle/object health plus ped armour. Instant hits, projectile movement/impact and area-fire ticks use source data; camera/use reject damage and melee combo amount stays a separate owner.
+- Direct15 records armour consumption, representative damage, projectile impact, fire and ped death; strict ASan+UBSan passes.
+- Full builds/smoke and native sweep33/0 pass; extension remains `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`. P6-A04 verified at40/68=58.8%; P6-A05 next.
+
 ### GODOT-P6-03 — 2026-09-13, DIRECT; moving population and source pool pressure
 
 - Native `470e326e` spawns generation-safe traffic/peds on current source graph routes and advances both populations by deterministic segment interpolation. Retired graph generations reject.

@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5 and P6-A01–A03 are verified; P4-A08 remains dependency-open and P6-A04 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5 and P6-A01–A04 are verified; P4-A08 remains dependency-open and P6-A05 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -122,8 +122,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | P6-A01 | verified | Port owned path graph loading/search and deterministic path ownership. | Known source route returns the expected graph path and survives area residency changes. |
 | P6-A02 | verified | Port task, event, scanner and group producer/consumer flow. | Repeated producer/event fixture yields the same ordered task transitions. |
 | P6-A03 | verified | Port traffic/population spawn, removal and pool-pressure rules; parked definitions alone do not count. | Bounded route creates moving traffic/peds and cleans them under forced pool pressure. |
-| P6-A04 | in_progress | Port weapons, projectiles, fire and damage across source model/weapon classes. | Representative class matrix records authoritative hit/damage/death transitions. |
-| P6-A05 | pending | Port wanted escalation, pursuit, roadblocks and escape. | Controlled offense -> pursuit -> roadblock -> escape scenario is reproducible. |
+| P6-A04 | verified | Port weapons, projectiles, fire and damage across source model/weapon classes. | Representative class matrix records authoritative hit/damage/death transitions. |
+| P6-A05 | in_progress | Port wanted escalation, pursuit, roadblocks and escape. | Controlled offense -> pursuit -> roadblock -> escape scenario is reproducible. |
 | P6-A06 | pending | Complete death/arrest, restart selection and return-to-play lifecycle. | Separate death and arrest E2Es recover world, control and camera; registration alone cannot pass. |
 | P6-A07 | pending | Port garages, properties, shops and related interactions required by normal play. | Buy/use/save/reload interaction route preserves ownership and progression. |
 
@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-13 — P6-A03 moving population and pool pressure verified
+### 2026-09-13 — P6-A04 source combat transitions verified
+
+- **Versions/result:** native `f5e4d07f` is committed/pushed; root companion is the commit containing this checkpoint, based on `ecda076`. `NativeCombatRuntime` reads the shipped `data/weapon.dat` through the read-only OS adapter and retains71 source rows across melee, instant-hit, projectile, area-effect, camera and use classes.
+- **Damage ownership:** generation-safe ped/vehicle/object values retain source health and ped armour. Instant hits consume armour before health; projectile definitions retain source speed/lifespan and advance before impact; area-effect weapons ignite and tick source damage; health clamps at zero and produces authoritative death state. Melee rows retain their source class while combo damage remains its separate source owner; camera/use reject direct damage atomically.
+- **Decisive gate:** direct15 uses actual weapon definitions to damage a vehicle and object, move/impact a projectile, ignite/tick fire, consume ped armour and kill the ped; unsupported camera damage retains the vehicle. Strict ASan+UBSan passes.
+- **Regression/boundary:** full Godot-native/native builds, smoke and native sweep33/0 pass. Extension stays SHA256 `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`; no render rerun. P6-A04 verified at `40/68=58.8%`, not readiness. Projectile/fire visuals, audio and melee combo damage presentation remain downstream owners. P6-A05 now owns wanted/pursuit/roadblock/escape; P4-A08 remains strict at `0390`.
+
+### Prior — P6-A03 moving population and pool pressure verified
 
 - **Versions/result:** native `470e326e` is committed/pushed; root companion is the commit containing this checkpoint, based on `fdea7dc`. `NativePopulationRuntime` owns generation-safe capacity110 traffic and capacity140 ped values over exact P6-A01 routes; parked definitions are not counted as movement.
 - **Route/movement:** vehicle and ped records retain source graph generation, ordered node route, segment progress, source model identity and speed. Tick resolves only current resident nodes and advances both populations by finite distance interpolation; stale path generation rejects rather than moving against retired areas.
