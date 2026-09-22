@@ -11,6 +11,24 @@ Fedora 44 / Mesa / RX 780M and original-reference acceptance remain not-run. See
 [`docs/visual_contract.md`](../docs/visual_contract.md) for the evidence rules and
 known visual limitations.
 
+### Source material, MatFX, mip and alpha families (P7-A02)
+
+Native scenes retain complete decoded source mip chains and discovered MatFX environment metadata. Actual Landstal evidence is20 no-effect/97 environment materials,930 env-mapped triangles using `xvehicleenv128`, and authored vehicle alpha. Unsupported MatFX types are rejected rather than hidden behind PBR or a generic fallback.
+
+Direct/source gates:
+
+```sh
+bash gta-reversed/source/app/platform/linux/VehicleMaterialProbe.sh /game
+./artifacts/godot/package/runtime/godot --headless --path artifacts/godot/package/godot \
+  --script res://tests/material_contract.gd
+python3 artifacts/build-runs/godot-wayland.py \
+  ./artifacts/godot/package/runtime/godot --path artifacts/godot/package/godot \
+  --display-driver wayland --audio-driver Dummy --rendering-method forward_plus \
+  --script /workspace/godot/tests/material_render.gd -- --game-dir /game
+```
+
+The rendered gate isolates the source env formula, authored trilinear lower-mip selection versus point/no-mip level0, and existing opaque/cutout/blend behavior. `material_source.gd` separately checks actual environment and vehicle-alpha families. Current extension/package SHA256 is `a6ddb65bf2b34558f8be5955e0b7b4cb28d50345603be23ae895cd9290ef27c9`.
+
 ### Source pose families (P7-A01)
 
 `SALegacyPose` is a standalone, value-only adapter for authoritative CPU pose readers. It captures normal ped DFF/TXD + ped.ifp poses and hi-poly cutscene DFF/TXD + cuts.img ANPK poses, then releases parser-global RW state before publishing copied arrays. It must not be used while `SALegacyBridge` owns an open pager.

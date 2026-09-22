@@ -33,7 +33,7 @@ func configure(packet: Dictionary) -> void:
     blank.shader = shader
     _materials.append(blank)
     for source: Dictionary in packet.images:
-        var image := Image.create_from_data(source.width, source.height, false, Image.FORMAT_RGBA8, source.rgba)
+        var image := Image.create_from_data(source.width, source.height, int(source.get("mipmaps", 1)) > 1, Image.FORMAT_RGBA8, source.rgba)
         var material := ShaderMaterial.new()
         material.shader = shader
         material.set_shader_parameter("source_texture", ImageTexture.create_from_image(image))

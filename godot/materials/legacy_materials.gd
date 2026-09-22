@@ -4,6 +4,7 @@ extends RefCounted
 const OPAQUE_SHADER := preload("res://materials/legacy_opaque.gdshader")
 const CUTOUT_SHADER := preload("res://materials/legacy_cutout.gdshader")
 const BLEND_SHADER := preload("res://materials/legacy_blend.gdshader")
+const ENV_SHADER := preload("res://materials/legacy_env.gdshader")
 const SKY_SHADER := preload("res://materials/legacy_sky.gdshader")
 
 const POST_AVAILABLE := false
@@ -37,17 +38,26 @@ static func make_surface(info: Dictionary) -> ShaderMaterial:
 	assert(info.filter is int, "surface filter must be the RenderWare filterAddressing integer")
 
 	var alpha_mode := StringName(info.alpha_mode)
+	var matfx_type := int(info.get("matfx_type", 0))
+	var env_texture := info.get("env_texture", null) as Texture2D
+	var env_coefficient := float(info.get("env_coefficient", 0.0))
+	var env_framebuffer_alpha := bool(info.get("env_framebuffer_alpha", false))
+	assert(matfx_type == 0 || matfx_type == 2, "only discovered none/env MatFX families are supported")
+	assert(env_coefficient >= 0.0 and is_finite(env_coefficient), "MatFX env coefficient must be finite and nonnegative")
 	var shader: Shader
-	match alpha_mode:
-		&"opaque":
-			shader = OPAQUE_SHADER
-		&"cutout":
-			shader = CUTOUT_SHADER
-		&"blend":
-			shader = BLEND_SHADER
-		_:
-			assert(false, "unsupported alpha_mode: %s" % alpha_mode)
-			shader = OPAQUE_SHADER
+	if matfx_type == 2 and env_texture != null and env_coefficient > 0.0:
+		shader = ENV_SHADER
+	else:
+		match alpha_mode:
+			&"opaque":
+				shader = OPAQUE_SHADER
+			&"cutout":
+				shader = CUTOUT_SHADER
+			&"blend":
+				shader = BLEND_SHADER
+			_:
+				assert(false, "unsupported alpha_mode: %s" % alpha_mode)
+				shader = OPAQUE_SHADER
 
 	var material := ShaderMaterial.new()
 	material.shader = shader
@@ -55,6 +65,10 @@ static func make_surface(info: Dictionary) -> ShaderMaterial:
 	material.set_shader_parameter(&"material_color", _raw_color(info.color))
 	material.set_shader_parameter(&"surface_ambient", float(info.ambient))
 	material.set_shader_parameter(&"surface_diffuse", float(info.diffuse))
+	material.set_shader_parameter(&"legacy_env_texture", env_texture)
+	material.set_shader_parameter(&"matfx_env_enabled", matfx_type == 2 and env_texture != null and env_coefficient > 0.0)
+	material.set_shader_parameter(&"matfx_env_coefficient", env_coefficient)
+	material.set_shader_parameter(&"matfx_env_framebuffer_alpha", env_framebuffer_alpha)
 
 	var source_texture := info.texture as Texture2D
 	for parameter in [
@@ -96,6 +110,8 @@ static func make_surface(info: Dictionary) -> ShaderMaterial:
 	material.set_meta(&"legacy_filter_addressing", filter_addressing)
 	material.set_meta(&"legacy_sampler_diagnostics", diagnostics)
 	material.set_meta(&"legacy_has_texture", source_texture != null)
+	material.set_meta(&"legacy_matfx_type", matfx_type)
+	material.set_meta(&"legacy_env_coefficient", env_coefficient)
 	material.set_meta(&"legacy_post_available", POST_AVAILABLE)
 	return material
 

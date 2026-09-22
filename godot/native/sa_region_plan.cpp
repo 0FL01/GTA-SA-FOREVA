@@ -184,8 +184,23 @@ bool BuildRegionPlan(const WorldShotScene &scene, RegionPlan &plan, RegionPlanFa
             failure.kind = RegionPlanFailure::Kind::BadImageDimensions;
             return false;
         }
-        const size_t pixels = static_cast<size_t>(image.w) * static_cast<size_t>(image.h);
-        if (pixels > std::numeric_limits<size_t>::max() / 4 || image.rgba.size() != pixels * 4) {
+        if (image.mipmaps <= 0 || image.mipmaps > 13) {
+            failure.kind = RegionPlanFailure::Kind::BadImageBytes;
+            return false;
+        }
+        size_t expectedBytes = 0;
+        int width = image.w, height = image.h;
+        for (int level = 0; level < image.mipmaps; ++level) {
+            const size_t pixels = static_cast<size_t>(width) * static_cast<size_t>(height);
+            if (pixels > (std::numeric_limits<size_t>::max() - expectedBytes) / 4) {
+                failure.kind = RegionPlanFailure::Kind::BadImageBytes;
+                return false;
+            }
+            expectedBytes += pixels * 4;
+            width = std::max(1, width / 2);
+            height = std::max(1, height / 2);
+        }
+        if (image.rgba.size() != expectedBytes) {
             failure.kind = RegionPlanFailure::Kind::BadImageBytes;
             return false;
         }

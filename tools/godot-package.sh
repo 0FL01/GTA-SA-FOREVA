@@ -102,6 +102,7 @@ copy_file "$PROJECT_DIR/materials/legacy_surface_common.gdshaderinc" godot/mater
 copy_file "$PROJECT_DIR/materials/legacy_opaque.gdshader" godot/materials/legacy_opaque.gdshader
 copy_file "$PROJECT_DIR/materials/legacy_cutout.gdshader" godot/materials/legacy_cutout.gdshader
 copy_file "$PROJECT_DIR/materials/legacy_blend.gdshader" godot/materials/legacy_blend.gdshader
+copy_file "$PROJECT_DIR/materials/legacy_env.gdshader" godot/materials/legacy_env.gdshader
 copy_file "$PROJECT_DIR/materials/legacy_sky.gdshader" godot/materials/legacy_sky.gdshader
 copy_file "$PROJECT_DIR/materials/legacy_post.gdshader" godot/materials/legacy_post.gdshader
 copy_file "$EXTENSION_DESCRIPTOR" godot/sa_legacy.gdextension

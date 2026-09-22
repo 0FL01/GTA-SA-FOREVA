@@ -291,7 +291,7 @@ Ref<ImageTexture> MakeTexture(const WorldShotImage& source) {
     PackedByteArray bytes;
     bytes.resize(static_cast<int64_t>(source.rgba.size()));
     std::memcpy(bytes.ptrw(), source.rgba.data(), source.rgba.size());
-    const Ref<Image> image = Image::create_from_data(source.w, source.h, false, Image::FORMAT_RGBA8, bytes);
+    const Ref<Image> image = Image::create_from_data(source.w, source.h, source.mipmaps > 1, Image::FORMAT_RGBA8, bytes);
     if (image.is_null() || image->is_empty()) {
         return {};
     }
@@ -2091,7 +2091,9 @@ Dictionary SALegacyBridge::DiagnosticActors(double alpha, bool includeTopology) 
         mesh["triangles"] = pose.Triangles[i];
         if (includeTopology) {
             const auto& source = topology.meshes[i];
-            PackedVector2Array uv; PackedInt32Array images; PackedColorArray colors;
+            PackedVector2Array uv; PackedInt32Array images, matfxTypes, envImages;
+            PackedFloat32Array envCoefficients; PackedByteArray envFramebufferAlpha, vehicleAlpha;
+            PackedColorArray colors;
             for (size_t j = 0; j < source.uv.size(); j += 2) uv.push_back(Vector2(source.uv[j], source.uv[j+1]));
             for (const auto image : source.triImg) images.push_back(image);
             for (int t = 0; t < source.tris; ++t) {
@@ -2101,8 +2103,23 @@ Dictionary SALegacyBridge::DiagnosticActors(double alpha, bool includeTopology) 
                     source.triCol.empty() ? Color(source.color[0], source.color[1], source.color[2], alphaValue) :
                     Color(source.triCol[size_t(t)*3], source.triCol[size_t(t)*3+1], source.triCol[size_t(t)*3+2], alphaValue);
                 colors.push_back(color);
+                if (source.surfaces.empty()) {
+                    matfxTypes.push_back(0); envImages.push_back(-1); envCoefficients.push_back(0.0f);
+                    envFramebufferAlpha.push_back(0); vehicleAlpha.push_back(0);
+                } else {
+                    const auto& surface = source.surfaces[size_t(t)];
+                    matfxTypes.push_back(surface.matFxType);
+                    envImages.push_back(surface.envMapImage);
+                    envCoefficients.push_back(surface.envMapCoefficient);
+                    envFramebufferAlpha.push_back(surface.envMapFramebufferAlpha ? 1 : 0);
+                    vehicleAlpha.push_back(surface.vehicleAlpha ? 1 : 0);
+                }
             }
             mesh["uv"] = uv; mesh["images"] = images; mesh["colors"] = colors;
+            mesh["matfx_types"] = matfxTypes; mesh["env_images"] = envImages;
+            mesh["env_coefficients"] = envCoefficients;
+            mesh["env_framebuffer_alpha"] = envFramebufferAlpha;
+            mesh["vehicle_alpha"] = vehicleAlpha;
         }
         meshes.push_back(mesh);
     }
@@ -2113,8 +2130,9 @@ Dictionary SALegacyBridge::DiagnosticActors(double alpha, bool includeTopology) 
             Dictionary image; PackedByteArray bytes;
             bytes.resize(int64_t(source.rgba.size()));
             if (!source.rgba.empty()) std::memcpy(bytes.ptrw(), source.rgba.data(), source.rgba.size());
+            image["name"] = SourceString(source.name);
             image["width"] = source.w; image["height"] = source.h; image["rgba"] = bytes;
-            image["filter"] = int64_t(source.filter); images.push_back(image);
+            image["filter"] = int64_t(source.filter); image["mipmaps"] = source.mipmaps; images.push_back(image);
         }
         result["images"] = images;
     }

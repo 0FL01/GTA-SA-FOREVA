@@ -79,6 +79,12 @@ func _test_factory_contract() -> void:
 	blend_info.family = "vehicle"
 	blend_info.filter = 0x3206 # Trilinear, U mirror, V clamp.
 	var blend := LegacyMaterialFactory.make_surface(blend_info)
+	var env_info := blend_info.duplicate()
+	env_info.matfx_type = 2
+	env_info.env_texture = texture
+	env_info.env_coefficient = 1.0
+	env_info.env_framebuffer_alpha = false
+	var env_map := LegacyMaterialFactory.make_surface(env_info)
 	_check(opaque.shader != cutout.shader && cutout.shader != blend.shader, "alpha modes must use distinct shaders")
 	_check(opaque.get_shader_parameter(&"sampler_mode") == 1, "RW bilinear sampler mapping")
 	_check(blend.get_shader_parameter(&"sampler_mode") == 3, "RW trilinear sampler mapping")
@@ -88,6 +94,10 @@ func _test_factory_contract() -> void:
 	_check(blend.get_shader_parameter(&"object_lighting") == 1.0, "vehicle object lighting family")
 	var blend_diagnostics: PackedStringArray = blend.get_meta(&"legacy_sampler_diagnostics")
 	_check(!blend_diagnostics.is_empty(), "shader-emulated mirror addressing is reported")
+	_check(env_map.shader != blend.shader and env_map.get_meta(&"legacy_matfx_type") == 2,
+		"MatFX env map uses the source premultiplied additive family")
+	_check(bool(env_map.get_shader_parameter(&"matfx_env_enabled")) and env_map.get_shader_parameter(&"matfx_env_coefficient") == 1.0,
+		"MatFX env texture and coefficient publication")
 
 	var approximate_info := base_info.duplicate()
 	approximate_info.filter = 0x1103
@@ -149,6 +159,7 @@ func _test_shader_contract() -> void:
 	var opaque := _read_text("res://materials/legacy_opaque.gdshader")
 	var cutout := _read_text("res://materials/legacy_cutout.gdshader")
 	var blend := _read_text("res://materials/legacy_blend.gdshader")
+	var env_map := _read_text("res://materials/legacy_env.gdshader")
 	_check("mix(COLOR, CUSTOM0" in common, "shader consumes day COLOR and night CUSTOM0")
 	_check("OUTPUT_IS_SRGB" in common, "Forward+/Compatibility conversion is explicit")
 	_check("far_clip - legacy_eye_depth" in common, "fog uses linear eye depth")
@@ -158,6 +169,9 @@ func _test_shader_contract() -> void:
 	_check("ALPHA =" not in cutout && "depth_prepass_alpha" not in cutout, "cutout does not enter Godot's blended transparent pipeline")
 	_check("depth_draw_always" in blend && "color.a <= 0.0" in blend, "blend writes depth and rejects only nonpositive alpha")
 	_check("ALPHA_SCISSOR_THRESHOLD" not in blend, "blend retains every positive source-alpha product")
+	_check("blend_premul_alpha" in env_map, "MatFX env map preserves source ONE/inverse-alpha blend")
+	_check("normal_view.x * 0.5 + 0.5" in common and "legacy_rgba.rgb * legacy_rgba.a" in common,
+		"MatFX camera-normal coordinates and premultiplied base formula")
 
 
 func _read_text(path: String) -> String:

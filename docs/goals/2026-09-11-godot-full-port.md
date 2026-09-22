@@ -1,7 +1,7 @@
 # Active goal: full standalone GTA:SA port hosted by Godot
 
 Status: ACTIVE
-Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6 and P7-A01 are verified; P4-A08 remains dependency-open and P7-A02 is the current independent atom.
+Execution: ACTIVE in DIRECT mode without subagents. P2, P3, P4-A01–A07, P5, P6 and P7-A01–A02 are verified; P4-A08 remains dependency-open and P7-A03 is the current independent atom.
 Activated: 2026-09-11
 Last updated: 2026-09-13
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
@@ -132,8 +132,8 @@ P0 implementation and available server gates are verified; target reflight stays
 | Atom | State | Small deliverable | Decisive direct gate |
 |---|---|---|---|
 | P7-A01 | verified | Port source skins, animation families and cutscene poses. | Controlled skinned animation/cutscene capture matches source data and pose transitions. |
-| P7-A02 | in_progress | Port material families, MatFX, mip selection and alpha behavior without PBR gap-covering. | Renderer pixel gate isolates each discovered material family and expected alpha/mip result. |
-| P7-A03 | pending | Complete camera modes, HUD, radar, map, frontend and settings lifecycle. | One frontend -> game -> map -> settings -> game route restores authoritative state. |
+| P7-A02 | verified | Port material families, MatFX, mip selection and alpha behavior without PBR gap-covering. | Renderer pixel gate isolates each discovered material family and expected alpha/mip result. |
+| P7-A03 | in_progress | Complete camera modes, HUD, radar, map, frontend and settings lifecycle. | One frontend -> game -> map -> settings -> game route restores authoritative state. |
 | P7-A04 | pending | Complete MAIN/mission GXT, source fonts and substitutions. | Multilingual mission/UI fixture resolves all strings and expected glyph substitutions. |
 | P7-A05 | pending | Complete keyboard, mouse, controller, hotplug and rumble/feedback behavior. | Device lifecycle route covers bind/input/disconnect/reconnect/feedback deterministically. |
 | P7-A06 | pending | Port SFX, speech and environmental audio with real target Godot audio; Dummy remains CI-only. | Target audio route emits and audibly/structurally validates one event from each family. |
@@ -168,6 +168,16 @@ P0 implementation and available server gates are verified; target reflight stays
 Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never renumbered or reused).
 
 ## Current checkpoint and evidence
+
+### 2026-09-13 — P7-A02 source material/MatFX/mip/alpha families verified
+
+- **Versions/result:** native `d72a417c` is committed/pushed; root companion is the commit containing this checkpoint, based on `cb300b5`. `TexSample_Decode` now publishes complete authored D3D8/9 mip chains, while `WorldShotSurface` retains MatFX type, environment coefficient/framebuffer-alpha and secondary image ownership. The diagnostic actor merge correctly offsets both primary and MatFX image indices.
+- **Actual corpus:** model400 Landstal exposes20 no-effect and97 environment-map source materials;930 published triangles use the actual `xvehicleenv128` image and80 authored-alpha triangles reach the native audit. Unsupported MatFX types are rejected by the Godot material factory rather than silently mapped to PBR or a generic shader. This representative does not claim unseen bump/dual family parity.
+- **Pixel gates:** clean packaged Forward+ `material_render.gd` isolates source environment contribution (`0.2,0,0`), trilinear authored lower-mip selection (green/blue blend) versus point/no-mip red level0, plus existing opaque/cutout/blend, sky and post behavior. `material_source.gd` verifies930 actual environment triangles,84 runtime vehicle-alpha triangles, `xvehicleenv128` and owned mip metadata. Headless material contract, pose, actor, catalog and chain routes pass; async prints its success marker before the known software-worker teardown timeout.
+- **Safety/regression:** strict ASan/UBSan rebuild of the new CarPose/TexSample path passes the actual material census; native material GPU oracle passes compositing128/63/64, back-to-front depth, Z-write, multiplied texture alpha and cutouts. Full builds, native smoke and sweep33/0 pass; native is ELF64/no Wine. PID1 is docker-init, zombies0. Extension/package SHA256 `a6ddb65bf2b34558f8be5955e0b7b4cb28d50345603be23ae895cd9290ef27c9`.
+- **Boundary/next:** P7-A02 closes at `45/68=66.2%`, not readiness or original-reference parity. P7-A03 now owns the authoritative frontend/game/map/settings lifecycle and complete camera/HUD/radar families. P4-A08 remains strict/dependency-open at `0390`.
+
+### Prior — P7-A01 source ped and cutscene pose families verified
 
 ### 2026-09-13 — P7-A01 source pose families verified
 

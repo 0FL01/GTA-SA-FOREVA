@@ -6,6 +6,7 @@ uniform sampler2D legacy_texture_nearest_repeat : source_color, filter_nearest, 
 uniform sampler2D legacy_texture_linear_repeat : source_color, filter_linear, repeat_enable, hint_default_white;
 uniform sampler2D legacy_texture_nearest_mipmap_repeat : source_color, filter_nearest_mipmap, repeat_enable, hint_default_white;
 uniform sampler2D legacy_texture_linear_mipmap_repeat : source_color, filter_linear_mipmap, repeat_enable, hint_default_white;
+uniform sampler2D legacy_env_texture : source_color, filter_linear_mipmap, repeat_enable, hint_default_black;
 
 uniform vec4 material_color = vec4(1.0);
 uniform float surface_ambient = 1.0;
@@ -28,9 +29,13 @@ uniform bool texture_enabled = true;
 uniform bool prelight_enabled = true;
 uniform bool fog_enabled = true;
 uniform bool vertex_only = false;
+uniform bool matfx_env_enabled = false;
+uniform float matfx_env_coefficient = 0.0;
+uniform bool matfx_env_framebuffer_alpha = false;
 
 varying vec4 legacy_vertex_color;
 varying float legacy_eye_depth;
+varying vec2 legacy_env_uv;
 
 // RealtimeEnvironment uses the fixed SA direction {-0.5,-0.5,sqrt(0.5)}.
 // The adapter's SA -> Godot basis (X,Z,-Y) produces this world-space vector.
@@ -110,6 +115,10 @@ vec3 legacy_source_to_output(vec3 legacy_rgb) {
 void vertex() {
 	vec4 prelight = mix(COLOR, CUSTOM0, clamp(night_blend, 0.0, 1.0));
 	legacy_eye_depth = abs((MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).z);
+	vec3 normal_view = normalize(MODELVIEW_NORMAL_MATRIX * NORMAL);
+	// librw standard MatFX: camera-space normal through the 0.5/-0.5
+	// normal2tex matrix, followed by its fragment-stage V inversion.
+	legacy_env_uv = vec2(normal_view.x * 0.5 + 0.5, normal_view.y * 0.5 + 0.5);
 	if (vertex_only) {
 		legacy_vertex_color = prelight;
 	} else {
@@ -128,10 +137,20 @@ vec4 legacy_surface_color(vec2 uv) {
 	vec4 texel = legacy_sample(uv);
 	vec4 legacy_rgba = legacy_vertex_color
 		* vec4(legacy_sample_to_source(texel.rgb), texel.a);
+	vec3 env_rgb = vec3(0.0);
+	if (matfx_env_enabled && matfx_env_coefficient > 0.0) {
+		vec4 env_texel = texture(legacy_env_texture, legacy_env_uv);
+		env_rgb = legacy_sample_to_source(env_texel.rgb) * matfx_env_coefficient;
+	}
 	if (fog_enabled && !vertex_only) {
 		float fog_span = max(far_clip - fog_start, 0.0001);
 		float visibility = clamp((far_clip - legacy_eye_depth) / fog_span, 0.0, 1.0);
 		legacy_rgba.rgb = mix(sky_bottom.rgb, legacy_rgba.rgb, visibility);
+		env_rgb *= visibility;
+	}
+	if (matfx_env_enabled) {
+		float framebuffer_alpha = max(legacy_rgba.a, matfx_env_framebuffer_alpha ? 0.0 : 1.0);
+		legacy_rgba.rgb = legacy_rgba.rgb * legacy_rgba.a + env_rgb * framebuffer_alpha;
 	}
 	return vec4(legacy_source_to_output(legacy_rgba.rgb), legacy_rgba.a);
 }

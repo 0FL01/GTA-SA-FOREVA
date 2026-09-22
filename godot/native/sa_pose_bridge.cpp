@@ -60,6 +60,8 @@ Dictionary SceneValue(const WorldShotScene& scene) {
         if (!source.rgba.empty()) std::memcpy(bytes.ptrw(), source.rgba.data(), source.rgba.size());
         image["width"] = source.w;
         image["height"] = source.h;
+        image["mipmaps"] = source.mipmaps;
+        image["filter"] = static_cast<int64_t>(source.filter);
         image["rgba"] = bytes;
         image["filter"] = static_cast<int64_t>(source.filter);
         images.push_back(image);

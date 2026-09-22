@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P7-02 — 2026-09-13, DIRECT; source material, MatFX, mip and alpha families
+
+- Native `d72a417c` decodes complete authored mip chains and publishes MatFX environment metadata with actual secondary image ownership. Landstal census is20 none/97 env;930 env triangles use `xvehicleenv128`, with80 authored-alpha triangles. A merge bug that offset only primary textures was fixed for MatFX images.
+- Clean packaged Forward+ gates isolate env output0.2, lower-mip trilinear green/blue versus no-mip red, and actual source env/vehicle-alpha families. Material contract, pose, actor, catalog and chain routes pass; async reaches its success marker before the known software teardown timeout.
+- Strict CarPose/TexSample sanitizer and native GPU material oracle pass; full builds, smoke and native sweep33/0 pass. Extension/package SHA `a6ddb65bf2b34558f8be5955e0b7b4cb28d50345603be23ae895cd9290ef27c9`, docker-init zombies0. P7-A02 verified at45/68=66.2%; P7-A03 next, P4-A08 remains strict at0390.
+
 ### GODOT-P7-01 — 2026-09-13, DIRECT; source ped and cutscene pose families
 
 - Native `aa26ec24` publishes immutable source pose scenes: andre IDLE/JUMP, a five-frame IDLE→WALK skeletal blend and hi-poly cssmokevest/smoke1a/csplay. Direct12 reports ped mapped32/26, blend morph0.9375 and cutscene61/56; missing clips retain the last publication. Strict new-owner sanitizer and the existing independent132-pose CJ oracle pass.

@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `aa26ec24`, source ped/cutscene pose publication and P7-A02 next.44/68 verified atoms (64.7% by count) is not game readiness.
+**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `d72a417c`, source material/MatFX/mip/alpha publication and P7-A03 next.45/68 verified atoms (66.2% by count) is not game readiness.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -15,7 +15,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P4 | A01–A07 verified; A08 dependency-open | Source boot/first mission pass; mission3 stops strictly before unowned TXD/sprite residency, and fail/retry/restarted-save semantics remain open |
 | P5 | A01–A06 verified | World residency/visibility plus complete vehicle-family and destructible-object value lifecycles verified |
 | P6 | A01–A07 verified | Paths, AI flow, population, combat, wanted/recovery and persistent interactions verified |
-| P7 | A01 verified; A02 in_progress, joins P4 | Source ped/cutscene pose values render without feedback; material/MatFX/mip/alpha families next |
+| P7 | A01–A02 verified; A03 in_progress, joins P4 | Source pose and discovered material/MatFX/mip/alpha families verified; frontend/game/map/settings lifecycle next |
 | P8 | pending | Complete source progression/content and PC-save compatibility |
 | P9 | pending | Cross-axis full-port and target release closure |
 
