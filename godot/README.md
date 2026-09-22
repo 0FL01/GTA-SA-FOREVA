@@ -54,6 +54,10 @@ Direct1300 and strict ASan/UBSan pass; full builds, smoke, native sweep33/0 and 
 
 `sa_source_event_flow_probe` runs a three-producer group route twice and compares all seven task transitions. It preserves source capacity16 event queues, group fan-out order, script-command first-tie and ordinary-event last-tie priority behavior. Direct25 and strict ASan+UBSan pass; perception remains an external typed event producer.
 
+### Moving source population and pool pressure (P6-A03)
+
+`sa_population_runtime_probe /game` moves model400 traffic and model7 peds along current Grove source graph routes, fills pools to the source free-space threshold and applies exact frame-gated closest cleanup. Direct248 and strict ASan+UBSan pass with vehicle103→102 and ped133→132; parked definitions alone are not counted.
+
 ### Source boot/first-mission checkpoint (P4-A06/A07 dependency)
 
 `./build/mad-sa-linux --play --new-game --boot-gate --game-dir /game --seconds 700` follows the unchanged source route through mission0 and mission2 and exits0 only after the real mission2 thread terminates with control enabled and fade alpha0. Native `6dd454b7` owns exact world/model/COL handoff, mission actors, source car-recording interpolation, GXT and source-duration mission-audio clocks. Marker: `play-boot-gate-ok ... no-fault=1`. This verifies bounded P4-A06 boot, not cutscene/NPC/audio presentation or broad story progression. Focused peds9/audio/carrec7/beat8/trains5 and Session5482/scheduling106/frame104/transaction71/portable111 pass; extension SHA256 remains `acf7d35b3f433e1d4323fc8c1357062408a0c67292223764654a33c9b30bdb0c`.

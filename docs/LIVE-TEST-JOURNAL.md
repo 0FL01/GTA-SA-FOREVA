@@ -4,6 +4,12 @@ Updated: 2026-09-13. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P6-03 — 2026-09-13, DIRECT; moving population and source pool pressure
+
+- Native `470e326e` spawns generation-safe traffic/peds on current source graph routes and advances both populations by deterministic segment interpolation. Retired graph generations reject.
+- Actual Grove routes move model400/model7 actors; forced capacities103/110 and133/140 preserve threshold8 and exact frame gates, then closest eligible refs are cleaned to102/132. Direct248 and strict ASan+UBSan pass.
+- Full builds/smoke and native sweep33/0 pass; extension remains `55bf329e32a775111b06c7055e15e8e2c9f0a04a32c586bb7fa8c49858bbbf47`. P6-A03 verified at39/68=57.4%; P6-A04 next.
+
 ### GODOT-P6-02 — 2026-09-13, DIRECT; deterministic task/event/group flow
 
 - Native `1a25c083` owns generation-safe producers/groups, source-size16 event queues and ordered task-transition values. Group fan-out is membership ordered; script-command priority ties keep first while ordinary ties select last exactly as `CEventGroup`.

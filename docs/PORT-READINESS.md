@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `1a25c083`, deterministic task/event/group flow and P6-A03 as the next independent atom.38/68 verified atoms (55.9% by count) is not game readiness.
+**Execution is active in DIRECT mode.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `470e326e`, moving source-path populations under exact pool pressure and P6-A04 next.39/68 verified atoms (57.4% by count) is not game readiness.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 
@@ -14,7 +14,7 @@ User approved long-term implementation of the [full Godot-port goal](goals/2026-
 | P3 | A01–A07 verified | Real source Pad/model400/COL route crosses enter/drive/exit/destroy/evict and emits authoritative initial HUD, action journal and exact NEW-door PCM identities |
 | P4 | A01–A07 verified; A08 dependency-open | Source boot/first mission pass; mission3 stops strictly before unowned TXD/sprite residency, and fail/retry/restarted-save semantics remain open |
 | P5 | A01–A06 verified | World residency/visibility plus complete vehicle-family and destructible-object value lifecycles verified |
-| P6 | A01–A02 verified; A03 in_progress | Exact path search and deterministic task/event/group flow verified; moving population under pool pressure is next |
+| P6 | A01–A03 verified; A04 in_progress | Exact paths, deterministic task/event flow and moving traffic/peds under source pool pressure verified; weapon/damage matrix next |
 | P7 | pending, joins P3/P4 | Complete visual/audio/UI/input/video families |
 | P8 | pending | Complete source progression/content and PC-save compatibility |
 | P9 | pending | Cross-axis full-port and target release closure |
