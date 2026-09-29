@@ -31,7 +31,7 @@ headers still reject. `NativeScriptWorldPublicationProbe.py` verifies the same
 query against actual paired GPU/source-COL generations3/4/5. This is an explicit
 non-cache/LOD1 initial profile, not complete mutable CIplStore/population parity.
 The updated clean package hash is
-`8bd13303369e830c54d9e95ed03b71e27b9e98eec4f8581ec460b961a77a2dcb`.
+`f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`.
 
 The next ownership seam is `sa_core_dynamic_sectors_probe` and
 `NativeDynamicSectorListsProbe.py --sanitized`: source physical sphere bounds,
@@ -83,15 +83,35 @@ explicit observations, not an actual runtime roster or ambient birth/census.
 verify the original gang selector and both shared sequence helpers (direct2529,
 630 cases). They preserve zone0's count/current-zone data, exactly two shared
 draws, original direction bit4 and the non-FF override's first-model shortcut.
-Unknown group/streaming state stays unavailable, not unloaded. The group and
-streaming fixtures do not create an actor or close runtime census completeness.
+Unknown group/streaming state stays unavailable, not unloaded. The independent
+selector fixture supplies both observations explicitly. The runtime now owns the
+real ped-group definitions but not the current streaming roster, actor creation
+or a complete census.
 
 `sa_core_ped_model_policies_probe` and `NativePedModelPoliciesProbe.py --sanitized`
 verify the original zone race-mask, two-argument stats and attractor policies
 (direct31406,31392 isolated cases). Both stats operands matter, the old-person
 rule is asymmetric, unknown non-cop attractor names are permitted and STRIPM
-uses the original inequality. Model/zone observations remain explicit; these
-helpers do not load models, create actors or certify an ambient census.
+uses the original inequality. The original-function oracle uses explicit
+model/zone observations; startup now supplies genuine model namespace values,
+but not live zone/loaded state, actors or an ambient census.
+
+`sa_core_ped_namespace_probe /game`, `sa_core_ped_metadata_probe /game` and
+`NativePedModelMetadataProbe.py --sanitized` check the reused ordered IDE reader,
+atomic three-file load, all276 qualified ped models,43 stat records,139 animation
+groups (the original118 plus21 authored groups),57 ped groups and the shared32
+original type names. The independent asset oracle compares every row and full
+DLL animation initializer fields; the probes pass294/307 checks and ASan/UBSan.
+The normal new-game path reads these names before its sole worker and retains
+them, but streaming/refcounts, audio identity, ambient birth and complete world
+census remain unowned. A3-second process exits1 under the unchanged final
+live predicate: this is **not** a boot gate. The clean packaged26-file audit
+passes, and the separate Forward+ actors/pose/material/region/chain/async routes
+have each exited0. A combined llvmpipe/Wayland sequence can occasionally hang
+*after* its printed marker during Godot4.6.1 shutdown; no timed-out marker is
+accepted. The ignored `artifacts/graphics/ped-metadata-*` evidence includes a
+minimal extension-only reproduction and the Wayland event-thread poll/join trace;
+zombies remain0. Server software rendering is not Fedora/Radeon acceptance.
 
 The source SCM player starts from the base MODEL_PLAYER placeholder. In the
 native new-game host only, the source wardrobe prepares actual modular CJ

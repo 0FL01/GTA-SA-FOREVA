@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-14 — 2026-09-29, DIRECT; ped data namespace and actual model policies
+
+- Native `b2ae0740` shares the original118 animation declarations and32 ped-type names with the DLL and reuses the full ordered IDE reader, case-qualified read-only IO and bounded text grammar. Owned startup snapshot qualifies276 ped models,43 stats,139 animation groups and57 ped groups; source fallback/stat/race/group order is preserved, never a loaded-model assumption.
+- Direct307/namespace294 and ASan/UBSan pass; independent asset and canonical-C++ oracle compares every actual row and all DLL animation initializer fields/enum ordinals. Old static metadata14259, contextual ground111582, Session5486/frame104, native34/0 and both full builds pass. A normal3s new-game process shows the startup model namespace but correctly exits1 as not-yet-live; this is not boot or generator clearance.
+- The ABI-changed clean package/audit passes26 files, zero game media. SHA256 `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`; each packaged software Wayland/Forward+ actor/pose/material/source/render/catalog/chain/async test returned exit0 and its marker. A combined run sometimes times out after printing a marker on engine shutdown and is explicitly **failed**; separate controlled extension-load-only fixture reproduces the Wayland event thread poll/join hang even with the pre-header variant `634be32c...`, whereas eight engine-only quits passed. Failing logs are retained; docker-init/zombies0. This is not a Radeon/target passage or interactive mission acceptance. Actual loaded-ped roster, ambient birth/census and generator model/world/pool transaction remain local work;61/68 is unchanged.
+
 ### GODOT-P9-13 — 2026-09-29, DIRECT; original zone/stat/attractor model policies
 
 - Native `5064fef3` preserves the source race mask, both stats operands/asymmetric old-person rule and exact attractor branches. Independent original execution confirms non-cop unknown-name acceptance and STRIPM inequality rather than the upstream changed defaults.

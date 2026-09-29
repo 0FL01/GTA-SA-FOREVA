@@ -157,6 +157,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCivilianOccupation.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeGangPedChoice.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedModelPolicies.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedModelMetadata.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceEventFlow.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePopulationRuntime.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeAmbientPedPolicy.cpp"
@@ -256,6 +257,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCollisionAssets.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceGround.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedModelMetadata.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldGround.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeDynamicSectorLists.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceSurfaces.cpp"
@@ -502,6 +504,16 @@ target_link_libraries(sa_core_gang_ped_choice_probe PRIVATE sa_core)
 add_executable(sa_core_ped_model_policies_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedModelPoliciesProbe.cpp")
 target_link_libraries(sa_core_ped_model_policies_probe PRIVATE sa_core)
+add_executable(sa_core_ped_namespace_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedNamespaceProbe.cpp")
+target_link_libraries(sa_core_ped_namespace_probe PRIVATE sa_core)
+add_executable(sa_core_ped_metadata_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedModelMetadataProbe.cpp")
+target_link_libraries(sa_core_ped_metadata_probe PRIVATE sa_core)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_core_ped_namespace_probe PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(sa_core_ped_metadata_probe PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_ped_creation_probe PRIVATE
         -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
