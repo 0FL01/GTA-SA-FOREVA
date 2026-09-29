@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-19 — 2026-09-29, DIRECT; original gang request masks and car dependencies
+
+- Native `a35b9c1f` preserves source-ordered double ped KEEP requests, full ped-group retirement, interleaved car selection, shared CRT draws and request-mask publication. The original nonempty loaded-car guard is retained literally, not fixed; original CountMembers uses a negative terminator. Actual car identities reuse the existing reader, never authorize loaded flags. Final GangWars demand and live streaming/car-group observations remain explicit/unowned; unknown facts preserve typed consumed prefixes.
+- Normal and ASan/UBSan/Werror streaming41983 checks include6481 complete original mask-controller comparisons plus3072/256/2048/4328 retained kernel cases. Cycle3916 verifies all480 rows,960 clock cases,3 regions and10 actual ordered gang-car groups; metadata867/namespace294/canonical/actual-data oracle, full builds, Session5486/frame100 and smoke pass. Extension/package remain `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`, docker-init/zombies0 and immutable approval backup pass.
+- Real demand, model/queue completion, references, ambient births/census and generator effects remain local work;61/68 stays unchanged. No new pixels, full mission, Wayland diagnostic or Fedora closure is claimed.
+
 ### GODOT-P9-18 — 2026-09-29, DIRECT; original gang timer and rolling request intents
 
 - Native `9d64bed5` preserves the independent timer0-to-minus1 wait,550 reset, modulo21 member wrap and exact old/unwrapped versus new/wrapped group pairs. Ordered model/TXD retirement and GAME_REQUIRED-only requests use actual metadata group order and an explicitly observed requested-gang mask, not loaded state; no RNG is consumed. Unknown observations preserve typed boundaries and already-emitted prefixes.
