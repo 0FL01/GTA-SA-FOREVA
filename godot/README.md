@@ -17,8 +17,10 @@ The subsequent generator classification fixture is
 `./build/godot-native/sa_loaded_cars_probe /game`: it binds the shipped34 car
 groups and480 popcycle rows to an explicit ordered roster and source RNG,
 proving real ELS1a normal-car eligibility without treating model400 as a
-fallback. The runtime loads the data before its parser worker, but still
-rejects the unresolved model/COL/blockage/ground/world/pool demand. No first-
+fallback. The runtime now streams genuine zone-selected models through that
+sole worker and retains exact loaded scene/COL order. Shared-RNG completion
+advances only to typed source blockage; complete ambient/sector/building-ground
+and world/pool spawn remain unresolved. No first-
 mission or target closure is inferred from this fixture.
 
 The source SCM player starts from the base MODEL_PLAYER placeholder. In the
@@ -30,9 +32,18 @@ seated hiding and script-owned car position/heading/exit restore. The mission
 `0340` text-colour handler reads the low byte of integer operands including
 local179, exactly as `Read<CRGBA>` in the original command parser; 060D remains
 strict. The clean Godot package renders actor/pose/material/catalog gates, but
-the current native first-mission route still stops at source random car-generator
-population selection. Do not infer a passing target mission, Big Smoke, or
+the current native first-mission route still stops at source car-generator
+CollisionBlockage (partial native Clear is not original-world clearance).
+Do not infer a passing target mission, Big Smoke, or
 original GPU parity from these local fixtures.
+
+`NativeScriptWorldPublicationProbe.py --build` / `--run --game-dir /game`
+uses the real Wayland GL/worker route to check staged generation3→4→5 swaps,
+adjacent SCM services and cancellation. `NativeLiveEntityBoundsProbe.py`
+checks complete registered player/mission-ped/vehicle ownership, but explicitly
+does not claim ambient-population/sector parity. Its `--sanitized` route runs
+without ptrace because LeakSanitizer and strace cannot run together; the ordinary
+route separately retains the no-EXE/query-only-no-IO checks.
 
 ### Source startup movies and splash (P7-A10)
 
@@ -50,7 +61,7 @@ for the dependency and LGPL redistribution boundary.
 
 ### Target closure runner
 
-The remaining acceptance evidence is target-only:
+The separate target-side acceptance runner is:
 
 ```bash
 ./tools/target-closure.sh "/path/to/owned/GTA San Andreas" artifacts/target-closure

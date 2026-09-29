@@ -1,8 +1,15 @@
 # Live-test journal
 
-Updated: 2026-09-23. [Readiness roadmap](PORT-READINESS.md) · [full chronology](goals/2026-09-08-linux-native-opengl-port.md)
+Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology](goals/2026-09-08-linux-native-opengl-port.md)
 
 ## Entry contract
+
+### GODOT-P9-05 — 2026-09-29, DIRECT; script CPU/COL/GPU pair and source loaded cars
+
+- Native `f1afcc1b` captures actual sole-worker car-model publications in order and performs source shared-RNG selection. The retained demand advances only to source vehicle/ped CollisionBlockage. Both model and TXD in-flight slots reject competing tickets; texture40 and loaded-car25 direct/sanitizer paths pass.
+- A real Wayland/GL regression uses the same LiveWorld staging/commit methods: generations3→4→5, GPU complete before Host Ready, adjacent SCM services paired before mechanics, generation mismatch rejection and cancelled partial-upload retirement. Host probe also exposed/fixed loss of LOAD_SCENE Z/opcode identity when source ground probing was removed; all Host assertions now pass without restoring that invented probe.
+- Last unchanged1400-second llvmpipe route still exited1 at generator18 after selection: paired script worlds4/6/7 and exact native proof frame1129/world7/vehicle101/player4/mission-ped9, seven entities, no XY candidates, native Clear/source-parity0. No false original-world Clear, spawn, full mission, target closure or human Big Smoke claim.
+- Final full builds, Session5486/scheduling106/frame104, runtime completion, mission-ped bound/permutation tests, texture/live-owner ASan/UBSan and native34/0 pass. Existing extension/package hashes remain `a9dddceb4497594b7739fc93ef1c44981d20c6603dd142fb3ad79028a90b4d91`, PID1 docker-init/zombies0. Source ambient/sector/building-ground/spawn remains actionable local work; Fedora acceptance stays separate.
 
 ### GODOT-P9-04 — 2026-09-23, DIRECT; source cargrp/popcycle classification
 
