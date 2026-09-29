@@ -61,7 +61,8 @@ state. No ambient actor is created and census completeness stays false.
 
 `sa_core_ambient_ped_selection_probe` and
 `NativeAmbientPedSelectionProbe.py --sanitized` preserve the source type-deficit
-and model-choice decision (direct1576,720 isolated retail cases). The station's
+and model-choice decision (direct1577,720 isolated retail cases). Police selection
+retains the source CITYCOP constructor key0 rather than a loaded model ID. The station's
 integer percentage, four deficit RNG draws, tie priority and dealer order are
 tested separately from actual loaded-ped/model helpers. Those helpers are
 explicit observations: unavailable authority is Unsupported, not an empty
