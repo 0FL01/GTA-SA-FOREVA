@@ -79,6 +79,13 @@ precede refcount1 in slot0. Direct1292 and640 isolated retail cases verify model
 selection and zone/attractor/stat observation order. Metadata/policies remain
 explicit observations, not an actual runtime roster or ambient birth/census.
 
+`sa_core_gang_ped_choice_probe` and `NativeGangPedChoiceProbe.py --sanitized`
+verify the original gang selector and both shared sequence helpers (direct2529,
+630 cases). They preserve zone0's count/current-zone data, exactly two shared
+draws, original direction bit4 and the non-FF override's first-model shortcut.
+Unknown group/streaming state stays unavailable, not unloaded. The group and
+streaming fixtures do not create an actor or close runtime census completeness.
+
 The source SCM player starts from the base MODEL_PLAYER placeholder. In the
 native new-game host only, the source wardrobe prepares actual modular CJ
 before the parser worker starts, keeps the ped hidden until the four authored

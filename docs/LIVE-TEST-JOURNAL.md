@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-12 — 2026-09-29, DIRECT; original gang-model sequence
+
+- Native `1798ceed` preserves zone0 count/current-zone data and the shared two-draw source sequence. Isolated original bodies prove direction bit4, not the upstream bit2 formula; any non-FF override selects the first row model without consulting loaded state.
+- Direct2529 and630 original selector/sequence comparisons pass normally and under ASan/UBSan, including RNG state and shared sequence scratch. Groups/streaming remain explicit fixtures; actual actor birth/census is not claimed.
+- Full builds, Session5486/frame104, smoke and native34/0 pass; package/extension is byte-identical, docker-init/zombies0. Source CollisionBlockage and target/interactive mission acceptance remain unresolved.
+
 ### GODOT-P9-11 — 2026-09-29, DIRECT; original civilian occupation traversal
 
 - Native `9bf5b6ec` preserves the original nested reference-count/all-eight-slots scan and3/5/7 pass limits. It corrects the upstream refactor hypothesis rather than treating that changed slot order as source authority.

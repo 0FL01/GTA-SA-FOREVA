@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-29 — source civilian occupation traversal verified; birth/census still incomplete
+### 2026-09-29 — source gang-model sequence verified; birth/census still incomplete
+
+- **Versions/status:** native `1798ceed` is committed/pushed; root companion contains this checkpoint, based on `5959c32`. Full goal/P9-A01 remain active,61/68 unchanged. No current mission, Fedora closure or interactive Big Smoke acceptance is claimed.
+- **Source correction:** gang selection uses zone0's group count but the current world-zone row. The original sequence consumes two shared rand15 draws and takes direction from bit4, unlike the upstream bit2 refactor. Any non-FF override returns the row's first model without RNG or a loaded-state check; the override byte is not an index. Unknown groups/streaming cannot be treated as absent, and empty modulo-zero input is rejected safely.
+- **Independent evidence:** direct2529 checks and630 isolated comparisons match the actual gang selector, sequence initializer and sequence-index bodies, including all shared RNG/scratch state, normally and under ASan/UBSan. Hashes are `9385173b0b6616128962eaae16ae69c728dc72b6805400a9d5d7e8ed582213c9` and `6d420f087f643529e328f3ca1490aa8ade998a798d104e9307db23dc7db305f9`; logs are `artifacts/graphics/NativeGangPedChoiceProbe[-sanitized].log`. Application runtime never uses executable bytes.
+- **Authority/regression:** groups and streaming bytes remain explicit fixtures, not an actual loaded-ped roster, birth controller or complete ambient census. Source dynamic blockage therefore stays strict. Full native/Godot builds, Session5486/frame104, smoke and native34/0 pass; docker-init/zombies0. Extension/package remains byte-identical `8bd13303369e830c54d9e95ed03b71e27b9e98eec4f8581ec460b961a77a2dcb`; no unnecessary pixel or long mission reflight is claimed.
+
+### Prior — source civilian occupation traversal verified; birth/census still incomplete
 
 - **Versions/status:** native `9bf5b6ec` is committed/pushed; root companion contains this checkpoint, based on `86ee38b`. P9-A01/full goal remain active,61/68 unchanged. No current mission, Fedora closure or interactive Big Smoke acceptance is claimed.
 - **RE correction:** the original civilian helper traverses reference-count passes and all eight loaded-ped slots, not the upstream refactor's first-N slots. With occupation testing enabled it uses three passes, or five for an interior with more than20 peds; disabled testing uses seven. Refcount0 in slot7 therefore precedes refcount1 in slot0. Source MALE01 fallback belongs only to disabled occupation testing and is still rejected by the outer source type selector.

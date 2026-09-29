@@ -155,6 +155,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedCreationCoordinates.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeAmbientPedSelection.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCivilianOccupation.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeGangPedChoice.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceEventFlow.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePopulationRuntime.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeAmbientPedPolicy.cpp"
@@ -231,6 +232,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedCreationCoordinates.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeAmbientPedSelection.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCivilianOccupation.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeGangPedChoice.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceJump.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceAnimClump.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceWalkRun.cpp"
@@ -492,6 +494,9 @@ target_link_libraries(sa_core_ambient_ped_selection_probe PRIVATE sa_core)
 add_executable(sa_core_civilian_occupation_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCivilianOccupationProbe.cpp")
 target_link_libraries(sa_core_civilian_occupation_probe PRIVATE sa_core)
+add_executable(sa_core_gang_ped_choice_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeGangPedChoiceProbe.cpp")
+target_link_libraries(sa_core_gang_ped_choice_probe PRIVATE sa_core)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_ped_creation_probe PRIVATE
         -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
