@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active DIRECT.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `5d753b91`: exact contextual building-only ground now joins the paired script scene/COL/GPU proof, while the generator still refuses incomplete source dynamic blockage.61/68 atoms (89.7%) is not game readiness. Fedora44/Wayland/Radeon780M/real-audio gates remain separately external; server evidence cannot close them.
+**Execution is active DIRECT.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `9b04adf1`: physical sphere/repeat-sector event ordering now has a source-reference gate beside contextual building ground and paired scene/COL/GPU. Ambient census and real generator spawn remain unresolved; native Clear is not source readiness.61/68 atoms (89.7%) is not game readiness. Fedora44/Wayland/Radeon780M/real-audio gates remain separately external.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 

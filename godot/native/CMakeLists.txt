@@ -131,6 +131,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSetPieces.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeZonePopulation.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCarGeneratorPopulation.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeDynamicSectorLists.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePathPolicy.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeExternalScriptTriggers.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeScriptModelAnims.cpp"
@@ -244,6 +245,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldEntityInfo.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceGround.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldGround.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeDynamicSectorLists.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceSurfaces.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedResponse.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedWorld.cpp"
@@ -455,6 +457,14 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
 endif()
 
+# Ordered dynamic repeat-sector replay; no complete population authority.
+add_executable(sa_core_dynamic_sectors_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeDynamicSectorListsProbe.cpp")
+target_link_libraries(sa_core_dynamic_sectors_probe PRIVATE sa_core)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_core_dynamic_sectors_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+endif()
 # P2-A04 owned isolated world probe: links ONLY sa_core, never the extension.
 add_executable(sa_core_world_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCoreWorldProbe.cpp"

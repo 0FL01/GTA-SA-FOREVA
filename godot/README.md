@@ -33,6 +33,15 @@ non-cache/LOD1 initial profile, not complete mutable CIplStore/population parity
 The updated clean package hash is
 `8bd13303369e830c54d9e95ed03b71e27b9e98eec4f8581ec460b961a77a2dcb`.
 
+The next ownership seam is `sa_core_dynamic_sectors_probe` and
+`NativeDynamicSectorListsProbe.py --sanitized`: source physical sphere bounds,
+repeat-list insertion/reinsertion, scan dedup and the eight-candidate cap are
+tested independently from the ambient population generator. The replay consumes
+explicit actor events; rebuilding lists from a pool snapshot is not equivalent.
+It keeps population completenessfalse and cannot authorize the pending generator
+spawn by itself. Direct314 and extracted-reference10213 checks pass; the current
+unchanged mission route still has the strict CollisionBlockage frontier.
+
 The source SCM player starts from the base MODEL_PLAYER placeholder. In the
 native new-game host only, the source wardrobe prepares actual modular CJ
 before the parser worker starts, keeps the ped hidden until the four authored

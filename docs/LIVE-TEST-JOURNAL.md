@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-07 — 2026-09-29, DIRECT; physical repeat-sector event ordering
+
+- Native `9b04adf1` adds the pointer-free `NativeDynamicSectorLists` replay. Source virtual-path review and read-only retail RE distinguish physical COL-sphere bounds/no clamp from static Entity box bounds/clamp; preserve the original low-bit repeat mapping and double-then-float grid arithmetic.
+- Extracted Physical reference bodies (their disabled test reference explicitly enabled), World traversal and source-node-reuse fixtures match13 event sequences/10213 checks under ASan/UBSan. Direct314 includes cap8 before Z, ninth-blocker reinsert, negative repeat order, ULP sector spill, aliases,140/110 pools and500-link upper-bound atomic rejection. Source population/shared allocator completeness is not claimed.
+- Full builds, contextual ground sanitizer111582, core79/Session5486/scheduling106/frame104, smoke and native34/0 pass. Extension/package remains byte-identical `8bd13303369e830c54d9e95ed03b71e27b9e98eec4f8581ec460b961a77a2dcb`; no pixel rerun is substituted. The real generator route still refuses incomplete census, and current mission/target/Big Smoke gates remain open.
+
 ### GODOT-P9-06 — 2026-09-29, DIRECT; contextual building-only ground ownership
 
 - Native `5d753b91` preserves exact primitive-empty COL headers and consumes the disk-validated IPL graph under an explicit initial non-cache/LOD1 profile. The complete extracted `LinkLods` oracle proves the parent-count invariant; possible shared collider envelopes are propagated conservatively. Nearby unresolved `lod_oiltank` and missing/changed headers remain Unsupported, never old-bound clearance.
