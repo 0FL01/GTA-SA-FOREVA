@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-09 — 2026-09-29, DIRECT; source exterior ped-coordinate kernel
+
+- Native `5abb8fb7` reuses the complete path reader for width/density/road-crossing metadata and preserves original coordinate trials, shared RNG, camera-specific annuli, ground rejection and seed-only jitter. Independent reference testing exposed the source repeated-square-root local; the implementation retains it rather than repairing the algorithm or changing the oracle.
+- Direct1023 and514 isolated-reference comparisons cover250 actual-node cases,66 successes, all RNG state/draws and output bits; strict ASan/UBSan passes. Camera/ground fixtures and x87 control0x37f are explicit. No original code/media is copied to the package or required by application runtime; the dev image pins Unicorn2.1.3.
+- Full builds, path15/population248/Session5486/frame104, smoke/native34/0 and dev-image rebuild pass. Extension/package byte identity remains `8bd13303369e830c54d9e95ed03b71e27b9e98eec4f8581ec460b961a77a2dcb`. Actual birth/frustum/ground/path-switch integration and census completeness remain open; no new mission or target acceptance is claimed.
+
 ### GODOT-P9-08 — 2026-09-29, DIRECT; source ambient ped expiry policy
 
 - Native `9ac88f41` preserves ManagePed's protected-actor guards, strict death-fade thresholds, source distance/camera exemptions and unsigned keep/death timer wrap. Output is a removal request, not a fabricated world/pool effect or complete census.

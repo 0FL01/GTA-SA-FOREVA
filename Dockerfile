@@ -52,7 +52,7 @@ RUN if [ -n "$UBUNTU_MIRROR" ]; then \
 
 # Conan 2 (Ubuntu 24.04 pip is externally-managed -> break-system-packages is intended here)
 # + Python RE libs for PE analysis (lief/capstone) - GUI disassemblers stay on host.
-RUN pip3 install --break-system-packages "conan>=2" lief capstone pefile \
+RUN pip3 install --break-system-packages "conan>=2" lief capstone pefile "unicorn==2.1.3" \
     && mkdir -p /opt/conan /opt/ccache \
     && conan profile detect --force \
     && conan --version && cmake --version && gcc --version | head -n 1
