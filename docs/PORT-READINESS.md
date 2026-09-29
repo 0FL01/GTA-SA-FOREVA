@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active DIRECT.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `5abb8fb7`: source ped-coordinate/width-jitter selection matches250 isolated retail cases with exact RNG/output bits beside expiry, sector replay and contextual ground. Actual ambient birth/census and generator spawn remain unresolved; native Clear is not source readiness.61/68 atoms (89.7%) is not game readiness. Fedora44/Wayland/Radeon780M/real-audio gates remain separately external.
+**Execution is active DIRECT.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `bac63ce6`: ambient type selection matches720 isolated retail cases, beside coordinate selection, expiry, sector replay and contextual ground. Actual model/birth/census and generator spawn remain unresolved; native Clear is not source readiness.61/68 atoms (89.7%) is not game readiness. Fedora44/Wayland/Radeon780M/real-audio gates remain separately external.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 

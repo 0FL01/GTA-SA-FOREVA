@@ -169,7 +169,15 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-29 — source exterior ped-coordinate kernel verified; birth/census still incomplete
+### 2026-09-29 — source ambient type selection verified; model/birth authority still incomplete
+
+- **Versions/status:** native `bac63ce6` is committed/pushed; root companion contains this checkpoint, based on `91175fd`. P9-A01/full goal remain active,61/68 unchanged. No new current mission, Fedora closure or interactive Big Smoke acceptance is claimed.
+- **Source decision:** `NativeSelectAmbientPed` preserves civilian/cop/dealer/gang deficit draws in that order, dealer→gang→cop→civilian tie priority, last loaded dealer in source group order, disabled/only-gang policies and failed-model fallback. The station's integer `/32768` percentage is distinct from the deficit float `/32767` consumer; boundary draws22937/22938 are pinned. All draws use the borrowed sole source stream.
+- **Independent evidence:** direct1576 checks and720 controlled cases match the isolated original selector's result, model/type, full RNG state/draw count and model-observation calls, normally and under ASan/UBSan. Original function SHA256 is `a2912c529b1fd5d70ea13b8db8f92fdf60e89db40ea27bae2810b5c814f7e632`; logs are `artifacts/graphics/NativeAmbientPedSelectionProbe[-sanitized].log`. External model helpers are explicitly controlled fixtures; the application has no original-code dependency.
+- **Authority boundary:** unknown dealer group is not an empty group, and missing police/gang/civilian model observations remain Unsupported. No ped is created, posed or inserted into world/pool lists, and this selector does not certify ambient census completeness. Actual model helper/roster ownership and the birth controller remain the next local work before generator clearance/spawn.
+- **Regression/delivery:** full native/Godot-native builds, Session5486/frame104, smoke and native34/0 pass; PID1 docker-init/zombies0. Extension and existing package remain byte-identical SHA256 `8bd13303369e830c54d9e95ed03b71e27b9e98eec4f8581ec460b961a77a2dcb`; no unrelated pixel or long mission reflight is claimed.
+
+### Prior — source exterior ped-coordinate kernel verified; birth/census still incomplete
 
 - **Versions/status:** native `5abb8fb7` is committed/pushed; root companion contains this checkpoint, based on `06b8f9b`. P9-A01/full goal remain active,61/68 unchanged. Current first-mission, Fedora closure and interactive Big Smoke remain unpassed; coordinate selection alone is not actor creation or generator clearance.
 - **Source algorithm:** the existing path reader now retains byte22 width, byte26 ped density and road-crossing links. `NativeGeneratePedCreationCoordinates` preserves the shared density draw,300 source node trials, original link order, five point trials, strict visible/hidden annuli, hidden parity draw and whole-request rejection when source ground differs by more than3. It also preserves the original repeated-square-root local across qualifying links. Width jitter consumes the caller's seed without drawing a second stream.

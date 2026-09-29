@@ -58,6 +58,15 @@ draws. Camera/ground observations and x87 control0x37f are explicit fixtures;
 unavailable authority is Unsupported, not invisible or missed. The fixture's
 all64 loaded path areas do not certify current runtime residency or road-switch
 state. No ambient actor is created and census completeness stays false.
+
+`sa_core_ambient_ped_selection_probe` and
+`NativeAmbientPedSelectionProbe.py --sanitized` preserve the source type-deficit
+and model-choice decision (direct1576,720 isolated retail cases). The station's
+integer percentage, four deficit RNG draws, tie priority and dealer order are
+tested separately from actual loaded-ped/model helpers. Those helpers are
+explicit observations: unavailable authority is Unsupported, not an empty
+roster or a fabricated default model. This kernel creates no actor and does not
+close source census or generator fulfillment.
 The dev image pins Unicorn2.1.3 solely for this test; no original executable,
 emulator or reference bytes are used by the application or shipped package.
 

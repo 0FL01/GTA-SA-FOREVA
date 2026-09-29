@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-10 — 2026-09-29, DIRECT; source ambient type selector
+
+- Native `bac63ce6` preserves deficit RNG order, dealer/gang/cop/civilian tie priority, source last-loaded dealer and failed-model fallback. Station `/32768` integer percentage and deficit `/32767` float consumers remain distinct, including draws22937/22938.
+- Direct1576 and720 isolated retail comparisons pass normally and under ASan/UBSan, checking selection, all RNG state/draws and model-observation calls. Helpers are controlled fixtures; unknown observations cannot become MODEL_INVALID or authorize birth/census clearance.
+- Full builds, Session5486/frame104, smoke/native34/0 pass; extension/package remains `8bd13303369e830c54d9e95ed03b71e27b9e98eec4f8581ec460b961a77a2dcb`, docker-init/zombies0. Actual model/birth integration remains next;61/68 and target/mission acceptance are unchanged.
+
 ### GODOT-P9-09 — 2026-09-29, DIRECT; source exterior ped-coordinate kernel
 
 - Native `5abb8fb7` reuses the complete path reader for width/density/road-crossing metadata and preserves original coordinate trials, shared RNG, camera-specific annuli, ground rejection and seed-only jitter. Independent reference testing exposed the source repeated-square-root local; the implementation retains it rather than repairing the algorithm or changing the oracle.
