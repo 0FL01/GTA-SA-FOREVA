@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-15 — 2026-09-29, DIRECT; source ped request selection and ordered slot plans
+
+- Native `79763870`: the original selector uses strict `<` percentage boundaries, rand15/32768 with a float spill,10 attempts and pre-incremented per-group cursors. All8 requested identities exclude duplicates even before assets are loaded. The source33x3 group translation is verified against owned data and binds actual metadata in all3 world regions; missing observations remain unavailable.
+- Direct9746 checks and original3072 selector/256 slot-update comparisons pass normally and under ASan/UBSan, including RNG/cursors and ordered model/TXD-deletable/KEEP request effects. Same-model replacement, duplicate slots and -2 versus other negative sentinels are retained. Actual metadata adapter825/namespace294 and independent all-row/canonical oracle pass; full builds, Session5486/frame100 and smoke pass.
+- Slot mutation is a pure effect plan, not asset readiness or a live ambient controller. Zone scheduling, sole-worker completions, real references, births and complete census remain local work. Extension/package SHA remains `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`, docker-init/zombies0; existing Wayland shutdown diagnostic, mission frontier and Fedora acceptance are not closed.61/68 is unchanged.
+
 ### GODOT-P9-14 — 2026-09-29, DIRECT; ped data namespace and actual model policies
 
 - Native `b2ae0740` shares the original118 animation declarations and32 ped-type names with the DLL and reuses the full ordered IDE reader, case-qualified read-only IO and bounded text grammar. Owned startup snapshot qualifies276 ped models,43 stats,139 animation groups and57 ped groups; source fallback/stat/race/group order is preserved, never a loaded-model assumption.
