@@ -19,9 +19,19 @@ groups and480 popcycle rows to an explicit ordered roster and source RNG,
 proving real ELS1a normal-car eligibility without treating model400 as a
 fallback. The runtime now streams genuine zone-selected models through that
 sole worker and retains exact loaded scene/COL order. Shared-RNG completion
-advances only to typed source blockage; complete ambient/sector/building-ground
-and world/pool spawn remain unresolved. No first-
+advances only to typed source blockage; contextual initial-world building-ground
+is now qualified, but complete ambient/sector and world/pool spawn remain unresolved. No first-
 mission or target closure is inferred from this fixture.
+
+`NativeWorldGroundProbe.py` (also `--sanitized`) exercises source-extracted
+constructor/sector/LinkLods code, exact empty-header ownership and contextual
+initial building-only queries. The generator18 witness has8 candidates and
+height22.99150276; near unresolved shared-model aliases and missing/stale
+headers still reject. `NativeScriptWorldPublicationProbe.py` verifies the same
+query against actual paired GPU/source-COL generations3/4/5. This is an explicit
+non-cache/LOD1 initial profile, not complete mutable CIplStore/population parity.
+The updated clean package hash is
+`8bd13303369e830c54d9e95ed03b71e27b9e98eec4f8581ec460b961a77a2dcb`.
 
 The source SCM player starts from the base MODEL_PLAYER placeholder. In the
 native new-game host only, the source wardrobe prepares actual modular CJ

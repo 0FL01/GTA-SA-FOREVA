@@ -4,6 +4,13 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-06 — 2026-09-29, DIRECT; contextual building-only ground ownership
+
+- Native `5d753b91` preserves exact primitive-empty COL headers and consumes the disk-validated IPL graph under an explicit initial non-cache/LOD1 profile. The complete extracted `LinkLods` oracle proves the parent-count invariant; possible shared collider envelopes are propagated conservatively. Nearby unresolved `lod_oiltank` and missing/changed headers remain Unsupported, never old-bound clearance.
+- Source reader/metadata/ground ASan+UBSan gate passes111582 checks and no post-publication IO. Real building-only heights are12.34375/15.80784416/10.484375/22.99150276; generator18 has8 known candidates. Real GL publications3→4→5 retain this query with GPU-before-Ready, exact generation and cancellation/adjacency checks; runner exits0/47 checks.
+- Full builds, core79/contact315/Session5486/scheduling106/frame104, smoke and native34/0 pass. New snapshot ABI triggered a fresh package/audit and Forward+ actor/pose/material/source/catalog/chain/async routes. A source-material post-marker timeout124 was rejected; a separate sequential rerun exited0. New extension/package SHA256 `8bd13303369e830c54d9e95ed03b71e27b9e98eec4f8581ec460b961a77a2dcb`; docker-init/zombies0.
+- This does not complete source ambient census/sector lists or generator spawn. The last unchanged long mission remains an exit1 blockage frontier; no target closure or human Big Smoke acceptance is inferred.
+
 ### GODOT-P9-05 — 2026-09-29, DIRECT; script CPU/COL/GPU pair and source loaded cars
 
 - Native `f1afcc1b` captures actual sole-worker car-model publications in order and performs source shared-RNG selection. The retained demand advances only to source vehicle/ped CollisionBlockage. Both model and TXD in-flight slots reject competing tickets; texture40 and loaded-car25 direct/sanitizer paths pass.
