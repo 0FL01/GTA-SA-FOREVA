@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active DIRECT.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `6a175f1b`: source-qualified ped metadata, policy/request/slot kernels and the original civilian zone-stream phase are verified. The timer is299 after a zone change versus300 after a single replacement. Live cycle/zone/gang scheduling, parser-completed slots, reference/birth/census and generator effects remain unresolved; requested identity or native Clear is not source readiness.61/68 atoms (89.7%) is not game readiness. Fedora44/Wayland/Radeon780M/real-audio gates remain separately external.
+**Execution is active DIRECT.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `d03e5b91`: source-qualified ped metadata, policy/request/slot kernels, the original civilian zone-stream phase and the shared480-row cycle/zone observation are verified. The timer is299 after a zone change versus300 after a single replacement. Live gang scheduling, parser-completed slots, reference/birth/census and generator effects remain unresolved; qualified weights, requested identity or native Clear are not source readiness.61/68 atoms (89.7%) is not game readiness. Fedora44/Wayland/Radeon780M/real-audio gates remain separately external.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 

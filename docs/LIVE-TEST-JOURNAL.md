@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-17 — 2026-09-29, DIRECT; shared cycle/zone authority for car and ped consumers
+
+- Native `d03e5b91` shares the existing inclusive3D/smallest-span zone and480-row cycle observation between cars and peds, preserving authored rescaling/order and current explicit clock/week/zone settings without duplicate IO or a second RNG. Ped qualification binds actual weights/race/groups, not requested or loaded slots; missing proof retains outputs and cannot become a no-zone/default-row/empty-roster shortcut.
+- Normal and ASan/UBSan/Werror cycle3878 checks cover every actual row,960 clock/week cases,3 regions and car regressions; the independent owned-data row oracle passes. Original streaming13856/3072+256+2048, metadata825/namespace294/canonical oracle, full builds, Session5486/frame100 and smoke pass. Extension/package remain `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`, docker-init/zombies0.
+- Source gang scheduling, live requested/loaded assets, references, actor births/census and generator fulfillment remain local work. No full mission, new pixels, Wayland diagnostic or Fedora closure is claimed;61/68 remains unchanged.
+
 ### GODOT-P9-16 — 2026-09-29, DIRECT; source civilian zone-stream phase
 
 - Native `6a175f1b` retains original guards, requested-state counts/order, first zero-ref/empty scan, first-free insertion, minimum4 zone refill and failed-selection holes. Original zone changes leave timer299, successful same-zone replacements300, unlike the upstream uniform300. Unavailable identity/refcount/selection facts cannot authorize a replacement; consumed intent/RNG/cursor prefixes are retained explicitly.
