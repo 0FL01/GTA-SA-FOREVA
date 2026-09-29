@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active DIRECT.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `1798ceed`: source gang-model/sequence traversal matches630 isolated cases, beside the civilian/type/coordinate/expiry/sector/ground kernels. Actual loaded-ped data, birth/census and generator spawn remain unresolved; native Clear is not source readiness.61/68 atoms (89.7%) is not game readiness. Fedora44/Wayland/Radeon780M/real-audio gates remain separately external.
+**Execution is active DIRECT.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `5064fef3`: original zone/stat/attractor policies match31392 isolated cases, beside the gang/civilian/type/coordinate/expiry/sector/ground kernels. Actual loaded-ped data, birth/census and generator spawn remain unresolved; native Clear is not source readiness.61/68 atoms (89.7%) is not game readiness. Fedora44/Wayland/Radeon780M/real-audio gates remain separately external.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 

@@ -86,6 +86,13 @@ draws, original direction bit4 and the non-FF override's first-model shortcut.
 Unknown group/streaming state stays unavailable, not unloaded. The group and
 streaming fixtures do not create an actor or close runtime census completeness.
 
+`sa_core_ped_model_policies_probe` and `NativePedModelPoliciesProbe.py --sanitized`
+verify the original zone race-mask, two-argument stats and attractor policies
+(direct31406,31392 isolated cases). Both stats operands matter, the old-person
+rule is asymmetric, unknown non-cop attractor names are permitted and STRIPM
+uses the original inequality. Model/zone observations remain explicit; these
+helpers do not load models, create actors or certify an ambient census.
+
 The source SCM player starts from the base MODEL_PLAYER placeholder. In the
 native new-game host only, the source wardrobe prepares actual modular CJ
 before the parser worker starts, keeps the ped hidden until the four authored

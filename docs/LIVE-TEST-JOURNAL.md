@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-13 — 2026-09-29, DIRECT; original zone/stat/attractor model policies
+
+- Native `5064fef3` preserves the source race mask, both stats operands/asymmetric old-person rule and exact attractor branches. Independent original execution confirms non-cop unknown-name acceptance and STRIPM inequality rather than the upstream changed defaults.
+- Direct31406 and31392 isolated policy comparisons pass normally and under ASan/UBSan. Model/zone/cheat state and the CRT string comparator are controlled observations; source code/tables are hash-pinned, never application dependencies or redistributed payloads.
+- Full builds, Session5486/frame104, smoke and native34/0 pass; extension/package stays byte-identical and docker-init/zombies0. Actual loaded-ped data, birth/census and generator fulfillment remain unresolved. No mission/target/interactive acceptance is claimed.
+
 ### GODOT-P9-12 — 2026-09-29, DIRECT; original gang-model sequence
 
 - Native `1798ceed` preserves zone0 count/current-zone data and the shared two-draw source sequence. Isolated original bodies prove direction bit4, not the upstream bit2 formula; any non-FF override selects the first row model without consulting loaded state.

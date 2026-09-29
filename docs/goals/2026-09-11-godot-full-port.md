@@ -169,7 +169,14 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-29 — source gang-model sequence verified; birth/census still incomplete
+### 2026-09-29 — original ped model policies verified; birth/census still incomplete
+
+- **Versions/status:** native `5064fef3` is committed/pushed; root companion contains this checkpoint, based on `9fc0cc6`. Full goal/P9-A01 remain active,61/68 unchanged. No current mission, Fedora closure or interactive Big Smoke acceptance is claimed.
+- **Source corrections:** zone acceptance preserves the current zone's low four race bits and the source cheat/no-zone early guards. Stats compatibility checks both operands, excludes the original categories and retains its asymmetric old-person rule; the upstream early return cannot substitute for it. Attractor policy preserves the original unknown-name acceptance for non-cops, `STRIPM` inequality and exact source model allow/exclusion lists rather than the changed refactor defaults.
+- **Independent evidence:** direct31406 checks and31392 isolated original-function comparisons pass normally and under ASan/UBSan. Original body hashes are `14bdfb88967f44dd971c10ea2548e97ca57a4e8f1ccf4ea8ec97490dae7fb1ee`, `b82f8032e2849f236dd24e3d2514bdff9d50dfeda754de798cf13a319328a450` and `08373f41184791445d0698eb8f473bca0454e011ee6f76ee2dbdf72736105d0e` (including attractor tables). Logs: `artifacts/graphics/NativePedModelPoliciesProbe[-sanitized].log`. Model/zone/cheat observations are explicit fixtures; the application never calls original executable code.
+- **Authority/regression:** these helpers neither load models nor create, pose or insert actors, and unknown model data cannot become a default race/civilian. Actual loaded-ped metadata/roster and ambient birth/census remain local work before generator clearance. Full native/Godot builds, Session5486/frame104, smoke and native34/0 pass; docker-init/zombies0. Extension/package stays byte-identical `8bd13303369e830c54d9e95ed03b71e27b9e98eec4f8581ec460b961a77a2dcb`; no unnecessary pixel or long mission reflight is claimed.
+
+### Prior — source gang-model sequence verified; birth/census still incomplete
 
 - **Versions/status:** native `1798ceed` is committed/pushed; root companion contains this checkpoint, based on `5959c32`. Full goal/P9-A01 remain active,61/68 unchanged. No current mission, Fedora closure or interactive Big Smoke acceptance is claimed.
 - **Source correction:** gang selection uses zone0's group count but the current world-zone row. The original sequence consumes two shared rand15 draws and takes direction from bit4, unlike the upstream bit2 refactor. Any non-FF override returns the row's first model without RNG or a loaded-state check; the override byte is not an index. Unknown groups/streaming cannot be treated as absent, and empty modulo-zero input is rejected safely.
