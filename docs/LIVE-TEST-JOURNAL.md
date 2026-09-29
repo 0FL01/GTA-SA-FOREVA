@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-20 — 2026-09-29, DIRECT; source gang demand and exact distance boundary
+
+- Native `395c0c3a` qualifies zone-strength/streets-cheat/GangWars demand with original XY float spills, extended squared sum and strict distance<150. Known NO_ATTACK and verified no-zone preserve source early guards; missing state/positions/gang/cheat stay typed and output-atomic. The adapter reuses live cycle zone strengths without inventing requested/loaded assets or a war controller.
+- Normal and ASan/UBSan/Werror streaming55245 checks include6625 original demand-prefix comparisons, with the original GangWars helper and CRT sqrt executing in isolated development memory; player/war state remain explicit observations. Earlier3072/256/2048/4328/6481 comparisons, cycle5840/all480 rows/960 clock cases/3 regions/10 car groups, metadata867/namespace294/canonical oracle, full builds, Session5486/frame100 and smoke pass. Extension/package remain `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`, docker-init/zombies0 and immutable approval backup pass.
+- A first oracle experiment restored the original helper after a RET fixture but retained Unicorn's cached translation; explicit cache invalidation restored genuine execution and all comparisons pass. No product workaround or relaxed expectation was used. Genuine live war/streaming/model completion/reference/birth/census and generator effects remain local work;61/68 is unchanged. No new pixels, full mission, Wayland diagnostic or Fedora closure is claimed.
+
 ### GODOT-P9-19 — 2026-09-29, DIRECT; original gang request masks and car dependencies
 
 - Native `a35b9c1f` preserves source-ordered double ped KEEP requests, full ped-group retirement, interleaved car selection, shared CRT draws and request-mask publication. The original nonempty loaded-car guard is retained literally, not fixed; original CountMembers uses a negative terminator. Actual car identities reuse the existing reader, never authorize loaded flags. Final GangWars demand and live streaming/car-group observations remain explicit/unowned; unknown facts preserve typed consumed prefixes.
