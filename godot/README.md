@@ -42,6 +42,13 @@ It keeps population completenessfalse and cannot authorize the pending generator
 spawn by itself. Direct314 and extracted-reference10213 checks pass; the current
 unchanged mission route still has the strict CollisionBlockage frontier.
 
+`sa_core_ambient_ped_policy_probe` and `NativeAmbientPedPolicyProbe.py --sanitized`
+cover the source `ManagePed` expiry/fade/deadline rules (direct52, literal-body30000
+cases). They preserve source timer wrap and camera exemptions, but only return a
+removal request. Real visibility, world-list/pool removal, actor creation and
+complete ambient census remain separate owners; this does not authorize generator
+clearance or claim the mission/target gate has passed.
+
 The source SCM player starts from the base MODEL_PLAYER placeholder. In the
 native new-game host only, the source wardrobe prepares actual modular CJ
 before the parser worker starts, keeps the ped hidden until the four authored

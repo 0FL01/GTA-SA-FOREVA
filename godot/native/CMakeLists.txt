@@ -154,6 +154,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePathGraph.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceEventFlow.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePopulationRuntime.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeAmbientPedPolicy.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCombatRuntime.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWantedRuntime.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeRestartLifecycle.cpp"
@@ -223,6 +224,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceRng.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePad.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourcePedControl.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeAmbientPedPolicy.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceJump.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceAnimClump.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceWalkRun.cpp"
@@ -465,6 +467,15 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_dynamic_sectors_probe PRIVATE
         -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
 endif()
+# Ambient expiry policy requires real visibility/camera/owner values; not census completeness.
+add_executable(sa_core_ambient_ped_policy_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeAmbientPedPolicyProbe.cpp")
+target_link_libraries(sa_core_ambient_ped_policy_probe PRIVATE sa_core)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_core_ambient_ped_policy_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+endif()
+
 # P2-A04 owned isolated world probe: links ONLY sa_core, never the extension.
 add_executable(sa_core_world_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeCoreWorldProbe.cpp"

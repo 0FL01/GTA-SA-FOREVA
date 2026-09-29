@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-08 — 2026-09-29, DIRECT; source ambient ped expiry policy
+
+- Native `9ac88f41` preserves ManagePed's protected-actor guards, strict death-fade thresholds, source distance/camera exemptions and unsigned keep/death timer wrap. Output is a removal request, not a fabricated world/pool effect or complete census.
+- Direct52 and30000 comparisons against literal ManagePed/Vector source bodies pass normally and under ASan/UBSan; source hash and full logs live under `artifacts/graphics/NativeAmbientPedPolicyProbe*`. Invalid arithmetic retains state/output.
+- Full builds, dynamic314, Session5486/frame104, smoke and native34/0 pass; extension/package remains byte-identical `8bd13303369e830c54d9e95ed03b71e27b9e98eec4f8581ec460b961a77a2dcb`, docker-init/zombies0. Ambient creation and actual generator/world/pool fulfillment remain local work;61/68 and target/interactive acceptance are unchanged.
+
 ### GODOT-P9-07 — 2026-09-29, DIRECT; physical repeat-sector event ordering
 
 - Native `9b04adf1` adds the pointer-free `NativeDynamicSectorLists` replay. Source virtual-path review and read-only retail RE distinguish physical COL-sphere bounds/no clamp from static Entity box bounds/clamp; preserve the original low-bit repeat mapping and double-then-float grid arithmetic.
