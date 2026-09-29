@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-18 — 2026-09-29, DIRECT; original gang timer and rolling request intents
+
+- Native `9d64bed5` preserves the independent timer0-to-minus1 wait,550 reset, modulo21 member wrap and exact old/unwrapped versus new/wrapped group pairs. Ordered model/TXD retirement and GAME_REQUIRED-only requests use actual metadata group order and an explicitly observed requested-gang mask, not loaded state; no RNG is consumed. Unknown observations preserve typed boundaries and already-emitted prefixes.
+- Normal and ASan/UBSan/Werror streaming22522 checks include original4328 gang phases,3072 selector/256 slot-plan/2048 civilian-phase comparisons. The complete original call verifies gang state/effects with an explicitly waiting civilian phase and external queue flags. Metadata867/namespace294/canonical/actual-data oracle, cycle3878/all480 rows, full builds, Session5486/frame104 and smoke pass. Extension/package remain `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`, docker-init/zombies0; immutable approval backup passes.
+- The separate gang-mask transition/car-loading controller, live asset completion/refcounts/births/census and generator effects remain local work. No new pixels, full mission, Wayland diagnostic or Fedora closure is claimed;61/68 remains unchanged.
+
 ### GODOT-P9-17 — 2026-09-29, DIRECT; shared cycle/zone authority for car and ped consumers
 
 - Native `d03e5b91` shares the existing inclusive3D/smallest-span zone and480-row cycle observation between cars and peds, preserving authored rescaling/order and current explicit clock/week/zone settings without duplicate IO or a second RNG. Ped qualification binds actual weights/race/groups, not requested or loaded slots; missing proof retains outputs and cannot become a no-zone/default-row/empty-roster shortcut.
