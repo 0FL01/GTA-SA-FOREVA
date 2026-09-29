@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-16 — 2026-09-29, DIRECT; source civilian zone-stream phase
+
+- Native `6a175f1b` retains original guards, requested-state counts/order, first zero-ref/empty scan, first-free insertion, minimum4 zone refill and failed-selection holes. Original zone changes leave timer299, successful same-zone replacements300, unlike the upstream uniform300. Unavailable identity/refcount/selection facts cannot authorize a replacement; consumed intent/RNG/cursor prefixes are retained explicitly.
+- Normal and ASan/UBSan direct13856 plus original3072 selector/256 slot-plan/2048 civilian-phase comparisons pass, including complete state and ordered request/flag/model/TXD effects. The original oracle intentionally stops before gang scheduling; loaded flags/refcounts are fixtures, not a real asset or actor owner. Actual metadata825/namespace294, canonical/asset oracle, full builds, Session5486/frame100 and smoke pass.
+- Extension/package hash remains `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`, docker-init/zombies0. Live cycle/zone bindings, gang tail, sole-worker ped completion/reference/birth/census and generator effects remain local work. No full mission, Fedora, Wayland diagnostic or61/68 closure is claimed.
+
 ### GODOT-P9-15 — 2026-09-29, DIRECT; source ped request selection and ordered slot plans
 
 - Native `79763870`: the original selector uses strict `<` percentage boundaries, rand15/32768 with a float spill,10 attempts and pre-incremented per-group cursors. All8 requested identities exclude duplicates even before assets are loaded. The source33x3 group translation is verified against owned data and binds actual metadata in all3 world regions; missing observations remain unavailable.
