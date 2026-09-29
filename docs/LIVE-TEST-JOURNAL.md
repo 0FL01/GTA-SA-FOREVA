@@ -4,6 +4,12 @@ Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-11 — 2026-09-29, DIRECT; original civilian occupation traversal
+
+- Native `9bf5b6ec` preserves the original nested reference-count/all-eight-slots scan and3/5/7 pass limits. It corrects the upstream refactor hypothesis rather than treating that changed slot order as source authority.
+- Direct1292 checks and640 isolated retail cases match model result and policy call order under normal and ASan/UBSan builds. Streaming/model metadata and zone/attractor/stat policies are controlled observations; birth and ambient census are explicitly unowned.
+- Full builds, Session5486/frame104, smoke and native34/0 pass. Package/extension hash is unchanged; docker-init/zombies0. The unchanged mission's typed CollisionBlockage remains unresolved; no target or interactive mission success is claimed.
+
 ### GODOT-P9-10 — 2026-09-29, DIRECT; source ambient type selector
 
 - Native `dd2b8440` (base `bac63ce6`) preserves deficit RNG order, dealer/gang/cop/civilian tie priority, source last-loaded dealer and failed-model fallback. Station `/32768` integer percentage and deficit `/32767` float consumers remain distinct, including draws22937/22938. The actual original police helper returns CITYCOP constructor key0, not a loaded model ID.

@@ -2,7 +2,7 @@
 
 ## Active execution
 
-**Execution is active DIRECT.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `dd2b8440`: ambient type selection matches720 isolated retail cases and retains CITYCOP constructor key0, beside coordinate selection, expiry, sector replay and contextual ground. Actual model/birth/census and generator spawn remain unresolved; native Clear is not source readiness.61/68 atoms (89.7%) is not game readiness. Fedora44/Wayland/Radeon780M/real-audio gates remain separately external.
+**Execution is active DIRECT.** The [current checkpoint](goals/2026-09-11-godot-full-port.md#current-checkpoint-and-evidence) records native `9bf5b6ec`: civilian occupation traversal matches640 isolated retail cases across all eight slots and original refcount passes, beside the source type/coordinate/expiry/sector/ground kernels. Actual loaded-ped data, birth/census and generator spawn remain unresolved; native Clear is not source readiness.61/68 atoms (89.7%) is not game readiness. Fedora44/Wayland/Radeon780M/real-audio gates remain separately external.
 
 User approved long-term implementation of the [full Godot-port goal](goals/2026-09-11-godot-full-port.md). That single goal owns the immutable plan backup, atomic work ledger and detailed gates; this file is the sole navigation roadmap. [RECON](GODOT-FULL-PORT-RECON.md) and the live journal retain evidence rather than duplicate plans.
 

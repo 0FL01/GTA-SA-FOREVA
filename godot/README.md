@@ -71,6 +71,14 @@ close source census or generator fulfillment.
 The dev image pins Unicorn2.1.3 solely for this test; no original executable,
 emulator or reference bytes are used by the application or shipped package.
 
+`sa_core_civilian_occupation_probe` and
+`NativeCivilianOccupationProbe.py --sanitized` preserve the original civilian
+helper's nested reference-count passes over all eight loaded-ped slots. The
+source3/5/7 limits are not a first-N-slots scan; a refcount0 model in slot7 can
+precede refcount1 in slot0. Direct1292 and640 isolated retail cases verify model
+selection and zone/attractor/stat observation order. Metadata/policies remain
+explicit observations, not an actual runtime roster or ambient birth/census.
+
 The source SCM player starts from the base MODEL_PLAYER placeholder. In the
 native new-game host only, the source wardrobe prepares actual modular CJ
 before the parser worker starts, keeps the ped hidden until the four authored

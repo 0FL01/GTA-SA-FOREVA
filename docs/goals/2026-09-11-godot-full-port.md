@@ -169,7 +169,15 @@ Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never r
 
 ## Current checkpoint and evidence
 
-### 2026-09-29 — source ambient type selection verified; model/birth authority still incomplete
+### 2026-09-29 — source civilian occupation traversal verified; birth/census still incomplete
+
+- **Versions/status:** native `9bf5b6ec` is committed/pushed; root companion contains this checkpoint, based on `86ee38b`. P9-A01/full goal remain active,61/68 unchanged. No current mission, Fedora closure or interactive Big Smoke acceptance is claimed.
+- **RE correction:** the original civilian helper traverses reference-count passes and all eight loaded-ped slots, not the upstream refactor's first-N slots. With occupation testing enabled it uses three passes, or five for an interior with more than20 peds; disabled testing uses seven. Refcount0 in slot7 therefore precedes refcount1 in slot0. Source MALE01 fallback belongs only to disabled occupation testing and is still rejected by the outer source type selector.
+- **Independent evidence:** direct1292 checks and640 isolated original-function cases match the chosen model and every zone/attractor/stat observation call, normally and under ASan/UBSan. Function SHA256 is `52c471e199e84807386bc0c04ad6de1e6a13ecb6796723cfef56a88cf676b5d7`; logs are `artifacts/graphics/NativeCivilianOccupationProbe[-sanitized].log`. Exact gender/animation/on-foot/interior/rain filters and unknown streaming/model/policy rejection are preserved. The application never calls the original executable.
+- **Authority boundary:** slot/model metadata and zone/attractor/stat policies are explicit fixtures, not an actual runtime loaded-ped roster or ambient census. No IO, RNG draw, actor birth, pose, world-list insertion or generator clearance is hidden in this filter. Actual helper data/roster ownership and the birth controller remain local work.
+- **Regression/delivery:** full native/Godot-native builds, Session5486/frame104, smoke and native34/0 pass; docker-init/zombies0. Extension and existing clean package remain byte-identical SHA256 `8bd13303369e830c54d9e95ed03b71e27b9e98eec4f8581ec460b961a77a2dcb`; no unrelated pixel or long mission reflight is claimed.
+
+### Prior — source ambient type selection verified; model/birth authority still incomplete
 
 - **Versions/status:** native `dd2b8440` is committed/pushed (selector base `bac63ce6`); root companion contains this checkpoint, based on `0bb0fa6`. P9-A01/full goal remain active,61/68 unchanged. No new current mission, Fedora closure or interactive Big Smoke acceptance is claimed.
 - **Source decision:** `NativeSelectAmbientPed` preserves civilian/cop/dealer/gang deficit draws in that order, dealer→gang→cop→civilian tie priority, last loaded dealer in source group order, disabled/only-gang policies and failed-model fallback. The station's integer `/32768` percentage is distinct from the deficit float `/32767` consumer; boundary draws22937/22938 are pinned. All draws use the borrowed sole source stream.
