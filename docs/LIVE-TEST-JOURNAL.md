@@ -4,6 +4,12 @@ Updated: 2026-10-01. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-25 — 2026-10-01, DIRECT; original skinned hit-COL construction
+
+- Native `0feb2e89` constructs all12 canonical skinned spheres, source material/piece fields, bounds and COL slot with literal RW root inverse/PRECONCAT/point arithmetic. Explicit current matrix observations remain necessary: parsed frame LTMs are not silently promoted to an updated HAnim array. Unknown/invalid data retains prior output; no Loaded, actor or census flag changes.
+- Normal and ASan/UBSan/Werror/strict-FP12342 checks match4112 complete original constructions bit-for-bit, including general/orthonormal inverses, identity shortcuts and signed zero. Actual original RW math runs; allocation and matrix observations remain explicit. Parser48 checks, independent96-bone/3065-vertex/3356-triangle/root-local DFF oracle and all265 available ordinary packet fixtures pass; ten special declarations stay unbound. Full native/Godot builds, texture40, source vehicle lifecycle115, real publication45, native sweep34/0, Session5486/frame100 and smoke pass. Logs: `artifacts/graphics/NativePedHitCollisionProbe[-sanitized].log`, `NativePedAssetsProbe[-sanitized].{log,catalog.log}`, `ped-hit-col-{vehicle-lifecycle,publication,etalon}.log`.
+- Extension/package stay `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`, docker-init/zombies0 and immutable backup pass. Live hierarchy/animation/renderer/resource/ref effects, actor birth/census and generator fulfillment remain local work;61/68 is unchanged. No new pixels, full mission, Wayland shutdown resolution or target closure is claimed.
+
 ### GODOT-P9-24 — 2026-10-01, DIRECT; original first-atomic skin setup
 
 - Native `50b4df4d` preserves the first atomic's literal division by the float-spilled extended sum, morph-radius scaling with widened `1.2F`, `0x3000` hierarchy flags and complex-hierarchy bypass. Base hierarchy observations stay explicit, not inferred from IDE flags. Owned parser packets retain raw morph radius/hierarchy flags and authored weights; normalization plans do not grant source LOADED, hit-COL, animation, hierarchy binding, renderer or reference authority.
