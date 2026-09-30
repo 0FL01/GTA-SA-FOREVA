@@ -4,6 +4,12 @@ Updated: 2026-10-01. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-22 — 2026-10-01, DIRECT; original model/TXD request effects
+
+- Native `92556bdc` preserves source request flag writes, priority stripping/increments, list operations, TXD/animation dependency order and REQUESTED publication, plus GAME_REQUIRED deletion and mission/KEEP guards. Pure atomic plans retain unknown facts; recursive dependencies and `RemoveModel` remain unfulfilled effects, never fabricated LOADED/unloaded states.
+- Normal and ASan/UBSan/Werror/strict-FP31933 checks plus13400 original requests/2560 original deletable calls pass. Real original list insertion executes; ordered effects, flags/state, backlinks and wrapping counters match. Type/parent/animation slots and removal are explicit observations/effects. Full native/Godot builds, Session5486/frame100 and smoke pass; logs are `artifacts/graphics/NativeModelStreamingProbe[-sanitized].log`.
+- Extension/package remain `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`, docker-init/zombies0 and immutable approval backup pass. Genuine source asset tables, sole-worker completion, live war effects, references/birth/census and generator effects remain local work;61/68 is unchanged. No new pixels, full mission, Wayland diagnostic or target closure is claimed.
+
 ### GODOT-P9-21 — 2026-10-01, DIRECT; original startup writes and war-update admission
 
 - Native `9032f1ec` initializes only the source gang-war startup fields and requested-ped slots/cursors/mask, preserving coordinates/gang observations, static timers, rotation and requested cars. The pure update plan retains EndGangWar→mission publication→cutscene/territory→disabled/coop/controller order and the original low-byte frame56 test; it does not execute those dependent effects or authorize later NO_ATTACK from an unowned producer.
