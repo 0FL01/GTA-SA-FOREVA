@@ -1,8 +1,14 @@
 # Live-test journal
 
-Updated: 2026-09-29. [Readiness roadmap](PORT-READINESS.md) · [full chronology](goals/2026-09-08-linux-native-opengl-port.md)
+Updated: 2026-10-01. [Readiness roadmap](PORT-READINESS.md) · [full chronology](goals/2026-09-08-linux-native-opengl-port.md)
 
 ## Entry contract
+
+### GODOT-P9-21 — 2026-10-01, DIRECT; original startup writes and war-update admission
+
+- Native `9032f1ec` initializes only the source gang-war startup fields and requested-ped slots/cursors/mask, preserving coordinates/gang observations, static timers, rotation and requested cars. The pure update plan retains EndGangWar→mission publication→cutscene/territory→disabled/coop/controller order and the original low-byte frame56 test; it does not execute those dependent effects or authorize later NO_ATTACK from an unowned producer.
+- Normal and ASan/UBSan/Werror streaming58262 checks compare64 real startup reset ranges and512 original update prefixes, retaining all earlier selector/slot/zone/timer/mask/demand cases. Mission/coop and dependent effect calls are explicit observations/mocks; the active controller is not executed. Cycle5852 connects the actual row/groups to four initialized first-zone requests/timer299, without assuming loaded assets; all480 rows/960 clocks/3 regions/10 car groups, metadata867/namespace294/canonical oracle, full builds, Session5486/frame100 and smoke pass.
+- Extension/package remain `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`; no extra pixels, full mission or target closure is claimed. Live effect fulfillment, model/TXD completion, real references/birth/census and generator effects remain local work;61/68 stays unchanged.
 
 ### GODOT-P9-20 — 2026-09-29, DIRECT; source gang demand and exact distance boundary
 

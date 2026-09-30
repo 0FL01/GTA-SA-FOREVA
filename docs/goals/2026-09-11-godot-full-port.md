@@ -3,7 +3,7 @@
 Status: ACTIVE
 Execution: DIRECT without subagents.61/68 atoms are verified. Target-only acceptance is still externally blocked, while an independently reproducible source car-generator dependency exposed by the corrected script player remains actionable locally.
 Activated: 2026-09-11
-Last updated: 2026-09-29
+Last updated: 2026-10-01
 Approval-time snapshots: root `d147577`; native independent repository `8c62697b`
 Predecessor: [delivered Legacy Look Lab](2026-09-11-godot-legacy-look-lab.md)
 RECON evidence: [completed full-port RECON](../GODOT-FULL-PORT-RECON.md)
@@ -168,6 +168,13 @@ P0 implementation and available server gates are verified; target reflight stays
 Atom count: **68** (`P0-A01` through `P9-A06`, scoped per stage; IDs are never renumbered or reused).
 
 ## Current checkpoint and evidence
+
+### 2026-10-01 — source startup writes and gang-war update admission; effect owners still pending
+
+- **Scope/status:** native `9032f1ec` is committed/pushed; root companion is based on `066dd907`. P9-A01 remains `in_progress`,61/68 unchanged. `NativeInitializePedGangWar` establishes the six original startup fields and explicit NO_ATTACK without inventing coordinates or a gang. `NativeResetPedStreamingRequests` establishes only the original requested-ped slots/count/cursors/current-zone/ped-mask; it does **not** reset static timers, gang rotation or the requested-car mask, qualify assets or initialize references.
+- **Source semantics:** `NativePlanPedGangWarUpdate` preserves mission-transition EndGangWar, mission-flag publication, cutscene return, territory update and disabled/coop admission order. The original territory test compares the **low byte** of the frame counter with56, unlike the upstream full-counter equality. Missing observations retain outputs; EndGangWar/territory/active-controller intents must be fulfilled in order before their dependent state is consumed. This is an admission plan, not a live war-controller implementation or completed world effects.
+- **Evidence:** normal and ASan+UBSan/Werror streaming58262 checks include64 original startup-reset and512 original update-prefix comparisons, with earlier3072/256/2048/4328/6481/6625 cases retained. Startup ranges execute their real writes; the update prefix runs with explicit mission/coop observations and mocked dependent effects, stopping before the active controller. Cycle5852 verifies actual initialization→cycle/groups→four first-zone requests/timer299 while rejecting loaded-state inference, alongside all480 rows/960 clocks/3 regions/10 car groups. Metadata867/namespace294/canonical oracle, both full builds, Session5486/frame100 and smoke pass. Logs remain the existing `artifacts/graphics/NativePedStreamingProbe[-sanitized].log`, `NativePopulationCycleProbe[-sanitized].log` and `NativePedModelMetadataProbe-sanitized.log`.
+- **Delivery/next:** extension/package stay byte-identical `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`; no additional pixel, long-mission or target success is claimed. Next fulfill live war-update effects and source model/TXD/sole-worker completions, then genuine references/birth/removal before complete census or generator fulfillment. Full mission, independent Wayland shutdown diagnostic and Fedora acceptance remain open.
 
 ### 2026-09-29 — source gang demand arithmetic; war controller and assets still unowned
 
