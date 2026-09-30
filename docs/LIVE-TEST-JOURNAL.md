@@ -4,6 +4,12 @@ Updated: 2026-10-01. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-26 — 2026-10-01, DIRECT; original local/world skinned collision poses
+
+- Native `d23d3108` preserves local first-use construction-and-return versus world construction-then-update, existing world updates without root access, Spine1-origin bounds and unchanged prior sphere attributes/COL slot. Unknown model presence or current hierarchy facts cannot become a pose; failures retain the complete prior state. Parsed frame LTMs are still only explicit fixtures, not a live animation owner.
+- Normal and ASan/UBSan/Werror/strict-FP61696 checks compare4112 original constructions and16448 complete local/world pose calls bit-for-bit, including signed zero and custom retained radii/material/piece bytes. Actual original RW math executes; allocation/current matrices remain explicit observations. Parser60 checks, independent96-bone/3065-vertex/3356-triangle/root-local DFF comparison and all265 available ordinary packet fixtures pass normally and under selected-TU sanitizers; ten special slots stay unbound. Full native/Godot builds, Session5486/frame100 and smoke pass. Logs: `artifacts/graphics/NativePedHitCollisionProbe[-sanitized].log`, `NativePedAssetsProbe[-sanitized].{log,catalog.log}`. Historical GUI/sweep gates were not repeated this slice.
+- Extension/package stay `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`; docker-init/zombies0 and immutable backup pass. Animation/hierarchy/renderer/resource/reference effects, genuine loaded slots, actor birth/census and generator fulfillment remain local work;61/68 is unchanged. No new pixels, full mission, Wayland shutdown resolution or target closure is claimed.
+
 ### GODOT-P9-25 — 2026-10-01, DIRECT; original skinned hit-COL construction
 
 - Native `0feb2e89` constructs all12 canonical skinned spheres, source material/piece fields, bounds and COL slot with literal RW root inverse/PRECONCAT/point arithmetic. Explicit current matrix observations remain necessary: parsed frame LTMs are not silently promoted to an updated HAnim array. Unknown/invalid data retains prior output; no Loaded, actor or census flag changes.
