@@ -4,6 +4,12 @@ Updated: 2026-10-01. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-23 — 2026-10-01, DIRECT; owned ped skin packets and exact worker tickets
+
+- Native `9c51b657` retains real IDE-declared DFF/TXD skeletons, inverse binds, authored skin/vertex/material data and images through the sole CPU parser worker. Missing assets, unsupported shapes, wrong TXDs and empty/exceptional completions remain errors; no legacy fallback, guessed texture name or RW pointer escapes. Immutable ticket identity and bounded job rotation preserve worker ownership; packets remain valid after RW shutdown.
+- Normal and selected-TU ASan/UBSan/Werror39 checks pass. Independent owned-file comparison verifies96 bones/3065 vertices/3356 triangles and material/image bindings for models7/105/280; catalogue comparison parses all265 available ordinary declarations and leaves10 unbound special slots explicit, with modular CJ separate. Full native/Godot builds, texture40, source vehicle lifecycle115, real paired publication45, native sweep34/0, Session5486/frame100 and smoke pass. Logs: `artifacts/graphics/NativePedAssetsProbe[-sanitized].{log,catalog.log}`, `ped-assets-{vehicle-lifecycle,publication,etalon}.log`.
+- Extension/package remain `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`; docker-init/zombies0 and immutable approval backup pass. Parser completion is **not** source LOADED, animation/hit-COL/reference authority or an ambient birth/census owner. Genuine model/dependency/live-war/actor effects and generator fulfillment remain local work;61/68 stays unchanged. No additional Godot pixels, full mission, Wayland shutdown fix or target closure is claimed.
+
 ### GODOT-P9-22 — 2026-10-01, DIRECT; original model/TXD request effects
 
 - Native `92556bdc` preserves source request flag writes, priority stripping/increments, list operations, TXD/animation dependency order and REQUESTED publication, plus GAME_REQUIRED deletion and mission/KEEP guards. Pure atomic plans retain unknown facts; recursive dependencies and `RemoveModel` remain unfulfilled effects, never fabricated LOADED/unloaded states.
