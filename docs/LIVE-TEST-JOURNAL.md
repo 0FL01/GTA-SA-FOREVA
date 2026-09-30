@@ -4,6 +4,12 @@ Updated: 2026-10-01. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-24 — 2026-10-01, DIRECT; original first-atomic skin setup
+
+- Native `50b4df4d` preserves the first atomic's literal division by the float-spilled extended sum, morph-radius scaling with widened `1.2F`, `0x3000` hierarchy flags and complex-hierarchy bypass. Base hierarchy observations stay explicit, not inferred from IDE flags. Owned parser packets retain raw morph radius/hierarchy flags and authored weights; normalization plans do not grant source LOADED, hit-COL, animation, hierarchy binding, renderer or reference authority.
+- Normal and ASan/UBSan/Werror/strict-FP24586 checks compare8192 original `SetClump` branches bit-for-bit, distinguishing16912 reciprocal-refactor results. Dependency/ref/binding calls remain explicit fixtures. Actual parser42 checks, independent96-bone/3065-vertex/3356-triangle DFF comparison and all265 available ordinary declarations pass; ten special slots stay unbound. Full native/Godot builds, texture40, source vehicle lifecycle115, real publication45, native sweep34/0, Session5486/frame100 and smoke pass. Logs: `artifacts/graphics/NativePedSkinSetupProbe[-sanitized].log`, `NativePedAssetsProbe[-sanitized].{log,catalog.log}` and `ped-skin-setup-{vehicle-lifecycle,publication,etalon}.log`.
+- The original qword multiplier was first hypothesized to be binary64 `1.2`; the pinned-data assertion disproved this before oracle acceptance, and direct inspection established exact widened `1.2F`. No expectations were weakened. Extension/package stay `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`, docker-init/zombies0 and immutable backup pass. Source hit-COL/animation/resource/reference/live-war effects, actor births/census and generator fulfillment remain local work;61/68 is unchanged. No new pixels, full mission, Wayland shutdown resolution or target closure is claimed.
+
 ### GODOT-P9-23 — 2026-10-01, DIRECT; owned ped skin packets and exact worker tickets
 
 - Native `9c51b657` retains real IDE-declared DFF/TXD skeletons, inverse binds, authored skin/vertex/material data and images through the sole CPU parser worker. Missing assets, unsupported shapes, wrong TXDs and empty/exceptional completions remain errors; no legacy fallback, guessed texture name or RW pointer escapes. Immutable ticket identity and bounded job rotation preserve worker ownership; packets remain valid after RW shutdown.
