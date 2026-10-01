@@ -4,6 +4,12 @@ Updated: 2026-10-01. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-29 — 2026-10-01, DIRECT; source skinned blend-frame rest translations
+
+- Native `41100f4f` retains authored inverse-bind flags and projects the source bone-position table from actual skin matrices/node order. Root zero is literal source behavior; later positions use the original inverse/point arithmetic and PUSH-before-POP stack. The32-slot stack has31 usable saves, with an unused terminal POP accepted but consumed underflow rejected. All failed plans retain prior output; rest translations do not become live interpolation frames, hierarchy matrices or Loaded state.
+- Normal and ASan/UBSan/Werror/strict-FP18976 checks compare1280 original bone-position calls,8192 frame applications and4096 hierarchy calls. Actual inverse/point math executes with explicit skin getters. Parser174 and all265 available ordinary declarations pass normally and under selected-TU sanitizers; independent96-bone/3065-vertex/3356-triangle DFF checks now include inverse-bind flags. Ten special declarations remain unbound. Collision61696/4112+16448 regressions, full builds, texture40, source vehicle lifecycle115, real paired publication41, native sweep34/0, Session5486/frame100 and smoke pass. Logs: `artifacts/graphics/NativePedHierarchyProbe[-sanitized].log`, `NativePedAssetsProbe[-sanitized].{log,catalog.log}`, `ped-bind-position-{vehicle-lifecycle,publication,etalon}.log`.
+- Extension/package remain `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`; docker-init/zombies0 and immutable backup pass. Actual blend-frame/association production and live hierarchy/binding/renderer/resource/ref/birth/census/generator consumers remain local work;61/68 is unchanged. No new Godot pixels, full mission, Wayland shutdown resolution or target closure is claimed.
+
 ### GODOT-P9-28 — 2026-10-01, DIRECT; original HAnim default-frame application
 
 - Native `c7abbd61` applies explicitly observed quaternion/translation interpolation frames with the original extended intermediates, float product spills, matrix flags3 and unchanged translation bits. The same application feeds hierarchy traversal; custom callback matrices remain supported. There is no quaternion normalization, guessed pose or IFP sampling claim. Unknown/invalid frames preserve the prior matrix and complete plan.
