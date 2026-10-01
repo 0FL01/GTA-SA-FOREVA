@@ -162,6 +162,7 @@ set(SA_CORE_SOURCES
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeModelStreaming.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedSkinSetup.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedHitCollision.cpp"
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedHierarchy.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceEventFlow.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePopulationRuntime.cpp"
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeAmbientPedPolicy.cpp"
@@ -266,6 +267,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeModelStreaming.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedSkinSetup.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedHitCollision.cpp"
+        "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedHierarchy.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeWorldGround.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeDynamicSectorLists.cpp"
         "${NATIVE_SOURCE_DIR}/app/platform/linux/NativeSourceSurfaces.cpp"
@@ -537,6 +539,13 @@ target_link_libraries(sa_core_ped_skin_setup_probe PRIVATE sa_core)
 add_executable(sa_core_ped_hit_col_probe
     "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedHitCollisionProbe.cpp")
 target_link_libraries(sa_core_ped_hit_col_probe PRIVATE sa_core)
+add_executable(sa_core_ped_hierarchy_probe
+    "${NATIVE_SOURCE_DIR}/app/platform/linux/NativePedHierarchyProbe.cpp")
+target_link_libraries(sa_core_ped_hierarchy_probe PRIVATE sa_core)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(sa_core_ped_hierarchy_probe PRIVATE
+        -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)
+endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(sa_core_ped_hit_col_probe PRIVATE
         -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off)

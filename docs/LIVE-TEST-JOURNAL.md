@@ -4,6 +4,12 @@ Updated: 2026-10-01. [Readiness roadmap](PORT-READINESS.md) · [full chronology]
 
 ## Entry contract
 
+### GODOT-P9-27 — 2026-10-01, DIRECT; original HAnim matrix/frame effect plans
+
+- Native `9876f8ec` preserves normal/NOMATRICES/local/subhierarchy traversal, source parent selection, current/modelling/LTM writes, private-frame flags and root dirty-list/object-update intents. Verified RWDEFAULT multiplication is shared with collision. Callback application, synchronized parent matrices and frame attachment remain explicit; parsed frames do not become live animation state or source Loaded. Plans are atomic on unknown/invalid input and bounded to256 nodes/32 saved parents.
+- Normal and ASan/UBSan/Werror/strict-FP4113 checks match2048 original HAnim calls, all matrix/frame float bits, source parent-stack order and actual dirty-list links. The callback is an explicit matrix fixture and object-update calls remain intents. Real-asset fixtures first exposed the shipped terminal exhausted POP; original execution confirms it has no observable restored-parent effect, and all2048 cases now include it. Consumed underflow still rejects without changing the prior plan. Parser165 checks and all265 available ordinary packets pass, preserving the independent96-bone/3065-vertex/3356-triangle DFF oracle and ten unbound special declarations; selected-TU sanitizers pass. Collision61696/4112+16448 source regressions, full native/Godot builds, Session5486/frame100 and smoke pass. Logs: `artifacts/graphics/NativePedHierarchyProbe[-sanitized].log`, `NativePedHitCollisionProbe-sanitized.log`, `NativePedAssetsProbe[-sanitized].{log,catalog.log}`.
+- Extension/package stay `f70d5e577771eab05e19e38a94dbb1bd5b65fd87c2a5b09757b4e6f2a73f27b9`; docker-init/zombies0 and immutable backup pass. Actual interpolation and hierarchy/frame/binding consumers, renderer/resources/references, genuine loaded slots/birth/census/generator effects remain local work;61/68 stays unchanged. No new GUI/sweep, full mission, Wayland shutdown resolution or target closure is claimed.
+
 ### GODOT-P9-26 — 2026-10-01, DIRECT; original local/world skinned collision poses
 
 - Native `d23d3108` preserves local first-use construction-and-return versus world construction-then-update, existing world updates without root access, Spine1-origin bounds and unchanged prior sphere attributes/COL slot. Unknown model presence or current hierarchy facts cannot become a pose; failures retain the complete prior state. Parsed frame LTMs are still only explicit fixtures, not a live animation owner.
